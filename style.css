@@ -118,3 +118,62 @@ body {
     from { filter: contrast(1.2) brightness(1.2); }
     to { filter: contrast(0.8) brightness(0.8); }
   }
+
+
+
+
+/* Existing styles remain intact */
+
+/* LOGIN SCREEN */
+#login-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+}
+
+#login-screen h1.glitch-title {
+  font-size: 3em;
+  margin-bottom: 20px;
+  text-shadow: 0 0 5px cyan, 0 0 10px magenta;
+}
+
+#login-screen form input,
+#login-screen form select,
+#login-screen form button {
+  display: block;
+  margin: 10px auto;
+  padding: 10px;
+  background: black;
+  border: 1px solid cyan;
+  color: cyan;
+  font-size: 1em;
+  border-radius: 6px;
+}
+
+#login-screen form button {
+  background: #FF0080;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#login-screen form button:hover {
+  background: #ff33a6;
+}
+
+
+
+/* Character Preview */
+#character-preview {
+  margin-bottom: 15px;
+}
+
+#character-preview img {
+  max-width: 200px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,255,255,0.5);
+}

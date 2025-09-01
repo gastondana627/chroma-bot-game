@@ -2,39 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Chroma Bot</title>
+  <title>Data_Bleed</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-  <style>
-    body { 
-      margin: 0; padding: 0; height: 100vh; background: #000; 
-      overflow: hidden; display: flex; justify-content: center; align-items: center; 
-      font-family: 'Inter', sans-serif; color: white;
-    }
-    #fireworks { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-    #video-container { position: fixed; bottom: 20px; right: 20px; width: 80px; height: 80px; cursor: pointer; border-radius: 50%; overflow: hidden; box-shadow: 0 0 12px rgba(255,255,255,0.3); transition: transform 0.3s ease; z-index: 10; }
-    #video-container:hover { transform: scale(1.15); }
-    #chroma-video { width: 100%; height: 100%; object-fit: cover; }
-    #chat-box { position: fixed; bottom: 120px; right: 20px; width: 280px; height: 380px; background: rgba(20,20,20,0.92); border: 2px solid #fff; border-radius: 12px; display: none; flex-direction: column; padding: 10px; z-index: 20; font-family: 'IBM Plex Mono', monospace; }
-    #chat-box header { font-weight: bold; margin-bottom: 10px; text-align: center; position: relative; }
-    #chat-box header button { position: absolute; right: 0; top: 0; background: transparent; border: none; color: white; font-size: 16px; cursor: pointer; }
-    #chat-box .messages { flex: 1; overflow-y: auto; font-size: 14px; }
-    #chat-box form { display: flex; margin-top: 8px; }
-    #chat-box input { flex: 1; padding: 6px; border: none; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; }
-    #chat-box button { margin-left: 6px; padding: 6px 10px; border: none; border-radius: 6px; background: #FF0080; color: white; cursor: pointer; transition: background 0.2s; }
-    #chat-box button:hover { background: #ff33a6; }
-    .typing-indicator { font-style: italic; color: #aaa; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <canvas id="fireworks"></canvas>
 
-  <!-- Video trigger -->
-  <div id="video-container">
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <h1 class="glitch-title">DATA_BLEED</h1>
+    <form id="login-form">
+      <input type="text" id="gamertag" placeholder="Gamertag" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <select id="character">
+        <option value="maya">Maya</option>
+        <option value="eli">Eli</option>
+        <option value="stanley">Stanley</option>
+      </select>
+      <button type="submit">CONNECT</button>
+    </form>
+    <!-- Character Preview Image -->
+    <div id="character-preview">
+      <img id="character-img" src="chroma-bot/assets/img/login/maya_login.png" alt="Character Preview">
+    </div>
+  </div>
+
+  <!-- Video trigger (hidden until login complete) -->
+  <div id="video-container" style="display:none;">
     <video id="chroma-video" autoplay loop muted playsinline>
       <source src="./chroma-bot/assets/vid/Chroma_Vid.mp4" type="video/mp4">
       Your browser does not support the video tag.
@@ -42,10 +42,10 @@
   </div>
 
   <!-- Chat -->
-  <div id="chat-box">
+  <div id="chat-box" style="display:none;">
     <header>
       💬 Chroma Bot
-      <button id="close-chat">✖</button>
+      <button id="close-chat" class="close-btn">✖</button>
     </header>
     <div class="messages" id="messages">
       <p><b>Bot:</b> Hi! Click the logo anytime to chat 🎆</p>
@@ -57,8 +57,10 @@
   </div>
 
   <script>
-    const video = document.getElementById("chroma-video");
+    const loginForm = document.getElementById("login-form");
+    const loginScreen = document.getElementById("login-screen");
     const videoContainer = document.getElementById("video-container");
+    const video = document.getElementById("chroma-video");
     const chatBox = document.getElementById("chat-box");
     const chatForm = document.getElementById("chat-form");
     const userInput = document.getElementById("userInput");
@@ -68,6 +70,29 @@
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+
+    const characterSelect = document.getElementById("character");
+    const characterImg = document.getElementById("character-img");
+
+    // --- Character Preview Logic ---
+    characterSelect.addEventListener("change", () => {
+      const choice = characterSelect.value;
+      let imgPath = "chroma-bot/assets/img/login/maya_login.png"; // default
+      if (choice === "eli") imgPath = "chroma-bot/assets/img/login/eli_login.png";
+      if (choice === "stanley") imgPath = "chroma-bot/assets/img/login/stanley_login.png";
+      characterImg.src = imgPath;
+    });
+
+    // --- Login Logic ---
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const gamertag = document.getElementById("gamertag").value;
+      const character = document.getElementById("character").value;
+      sessionStorage.setItem("gamertag", gamertag);
+      sessionStorage.setItem("character", character);
+      loginScreen.style.display = "none";
+      videoContainer.style.display = "block";
+    });
 
     // --- Toggle UI ---
     videoContainer.addEventListener("click", (e) => {
@@ -97,13 +122,14 @@
     }
 
     async function getBotResponse(userMessage) {
-      const activeCharacter = "maya"; // default for now
+      const activeCharacter = sessionStorage.getItem("character") || "maya";
+      const gamertag = sessionStorage.getItem("gamertag") || "Player";
       addMessage("Bot", `<span class="typing-indicator">...</span>`);
       try {
         const response = await fetch("http://127.0.0.1:3001/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMessage, character: activeCharacter })
+          body: JSON.stringify({ message: userMessage, character: activeCharacter, sessionId: gamertag })
         });
         if (!response.ok) throw new Error(`Server responded ${response.status}`);
         const data = await response.json();
@@ -121,7 +147,8 @@
         e.preventDefault();
         const text = userInput.value.trim();
         if (!text) return;
-        addMessage("You", text);
+        const gamertag = sessionStorage.getItem("gamertag") || "You";
+        addMessage(gamertag, text);
         userInput.value = "";
         await getBotResponse(text);
       });
