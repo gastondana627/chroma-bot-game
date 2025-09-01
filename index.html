@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chroma Bot</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body { 
+      margin: 0; padding: 0; height: 100vh; background: #000; 
+      overflow: hidden; display: flex; justify-content: center; align-items: center; 
+      font-family: 'Inter', sans-serif; color: white;
+    }
+    #fireworks { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+    #video-container { position: fixed; bottom: 20px; right: 20px; width: 80px; height: 80px; cursor: pointer; border-radius: 50%; overflow: hidden; box-shadow: 0 0 12px rgba(255,255,255,0.3); transition: transform 0.3s ease; z-index: 10; }
+    #video-container:hover { transform: scale(1.15); }
+    #chroma-video { width: 100%; height: 100%; object-fit: cover; }
+    #chat-box { position: fixed; bottom: 120px; right: 20px; width: 280px; height: 380px; background: rgba(20,20,20,0.92); border: 2px solid #fff; border-radius: 12px; display: none; flex-direction: column; padding: 10px; z-index: 20; font-family: 'IBM Plex Mono', monospace; }
+    #chat-box header { font-weight: bold; margin-bottom: 10px; text-align: center; position: relative; }
+    #chat-box header button { position: absolute; right: 0; top: 0; background: transparent; border: none; color: white; font-size: 16px; cursor: pointer; }
+    #chat-box .messages { flex: 1; overflow-y: auto; font-size: 14px; }
+    #chat-box form { display: flex; margin-top: 8px; }
+    #chat-box input { flex: 1; padding: 6px; border: none; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; }
+    #chat-box button { margin-left: 6px; padding: 6px 10px; border: none; border-radius: 6px; background: #FF0080; color: white; cursor: pointer; transition: background 0.2s; }
+    #chat-box button:hover { background: #ff33a6; }
+    .typing-indicator { font-style: italic; color: #aaa; }
+  </style>
+</head>
+<body>
+  <canvas id="fireworks"></canvas>
+
+  <!-- Video trigger -->
+  <div id="video-container">
+    <video id="chroma-video" autoplay loop muted playsinline>
+      <source src="./chroma-bot/assets/vid/Chroma_Vid.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <!-- Chat -->
+  <div id="chat-box">
+    <header>
+      💬 Chroma Bot
+      <button id="close-chat">✖</button>
+    </header>
+    <div class="messages" id="messages">
+      <p><b>Bot:</b> Hi! Click the logo anytime to chat 🎆</p>
+    </div>
+    <form id="chat-form">
+      <input type="text" id="userInput" placeholder="Type a message..." required>
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const video = document.getElementById("chroma-video");
+    const videoContainer = document.getElementById("video-container");
+    const chatBox = document.getElementById("chat-box");
+    const chatForm = document.getElementById("chat-form");
+    const userInput = document.getElementById("userInput");
+    const messages = document.getElementById("messages");
+    const closeChat = document.getElementById("close-chat");
+    const canvas = document.getElementById("fireworks");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // --- Toggle UI ---
+    videoContainer.addEventListener("click", (e) => {
+      createFirework(e.clientX, e.clientY, "explode");
+      video.pause();
+      videoContainer.style.display = "none";
+      chatBox.style.display = "flex";
+    });
+
+    closeChat.addEventListener("click", () => {
+      const rect = videoContainer.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      createFirework(centerX, centerY, "implode");
+      chatBox.style.display = "none";
+      videoContainer.style.display = "block";
+      video.play();
+      video.loop = true;
+    });
+
+    // --- Chat Logic ---
+    function addMessage(sender, text) {
+      const msg = document.createElement("p");
+      msg.innerHTML = `<b>${sender}:</b> ${text}`;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function getBotResponse(userMessage) {
+      const activeCharacter = "maya"; // default for now
+      addMessage("Bot", `<span class="typing-indicator">...</span>`);
+      try {
+        const response = await fetch("http://127.0.0.1:3001/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userMessage, character: activeCharacter })
+        });
+        if (!response.ok) throw new Error(`Server responded ${response.status}`);
+        const data = await response.json();
+        messages.removeChild(messages.lastChild);
+        addMessage("Bot", data.reply);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        messages.removeChild(messages.lastChild);
+        addMessage("Bot", "⚠️ Connection error, try again later.");
+      }
+    }
+
+    if (chatForm) {
+      chatForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const text = userInput.value.trim();
+        if (!text) return;
+        addMessage("You", text);
+        userInput.value = "";
+        await getBotResponse(text);
+      });
+    }
+
+    // --- Fireworks ---
+    class Firework {
+      constructor(x, y, color, velocity) {
+        this.x = x; this.y = y;
+        this.color = color;
+        this.velocity = velocity;
+        this.alpha = 1; this.radius = 2;
+      }
+      draw() {
+        ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      update() {
+        this.x += this.velocity.x; this.y += this.velocity.y;
+        this.alpha -= 0.02;
+        this.draw();
+      }
+    }
+
+    let fireworks = [];
+    function createFirework(x, y, mode = "explode") {
+      const metallicColors = [
+        "rgba(192,192,192,1)",
+        "rgba(220,220,220,0.9)",
+        "rgba(255,255,255,0.8)",
+        "rgba(169,169,169,0.9)"
+      ];
+      const particleCount = mode === "explode" ? 100 : 70;
+      const baseSpeed = mode === "explode" ? 5 : 4;
+      for (let i = 0; i < particleCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * baseSpeed + 1;
+        let velocity;
+        if (mode === "explode") {
+          velocity = { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed };
+        } else {
+          velocity = { x: -Math.cos(angle) * speed * 0.5, y: -Math.sin(angle) * speed * 0.5 };
+        }
+        fireworks.push(new Firework(x, y, metallicColors[Math.floor(Math.random() * metallicColors.length)], velocity));
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      fireworks.forEach((f, i) => {
+        f.update();
+        if (f.alpha <= 0) fireworks.splice(i, 1);
+      });
+    }
+    animate();
+  </script>
+</body>
+</html>
