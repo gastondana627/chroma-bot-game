@@ -1,5 +1,6 @@
-// chroma-bot/script.js
-import { getAIResponse } from "./openai.js";
+// script.js (root)
+
+import { setupSaveLoad } from "./save.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const chatBox = document.getElementById("chat-box");
@@ -9,19 +10,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   const video = document.getElementById("chroma-video");
   const videoContainer = document.getElementById("video-container");
 
-  let characterStates = null;
-  let currentState = "normal";
   let wrongCount = 0;
 
-  // Load character states
-  try {
-    const res = await fetch("./chroma-bot/assets/config/character.json");
-    characterStates = await res.json();
-  } catch (err) {
-    console.error("Could not load character.json:", err);
-  }
+  // Gamertag + character from login/session
+  const gamertag = sessionStorage.getItem("gamertag") || "Player";
+  const character = sessionStorage.getItem("character") || "maya";
 
-  // When clicking video → stop & show chat
+  const header = document.createElement("h3");
+  header.textContent = `${gamertag} (${character})`;
+  document.body.insertBefore(header, chatBox);
+
+  // Setup save/load
+  setupSaveLoad(messages);
+
+  // Intro video → stop & reveal chat
   videoContainer.addEventListener("click", () => {
     video.loop = false;
     video.pause();
@@ -29,7 +31,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     chatBox.style.display = "flex";
   });
 
-  // Add message helper
   function addMessage(sender, text) {
     const msg = document.createElement("p");
     msg.innerHTML = `<b>${sender}:</b> ${text}`;
@@ -37,49 +38,41 @@ document.addEventListener("DOMContentLoaded", async () => {
     messages.scrollTop = messages.scrollHeight;
   }
 
-  // Handle chat form submit
   if (chatForm) {
     chatForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const text = userInput.value.trim();
       if (!text) return;
 
-      addMessage("You", text);
+      addMessage(gamertag, text);
       userInput.value = "";
 
       const reply = await getBotResponse(text);
-      addMessage("Bot", reply);
+      addMessage(character, reply.text);
+
+      // Trigger glitch if needed
+      if (reply.outcome === "fail") triggerGlitch("fail");
+      else if (reply.outcome === "neutral" && reply.stage > 1) triggerGlitch("warn");
     });
   }
 
-  // Bot response logic
   async function getBotResponse(userMessage) {
-    // 1. Knowledge base lookup
     try {
-      const res = await fetch("knowledge.json");
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userMessage,
+          character: character,
+          sessionId: gamertag
+        })
+      });
       const data = await res.json();
-      for (const item of data.knowledge) {
-        if (userMessage.toLowerCase().includes(item.input.toLowerCase())) {
-          return item.output;
-        }
-      }
-
-      // Track wrong answers → state transitions
-      wrongCount++;
-      if (characterStates) {
-        if (wrongCount >= characterStates.thresholds.critical) {
-          currentState = "broken";
-        } else if (wrongCount >= characterStates.thresholds.wrongAnswers) {
-          currentState = "tired";
-        }
-      }
+      return { text: data.reply || "…", outcome: data.outcome, stage: data.stage };
     } catch (err) {
-      console.error("Error loading knowledge.json:", err);
+      console.error("Backend error:", err);
+      return { text: "⚠️ Could not reach server.", outcome: "neutral", stage: 1 };
     }
-
-    // 2. AI fallback (OpenAI API)
-    const aiReply = await getAIResponse(userMessage);
-    return aiReply;
   }
 
   // Fireworks animation
@@ -145,4 +138,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   animate();
+
+  // --- Glitch overlay ---
+  function triggerGlitch(type) {
+    const body = document.body;
+    if (type === "warn") {
+      body.classList.add("glitch-warn");
+      setTimeout(() => body.classList.remove("glitch-warn"), 500);
+    }
+    if (type === "fail") {
+      body.classList.add("glitch-fail");
+      setTimeout(() => body.classList.remove("glitch-fail"), 1200);
+    }
+  }
 });

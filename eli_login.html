@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Eli Login</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url("chroma-bot/assets/img/eli/Eli_Log_In_Area.png") no-repeat center center fixed;
+      background-size: cover;
+      font-family: monospace;
+    }
+    .login-container {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.6);
+      padding: 20px;
+      border-radius: 10px;
+      color: #fff;
+    }
+    input {
+      display: block;
+      margin: 10px 0;
+      padding: 8px;
+      width: 220px;
+    }
+    button {
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login as Eli</h2>
+    <input type="text" id="gamertag" placeholder="Enter Gamertag">
+    <input type="password" id="password" placeholder="Password (illusion only)">
+    <button id="login-btn">Connect</button>
+  </div>
+
+  <script>
+    document.getElementById("login-btn").addEventListener("click", () => {
+      const gamertag = document.getElementById("gamertag").value || "Anonymous";
+      sessionStorage.setItem("gamertag", gamertag);
+      sessionStorage.setItem("character", "eli");
+      window.location.href = "chatbot.html"; // Always starts Eli
+    });
+  </script>
+</body>
+</html>

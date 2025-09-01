@@ -1,95 +1,67 @@
-📖 Project README (Updated)
+# Data_Bleed Game Bot
 
-🚀 Overview
+An experimental interactive narrative game where player choices shape the story, powered by character-specific lore and frontend animations.
 
-This project is a Chroma Bot AI Chat Experience with:
-	•	FastAPI backend (AI responses via OpenAI).
-	•	Node/Express (server.js) serving static files for local testing & Vercel deployment.
-	•	Frontend animations (Chroma logo animation + fireworks).
-	•	Story arcs with potential “scam” failure sequences (logo breaking).
+## 🚀 Current Features
+- **Multi-character AI bot** (Maya, Eli, Stanley).
+- **Lore-driven responses** from `characters.json`.
+- **Outcome-based story arcs** (success, fail).
+- **Frontend animation hooks** (logo break on failure).
+- **Non-intrusive login illusion**: no personal data leaves the client.
+- **GDPR-safe session**: gamertag + password stored in `sessionStorage` only.
 
-Currently tested locally on MacOS + Python 3.12 + Node.js.
-
----
-
-## Workflow
-
-- Keep this repo **standalone** for now (UI/UX experiments).  
-- Once the Chroma Bot sequences are stable → merge into main game repo under a `/modules/chroma-bot/` directory.  
-- This keeps development modular and avoids blocking the larger game flow.  
-
----
-
-## Localhost → Production Notes
-
-- Localhost will be simple (static file server, e.g. `npm run dev` or `python3 -m http.server`).  
-- Production on **Vercel** will auto-deploy this repo once connected.  
-- When integrated into main repo → Vercel can be configured with separate build outputs for `game/` and `chroma-bot/`.
-
----
-
-## Next Steps
-
-- Add the 5 **Chroma breaking images** under `/assets/images/`.  
-- Add glitch/horror audio under `/assets/audio/`.  
-- Scaffold a simple A-Frame scene in `src/index.html`.  
-- Test UI cracking logic in isolation before merging with main game.
+## 📂 Project Structure
 
 
-## Workflow structure
-Data_Bleed_VSC/
-│── chroma-bot/          # Frontend (static files, served by Node.js or Vercel)
-│   ├── assets/          # Images, video, configs
-│   ├── script.js        # Main frontend logic (chat + fireworks + state logic)
-│   ├── chatbot.html     # Chatbot UI
-│   └── server.js        # Node server for local static hosting
+
+DATA_BLEED_VSC_GAME/
+├── chroma-bot/
+│   └── assets/
+│       ├── config/              # config + JSON
+│       └── img/eli/             # Eli login screen art
 │
-│── main.py              # FastAPI backend for AI responses
-│── .env                 # Environment variables (API keys)
-│── venv/                # Python virtual environment
+├── characters/                  # per-character JSON (legacy testing)
+├── chatbot.html                 # chatbot UI
+├── eli_login.html               # new login flow
+├── save.js                      # save/load chatlog logic
+├── script.js                    # main frontend logic
+├── main.py                      # backend (FastAPI + lore integration)
+├── server.js                    # static server
+├── knowledge.json               # shared knowledge base
+└── README.md
 
 
-🔑 Environment Variables
 
-Create a file named .env inside chroma-bot/ or project root:
-OPENAI_API_KEY=sk-xxxxxx
+## 🧩 Characters
+- **Maya**: cryptic desert wanderer, guides with calm hints.
+- **Eli**: paranoid hacker, terse and technical.
+- **Stanley**: whistleblower, sharp and friendly.
+- **Global Lore**: Data_Bleed world, Chroma Awards, Shadow Observers.
 
-🖥️ Local Development
+## ✨ New Additions
+1. **Global Knowledge Integration**  
+   - `main.py` checks `global_knowledge` first (e.g., “Shadow Observers”).  
+   - Ensures consistent lore across characters.
 
-1. Setup Python (FastAPI backend)
-cd ~/Downloads/Data_Bleed_VSC
-python3 -m venv venv
-source venv/bin/activate
+2. **Eli Login Flow**  
+   - `eli_login.html` overlays text inputs on Eli’s login art.  
+   - Stores gamertag + session in local sessionStorage.  
+   - Auto-passes “eli” into `/api/chat`.  
 
-pip install -r requirements.txt
+3. **Session Save/Load**  
+   - `save.js` adds Save Game / Load Game.  
+   - Saves chat log as JSON locally (download).  
+   - Load restores previous session.  
 
-Run FastAPI:
-uvicorn main:app --reload --port 3001
-
-You should see:
-✅ OPENAI_API_KEY loaded successfully.
-Uvicorn running on http://127.0.0.1:3001
-
-
-2. Setup Node (Frontend static files)
-
-cd ~/Downloads/Data_Bleed_VSC/chroma-bot
-npm install
-node server.js
-
-You should see:
-✅ Server running at http://localhost:3001
-
-3. Open in Browser
-
-Go to:
-👉 http://localhost:3001/chatbot.html
+## 🔑 Usage
+- Run backend:
+  ```bash
+  uvicorn main:app --reload --port 3001
 
 
-✨ Features
 
-✅ Already Working
-	•	Frontend chat box (script.js) with AI backend fallback.
-	•	Fireworks animation on click.
-	•	State transitions (normal → tired → broken).
-	•	FastAPI successfully connected to OpenAI API.
+	•	Run frontend server:
+  node server.js
+
+
+

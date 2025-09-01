@@ -96,3 +96,25 @@ body {
   .system-message, .error-text {
     font-family: 'IBM Plex Mono', monospace;
   }
+
+
+
+  .glitch-warn {
+    background: rgba(255, 0, 0, 0.1);
+    animation: flicker 0.2s infinite alternate;
+  }
+  
+  .glitch-fail {
+    background: rgba(255, 0, 0, 0.4);
+    animation: bleed 0.1s infinite alternate;
+  }
+  
+  @keyframes flicker {
+    from { filter: hue-rotate(0deg); }
+    to { filter: hue-rotate(30deg); }
+  }
+  
+  @keyframes bleed {
+    from { filter: contrast(1.2) brightness(1.2); }
+    to { filter: contrast(0.8) brightness(0.8); }
+  }
