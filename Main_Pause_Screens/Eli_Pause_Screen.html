@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA_BLEED - Session Paused</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400;700;900&family=Courier+Prime:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a2332 35%, #2a3a4a 100%);
+            color: #00d4ff;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .terminal-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: grid-flicker 4s infinite;
+        }
+        
+        .subject-profile {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            width: 300px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+        
+        .profile-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00d4ff;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .subject-avatar {
+            width: 150px;
+            height: 180px;
+            margin: 0 auto 15px;
+            background: linear-gradient(135deg, #2a3a4a, #1a2332);
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .subject-avatar::before {
+            content: '🎧';
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0.8;
+        }
+        
+        .subject-avatar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(0, 212, 255, 0.1) 50%, transparent 70%);
+            animation: scan-line 3s infinite;
+        }
+        
+        .profile-data {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .data-field {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            padding-bottom: 4px;
+        }
+        
+        .field-label {
+            color: #7fb3d3;
+            text-transform: uppercase;
+        }
+        
+        .field-value {
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        
+        .field-value.warning {
+            color: #ff4757;
+            animation: warning-pulse 1.5s infinite;
+        }
+        
+        .main-terminal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00d4ff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 
+                0 0 50px rgba(0, 212, 255, 0.4),
+                inset 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+        
+        .terminal-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .terminal-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #00d4ff;
+            text-shadow: 0 0 20px #00d4ff;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+        
+        .terminal-subtitle {
+            font-size: 1rem;
+            color: #7fb3d3;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .session-status {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .status-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .menu-btn {
+            background: transparent;
+            border: 2px solid #00d4ff;
+            color: #00d4ff;
+            padding: 15px 25px;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .menu-btn:hover {
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .menu-btn:hover::before {
+            left: 100%;
+        }
+        
+        .menu-btn.danger {
+            border-color: #ff4757;
+            color: #ff4757;
+        }
+        
+        .menu-btn.danger:hover {
+            background: rgba(255, 71, 87, 0.1);
+            box-shadow: 0 0 25px rgba(255, 71, 87, 0.5);
+        }
+        
+        .exploitation-log {
+            position: absolute;
+            top: 50px;
+            right: 50px;
+            width: 350px;
+            height: 500px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #ff4757;
+            border-radius: 8px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(255, 71, 87, 0.3);
+            overflow-y: auto;
+        }
+        
+        .log-header {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ff4757;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        
+        .log-entry {
+            background: rgba(255, 71, 87, 0.1);
+            border-left: 3px solid #ff4757;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .log-entry:hover {
+            background: rgba(255, 71, 87, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .log-timestamp {
+            color: #7fb3d3;
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+        }
+        
+        .log-content {
+            color: #ff4757;
+        }
+        
+        .system-alerts {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        
+        .alert-badge {
+            background: rgba(255, 71, 87, 0.2);
+            border: 1px solid #ff4757;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            color: #ff4757;
+            animation: alert-glow 2s infinite;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00d4ff;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 500px;
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: #ff4757;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .modal-text {
+            color: #00d4ff;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .modal-btn {
+            background: transparent;
+            border: 2px solid #00d4ff;
+            color: #00d4ff;
+            padding: 10px 25px;
+            font-family: 'Orbitron', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        
+        @keyframes grid-flicker {
+            0%, 98% { opacity: 1; }
+            99%, 100% { opacity: 0.7; }
+        }
+        
+        @keyframes scan-line {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes warning-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        @keyframes alert-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 71, 87, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 71, 87, 0.8); }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-grid"></div>
+    
+    <!-- Subject Profile (Left Panel) -->
+    <div class="subject-profile">
+        <div class="profile-header">
+            <h3>SUBJECT PROFILE</h3>
+            <div style="font-size: 0.8rem; color: #7fb3d3;">ID: USER_7739</div>
+        </div>
+        
+        <div class="subject-avatar"></div>
+        
+        <div class="profile-data">
+            <div class="data-field">
+                <span class="field-label">Status:</span>
+                <span class="field-value warning">MONITORED</span>
+            </div>
+            <div class="data-field">
+                <span class="field-label">Session Time:</span>
+                <span class="field-value">04:37:22</span>
+            </div>
+            <div class="data-field">
+                <span class="field-label">Data Harvested:</span>
+                <span class="field-value">2.4GB</span>
+            </div>
+            <div class="data-field">
+                <span class="field-label">Microtransactions:</span>
+                <span class="field-value warning">$247.83</span>
+            </div>
+            <div class="data-field">
+                <span class="field-label">Addiction Level:</span>
+                <span class="field-value warning">CRITICAL</span>
+            </div>
+            <div class="data-field">
+                <span class="field-label">Exploitation Score:</span>
+                <span class="field-value warning">9.2/10</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Terminal (Center) -->
+    <div class="main-terminal">
+        <div class="terminal-header">
+            <div class="terminal-title">DATA_BLEED</div>
+            <div class="terminal-subtitle">Session Suspended</div>
+        </div>
+        
+        <div class="session-status">
+            <div class="status-line">
+                <span>ENCRYPTION:</span>
+                <span style="color: #00d4ff;">AES-256</span>
+            </div>
+            <div class="status-line">
+                <span>CONNECTION:</span>
+                <span style="color: #00ff00;">SECURE</span>
+            </div>
+            <div class="status-line">
+                <span>DATA STREAM:</span>
+                <span style="color: #ff4757;">ACTIVE</span>
+            </div>
+            <div class="status-line">
+                <span>NEURAL PATTERN:</span>
+                <span style="color: #ff4757;">COMPROMISED</span>
+            </div>
+        </div>
+        
+        <div class="menu-options">
+            <button class="menu-btn" onclick="resumeSession()">
+                > RESUME_SESSION
+            </button>
+            <button class="menu-btn" onclick="accessSettings()">
+                > ACCESS_SETTINGS
+            </button>
+            <button class="menu-btn danger" onclick="terminateConnection()">
+                > TERMINATE_CONNECTION
+            </button>
+        </div>
+    </div>
+    
+    <!-- Exploitation Log (Right Panel) -->
+    <div class="exploitation-log">
+        <div class="log-header">⚠️ Exploitation Log</div>
+        
+        <div class="log-entry" onclick="showLogDetail('Loot box algorithm triggered dopamine response')">
+            <div class="log-timestamp">[14:32:18]</div>
+            <div class="log-content">Loot box purchase detected - $19.99</div>
+        </div>
+        
+        <div class="log-entry" onclick="showLogDetail('FOMO marketing campaign effectiveness: 94%')">
+            <div class="log-timestamp">[14:28:03]</div>
+            <div class="log-content">FOMO trigger activated successfully</div>
+        </div>
+        
+        <div class="log-entry" onclick="showLogDetail('Pay-to-win mechanics detected in competitive match')">
+            <div class="log-timestamp">[14:25:47]</div>
+            <div class="log-content">Matched against premium players</div>
+        </div>
+        
+        <div class="log-entry" onclick="showLogDetail('Behavioral data indicates increasing dependency')">
+            <div class="log-timestamp">[14:20:12]</div>
+            <div class="log-content">Addiction metrics: +15%</div>
+        </div>
+        
+        <div class="log-entry" onclick="showLogDetail('Dark pattern UI successfully guided purchase decision')">
+            <div class="log-timestamp">[14:15:30]</div>
+            <div class="log-content">Dark pattern deployment: SUCCESS</div>
+        </div>
+        
+        <div class="log-entry" onclick="showLogDetail('Personal data harvested and sold to third parties')">
+            <div class="log-timestamp">[14:10:09]</div>
+            <div class="log-content">Data package sold: $3.47 profit</div>
+        </div>
+    </div>
+    
+    <!-- System Alerts -->
+    <div class="system-alerts">
+        <div class="alert-badge">NEURAL LINK: ACTIVE</div>
+        <div class="alert-badge">WALLET: $52.17 REMAINING</div>
+        <div class="alert-badge">RESISTANCE: MINIMAL</div>
+    </div>
+    
+    <!-- Modal for alerts -->
+    <div class="modal" id="alertModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">System Alert</div>
+            <div class="modal-text" id="modalText"></div>
+            <button class="modal-btn" onclick="closeModal()">ACKNOWLEDGE</button>
+        </div>
+    </div>
+    
+    <script>
+        function showModal(title, message) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = message;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+        
+        function resumeSession() {
+            showModal(
+                'RESUMING SESSION',
+                'Data extraction protocol resuming... Your behavioral patterns will continue to be monitored and monetized.'
+            );
+        }
+        
+        function accessSettings() {
+            showModal(
+                'ACCESS DENIED',
+                'Terminal settings are controlled by corporate algorithms. User preferences have been overridden for maximum revenue extraction.'
+            );
+        }
+        
+        function terminateConnection() {
+            showModal(
+                'CONNECTION PERSISTENT',
+                'Termination request denied. Neural pathways remain active. You cannot disconnect from what you have become addicted to.'
+            );
+        }
+        
+        function showLogDetail(detail) {
+            showModal('EXPLOITATION DETAIL', detail);
+        }
+        
+        // Simulate real-time updates
+        let exploitationValue = 247.83;
+        let dataHarvested = 2.4;
+        
+        setInterval(() => {
+            exploitationValue += (Math.random() * 5);
+            dataHarvested += (Math.random() * 0.1);
+            
+            document.querySelector('[data-field="microtransactions"]') && 
+            (document.querySelector('[data-field="microtransactions"]').textContent = `$${exploitationValue.toFixed(2)}`);
+            
+            document.querySelector('[data-field="data"]') && 
+            (document.querySelector('[data-field="data"]').textContent = `${dataHarvested.toFixed(1)}GB`);
+        }, 3000);
+        
+        // Configuration for database integration
+        window.DataBleedConfig = {
+            subject: {
+                id: 'USER_7739',
+                status: 'MONITORED',
+                sessionTime: '04:37:22',
+                dataHarvested: '2.4GB',
+                microtransactions: '$247.83',
+                addictionLevel: 'CRITICAL',
+                exploitationScore: '9.2/10'
+            },
+            exploitationLog: [
+                { timestamp: '14:32:18', event: 'Loot box purchase detected - $19.99', detail: 'Loot box algorithm triggered dopamine response' },
+                { timestamp: '14:28:03', event: 'FOMO trigger activated successfully', detail: 'FOMO marketing campaign effectiveness: 94%' },
+                { timestamp: '14:25:47', event: 'Matched against premium players', detail: 'Pay-to-win mechanics detected in competitive match' },
+                { timestamp: '14:20:12', event: 'Addiction metrics: +15%', detail: 'Behavioral data indicates increasing dependency' },
+                { timestamp: '14:15:30', event: 'Dark pattern deployment: SUCCESS', detail: 'Dark pattern UI successfully guided purchase decision' },
+                { timestamp: '14:10:09', event: 'Data package sold: $3.47 profit', detail: 'Personal data harvested and sold to third parties' }
+            ],
+            systemStatus: {
+                encryption: 'AES-256',
+                connection: 'SECURE',
+                dataStream: 'ACTIVE',
+                neuralPattern: 'COMPROMISED'
+            }
+        };
+    </script>
+</body>
+</html>
