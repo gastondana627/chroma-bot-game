@@ -1,179 +1,366 @@
-/* chroma-bot/style.css */
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0d0d0d;
-    color: white;
-    overflow: hidden;
-  }
-  
-  /* Fireworks canvas */
-  #fireworks {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-  }
-  
-  /* Video container (acts like floating button) */
-  #video-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 120px;
-    height: 120px;
-    cursor: pointer;
-    border-radius: 50%;
-    overflow: hidden;
-    box-shadow: 0 0 20px rgba(255,255,255,0.3);
-    transition: transform 0.3s ease;
-  }
-  #video-container:hover {
-    transform: scale(1.15);
-  }
-  #chroma-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  /* Chat Window */
-  #chat-box {
-    position: fixed;
-    bottom: 160px;
-    right: 20px;
-    width: 320px;
-    height: 420px;
-    background: rgba(20,20,20,0.92);
-    border: 2px solid #fff;
-    border-radius: 12px;
-    display: none;
-    flex-direction: column;
-    padding: 10px;
-  }
-  #chat-box header {
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-align: center;
-  }
-  #chat-box .messages {
-    flex: 1;
-    overflow-y: auto;
-    font-size: 14px;
-  }
-  #chat-box form {
-    display: flex;
-    margin-top: 8px;
-  }
-  #chat-box input {
-    flex: 1;
-    padding: 6px;
-    border: none;
-    border-radius: 6px;
-  }
-  #chat-box button {
-    margin-left: 6px;
-    padding: 6px 10px;
-    border: none;
-    border-radius: 6px;
-    background: #ff0080;
-    color: white;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  #chat-box button:hover {
-    background: #ff33a6;
-  }
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #0d0d0d;
+  color: white;
+  overflow: hidden;
+}
 
+/* Fireworks canvas */
+#fireworks {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
 
-  body {
-    /* Use Inter for all main text */
-    font-family: 'Inter', sans-serif;
-  }
-  
-  /* Example usage for the secondary font */
-  .system-message, .error-text {
-    font-family: 'IBM Plex Mono', monospace;
-  }
-
-
-
-  .glitch-warn {
-    background: rgba(255, 0, 0, 0.1);
-    animation: flicker 0.2s infinite alternate;
-  }
-  
-  .glitch-fail {
-    background: rgba(255, 0, 0, 0.4);
-    animation: bleed 0.1s infinite alternate;
-  }
-  
-  @keyframes flicker {
-    from { filter: hue-rotate(0deg); }
-    to { filter: hue-rotate(30deg); }
-  }
-  
-  @keyframes bleed {
-    from { filter: contrast(1.2) brightness(1.2); }
-    to { filter: contrast(0.8) brightness(0.8); }
-  }
-
-
-
-
-/* Existing styles remain intact */
-
-/* LOGIN SCREEN */
+/* Login screen */
 #login-screen {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   height: 100vh;
-  text-align: center;
 }
 
-#login-screen h1.glitch-title {
-  font-size: 3em;
-  margin-bottom: 20px;
-  text-shadow: 0 0 5px cyan, 0 0 10px magenta;
+#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 250px;
 }
 
-#login-screen form input,
-#login-screen form select,
-#login-screen form button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  background: black;
-  border: 1px solid cyan;
-  color: cyan;
-  font-size: 1em;
-  border-radius: 6px;
+#character-preview {
+  margin-top: 15px;
 }
 
-#login-screen form button {
-  background: #FF0080;
+#character-preview img {
+  width: 200px;
+  border-radius: 10px;
+  border: 2px solid white;
+}
+
+/* Eli Custom Login */
+#eli-login {
+  display: none;
+  position: relative;
+  width: 400px;
+  height: 250px;
+  margin-top: 20px;
+}
+
+#eli-login .eli-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 2px solid #fff;
+}
+
+#eli-login .eli-input {
+  position: absolute;
+  left: 20%;
+  width: 60%;
+  padding: 6px;
   border: none;
-  color: white;
+  border-radius: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+#eli-login .gamertag {
+  top: 40%; /* adjust these % to match Eli’s image slots */
+}
+
+#eli-login .password {
+  top: 55%;
+}
+
+#eli-login .eli-btn {
+  position: absolute;
+  bottom: 10%;
+  left: 35%;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #ff0080;
+  color: #fff;
   cursor: pointer;
   transition: background 0.2s;
 }
 
-#login-screen form button:hover {
+#eli-login .eli-btn:hover {
+  background: #ff33a6;
+}
+
+/* Video container */
+#video-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 120px;
+  height: 120px;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(255,255,255,0.3);
+  transition: transform 0.3s ease;
+}
+#video-container:hover {
+  transform: scale(1.15);
+}
+#chroma-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Chat Window */
+#chat-box {
+  position: fixed;
+  bottom: 160px;
+  right: 20px;
+  width: 320px;
+  height: 420px;
+  background: rgba(20,20,20,0.92);
+  border: 2px solid #fff;
+  border-radius: 12px;
+  display: none;
+  flex-direction: column;
+  padding: 10px;
+  z-index: 20;
+}
+
+#chat-box header {
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+  position: relative;
+}
+
+/* Close button (X) */
+#chat-box header .close-btn {
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+#chat-box header .close-btn:hover {
+  color: #ff0080;
+}
+
+#chat-box .messages {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+#chat-box form {
+  display: flex;
+  margin-top: 8px;
+}
+#chat-box input {
+  flex: 1;
+  padding: 6px;
+  border: none;
+  border-radius: 6px;
+}
+#chat-box button {
+  margin-left: 6px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #ff0080;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#chat-box button:hover {
   background: #ff33a6;
 }
 
 
-
-/* Character Preview */
-#character-preview {
-  margin-bottom: 15px;
+.character-login {
+  position: relative;
+  width: 420px;   /* adjust to your image size */
+  margin: 20px auto;
+}
+.character-login img {
+  width: 100%;
+  display: block;
+  border-radius: 10px;
 }
 
-#character-preview img {
-  max-width: 200px;
+/* --- Eli Login Overlay --- */
+.eli-input {
+  position: absolute;
+  left: 80px;       /* adjust */
+  width: 240px;     /* adjust */
+  padding: 6px;
+  border-radius: 6px;
+}
+#eli-gamertag {
+  top: 120px;       /* adjust to fit input area on image */
+}
+#eli-password {
+  top: 170px;       /* adjust */
+}
+.eli-btn {
+  position: absolute;
+  bottom: 40px;
+  left: 150px;
+  width: 100px;
+  padding: 8px;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,255,255,0.5);
+  background: #ff0080;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+/* --- Maya Login Overlay --- */
+.maya-input {
+  position: absolute;
+  left: 70px;
+  width: 250px;
+  padding: 6px;
+  border-radius: 6px;
+}
+#maya-gamertag {
+  top: 110px;
+}
+#maya-password {
+  top: 160px;
+}
+.maya-btn {
+  position: absolute;
+  bottom: 35px;
+  left: 160px;
+  width: 100px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #0077ff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+/* --- Stanley Login Overlay --- */
+.stanley-input {
+  position: absolute;
+  left: 75px;
+  width: 260px;
+  padding: 6px;
+  border-radius: 6px;
+}
+#stanley-gamertag {
+  top: 130px;
+}
+#stanley-password {
+  top: 185px;
+}
+.stanley-btn {
+  position: absolute;
+  bottom: 50px;
+  left: 160px;
+  width: 100px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #00cc66;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+
+.character-login {
+  transform: scale(calc(min(100vw / 900, 100vh / 700)));
+  transform-origin: top center;
+}
+
+
+.character-login {
+  position: relative;
+  width: 90vw;        /* scale better */
+  height: 90vh;       /* allow more space */
+  max-width: 1000px;  /* don’t get too big */
+  max-height: 800px;
+  margin: auto;
+  overflow: auto;     /* ✅ allows scrolling inside if needed */
+  transform: scale(calc(min(100vw / 900, 100vh / 700)));
+  transform-origin: top center;
+}
+
+iframe.login-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+
+/* Glitch Card Selector */
+#character-selector {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.character-card {
+  width: 200px;
+  height: 120px;
+  background: #111;
+  border: 2px solid #00ffff44;
+  border-radius: 12px;
+  text-align: center;
+  padding: 15px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.character-card h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #fff;
+}
+
+.character-card p {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Hover glitch effect */
+.character-card:hover {
+  transform: scale(1.1) rotate(-1deg);
+  box-shadow: 0 0 20px #0ff, 0 0 40px #f0f;
+}
+
+/* Theme tints */
+.character-card.maya { border-color: #ff1493aa; }
+.character-card.eli { border-color: #00ff00aa; }
+.character-card.stanley { border-color: #ffa500aa; }
+
+
+.character-login {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+  height: 90vh;      /* scale with screen */
+  overflow: hidden;  /* contain iframe */
+}
+
+iframe.login-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  overflow-y: auto;  /* allow scrolling inside iframe */
 }

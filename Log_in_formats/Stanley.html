@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FriendSpace - Connect with Friends</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: 
+                linear-gradient(135deg, #6b7280 0%, #4b5563 30%, #374151 70%, #1f2937 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* Subtle horror elements that appear gradually */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(139, 0, 0, 0) 0%, rgba(139, 0, 0, 0.02) 50%),
+                radial-gradient(circle at 80% 80%, rgba(25, 25, 112, 0) 0%, rgba(25, 25, 112, 0.02) 50%);
+            z-index: -2;
+            transition: all 2s ease;
+        }
+
+        .body-corrupted::before {
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(139, 0, 0, 0.05) 0%, rgba(139, 0, 0, 0.15) 50%),
+                radial-gradient(circle at 80% 80%, rgba(25, 25, 112, 0.05) 0%, rgba(25, 25, 112, 0.15) 50%);
+        }
+
+        /* Hidden data streams */
+        .data-stream {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 3s ease;
+        }
+
+        .stream-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.3), transparent);
+            animation: streamFlow 8s linear infinite;
+        }
+
+        @keyframes streamFlow {
+            0% { transform: translateX(-100vw); }
+            100% { transform: translateX(100vw); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            width: 100%;
+            padding: 20px 0;
+            text-align: left;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            margin-bottom: 60px;
+            transform: translateZ(10px);
+            transition: all 0.5s ease;
+        }
+
+        .header-corrupted {
+            background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+            box-shadow: 0 4px 8px rgba(139, 0, 0, 0.4);
+        }
+
+        .header h1 {
+            color: #e5e7eb;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-left: 40px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .header-corrupted h1 {
+            color: #fca5a5;
+            text-shadow: 
+                2px 2px 4px rgba(139, 0, 0, 0.8),
+                0 0 10px rgba(220, 38, 38, 0.3);
+        }
+
+        /* Glitch effect for title */
+        .glitch-title::before,
+        .glitch-title::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+        }
+
+        .glitch-title::before {
+            animation: glitch-1 0.3s ease-in-out;
+            color: #ef4444;
+            z-index: -1;
+        }
+
+        .glitch-title::after {
+            animation: glitch-2 0.3s ease-in-out;
+            color: #3b82f6;
+            z-index: -2;
+        }
+
+        @keyframes glitch-1 {
+            0%, 100% { transform: translate(0); opacity: 0; }
+            20% { transform: translate(-2px, 2px); opacity: 0.8; }
+            40% { transform: translate(-2px, -2px); opacity: 0.8; }
+            60% { transform: translate(2px, 2px); opacity: 0.8; }
+            80% { transform: translate(2px, -2px); opacity: 0.8; }
+        }
+
+        @keyframes glitch-2 {
+            0%, 100% { transform: translate(0); opacity: 0; }
+            20% { transform: translate(2px, -2px); opacity: 0.8; }
+            40% { transform: translate(2px, 2px); opacity: 0.8; }
+            60% { transform: translate(-2px, -2px); opacity: 0.8; }
+            80% { transform: translate(-2px, 2px); opacity: 0.8; }
+        }
+
+        .login-container {
+            background: linear-gradient(145deg, #e5e7eb 0%, #d1d5db 100%);
+            border: 2px solid #9ca3af;
+            border-radius: 12px;
+            padding: 40px;
+            width: 450px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transform-style: preserve-3d;
+            transform: rotateX(5deg) rotateY(-2deg);
+            transition: all 0.4s ease;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .login-container:hover {
+            transform: rotateX(0deg) rotateY(0deg) translateZ(15px);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .login-container-corrupted {
+            background: linear-gradient(145deg, #374151 0%, #1f2937 100%);
+            border-color: #7f1d1d;
+            box-shadow: 
+                0 20px 40px rgba(139, 0, 0, 0.3),
+                inset 0 1px 0 rgba(220, 38, 38, 0.2);
+        }
+
+        .login-title {
+            color: #1f2937;
+            font-size: 2.2em;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 35px;
+            transform: translateZ(20px);
+            transition: all 0.5s ease;
+        }
+
+        .login-title-corrupted {
+            color: #dc2626;
+            text-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+            transform: translateZ(15px);
+        }
+
+        .form-label {
+            color: #374151;
+            font-size: 1em;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+            transition: all 0.5s ease;
+        }
+
+        .form-label-corrupted {
+            color: #991b1b;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #f9fafb;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            color: #1f2937;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .form-input:focus {
+            background: #ffffff;
+            border-color: #3b82f6;
+            transform: translateZ(5px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .form-input-corrupted {
+            background: #374151;
+            border-color: #7f1d1d;
+            color: #e5e7eb;
+        }
+
+        .form-input-corrupted:focus {
+            background: #4b5563;
+            border-color: #dc2626;
+            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .form-input::placeholder {
+            color: #9ca3af;
+            transition: all 0.5s ease;
+        }
+
+        .form-input-corrupted::placeholder {
+            color: #6b7280;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transform: translateZ(20px);
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .login-button:hover {
+            transform: translateZ(25px) translateY(-2px);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .login-button:hover::before {
+            left: 100%;
+        }
+
+        .login-button-corrupted {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+        }
+
+        .login-button-corrupted:hover {
+            box-shadow: 0 8px 16px rgba(220, 38, 38, 0.6);
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
+            transform: translateZ(10px);
+        }
+
+        .forgot-password a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .forgot-password a:hover {
+            color: #374151;
+        }
+
+        .forgot-password-corrupted a {
+            color: #991b1b;
+        }
+
+        .forgot-password-corrupted a:hover {
+            color: #dc2626;
+            text-shadow: 0 0 5px rgba(220, 38, 38, 0.3);
+        }
+
+        /* Hidden warning that appears */
+        .warning-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .warning-content {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            transform: scale(0);
+            transition: transform 0.3s ease;
+        }
+
+        .warning-show .warning-content {
+            transform: scale(1);
+        }
+
+        .corruption-counter {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8em;
+            font-family: monospace;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .corruption-counter-visible {
+            opacity: 1;
+            color: #dc2626;
+        }
+
+        /* Eye tracking effect */
+        .eyes {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 20px;
+            opacity: 0;
+            transition: opacity 2s ease;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .eye {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #dc2626;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+        }
+
+        .eye-left {
+            left: 0;
+            animation: blink 3s infinite;
+        }
+
+        .eye-right {
+            right: 0;
+            animation: blink 3s infinite 0.5s;
+        }
+
+        @keyframes blink {
+            0%, 95%, 100% { opacity: 1; }
+            97% { opacity: 0; }
+        }
+
+        .eyes-visible {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 500px) {
+            .header h1 {
+                font-size: 2em;
+                margin-left: 20px;
+            }
+            
+            .login-container {
+                width: 90%;
+                padding: 30px 25px;
+                margin: 20px;
+            }
+        }
+
+        /* Text corruption animation */
+        .corrupt-text {
+            animation: textCorrupt 0.3s ease-in-out;
+        }
+
+        @keyframes textCorrupt {
+            0%, 100% { opacity: 1; }
+            20% { opacity: 0.3; transform: translateX(-1px); }
+            40% { opacity: 0.7; transform: translateX(1px); }
+            60% { opacity: 0.4; transform: translateX(-1px); }
+            80% { opacity: 0.9; transform: translateX(1px); }
+        }
+    </style>
+</head>
+<body id="mainBody">
+    <div class="data-stream" id="dataStream">
+        <div class="stream-line" style="top: 10%; animation-delay: 0s;"></div>
+        <div class="stream-line" style="top: 30%; animation-delay: 2s;"></div>
+        <div class="stream-line" style="top: 50%; animation-delay: 4s;"></div>
+        <div class="stream-line" style="top: 70%; animation-delay: 6s;"></div>
+        <div class="stream-line" style="top: 90%; animation-delay: 1s;"></div>
+    </div>
+
+    <div class="header" id="header">
+        <h1 id="headerTitle" data-text="FriendSpace">FriendSpace</h1>
+    </div>
+
+    <div class="login-container" id="loginContainer">
+        <div class="eyes" id="eyes">
+            <div class="eye eye-left"></div>
+            <div class="eye eye-right"></div>
+        </div>
+
+        <h2 class="login-title" id="loginTitle">Log In</h2>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label class="form-label" id="emailLabel" for="email">Email or Phone</label>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    id="email"
+                    name="email"
+                    placeholder=""
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" id="passwordLabel" for="password">Password</label>
+                <input 
+                    type="password" 
+                    class="form-input" 
+                    id="password"
+                    name="password"
+                    placeholder=""
+                    required
+                >
+            </div>
+
+            <button type="submit" class="login-button" id="loginBtn">
+                Log In
+            </button>
+        </form>
+
+        <div class="forgot-password" id="forgotPassword">
+            <a href="#" id="forgotLink">Forgot password?</a>
+        </div>
+    </div>
+
+    <div class="corruption-counter" id="corruptionCounter">
+        System.integrity: <span id="integrityPercent">100</span>%
+    </div>
+
+    <div class="warning-overlay" id="warningOverlay">
+        <div class="warning-content">
+            <h2>⚠️ SECURITY BREACH DETECTED</h2>
+            <p>This platform has been compromised. Your data may be at risk.</p>
+            <p><strong>Educational Note:</strong> Always verify the authenticity of login pages. Phishing sites often mimic popular social media platforms to steal credentials.</p>
+            <button onclick="closeWarning()" style="margin-top: 20px; padding: 10px 20px; background: white; color: #dc2626; border: none; border-radius: 5px; cursor: pointer;">Understand & Close</button>
+        </div>
+    </div>
+
+    <script>
+        let corruptionLevel = 0;
+        let maxCorruption = 100;
+        let corruptionInterval;
+        let interactionCount = 0;
+
+        // Elements
+        const body = document.getElementById('mainBody');
+        const header = document.getElementById('header');
+        const headerTitle = document.getElementById('headerTitle');
+        const loginContainer = document.getElementById('loginContainer');
+        const loginTitle = document.getElementById('loginTitle');
+        const emailLabel = document.getElementById('emailLabel');
+        const passwordLabel = document.getElementById('passwordLabel');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const forgotPassword = document.getElementById('forgotPassword');
+        const forgotLink = document.getElementById('forgotLink');
+        const corruptionCounter = document.getElementById('corruptionCounter');
+        const integrityPercent = document.getElementById('integrityPercent');
+        const dataStream = document.getElementById('dataStream');
+        const eyes = document.getElementById('eyes');
+        const warningOverlay = document.getElementById('warningOverlay');
+
+        // Start corruption on any interaction
+        function startCorruption() {
+            if (corruptionInterval) return;
+            
+            corruptionInterval = setInterval(() => {
+                if (corruptionLevel < maxCorruption) {
+                    corruptionLevel += Math.random() * 3;
+                    updateCorruption();
+                } else {
+                    showWarning();
+                    clearInterval(corruptionInterval);
+                }
+            }, 200);
+
+            // Show corruption counter
+            corruptionCounter.classList.add('corruption-counter-visible');
+        }
+
+        function updateCorruption() {
+            const corruption = Math.min(corruptionLevel, maxCorruption);
+            integrityPercent.textContent = Math.max(0, Math.floor(100 - corruption));
+
+            // Gradual visual corruption
+            if (corruption > 10) {
+                body.classList.add('body-corrupted');
+                dataStream.style.opacity = Math.min(corruption / 100, 0.3);
+            }
+
+            if (corruption > 25) {
+                header.classList.add('header-corrupted');
+                headerTitle.classList.add('glitch-title');
+            }
+
+            if (corruption > 40) {
+                loginContainer.classList.add('login-container-corrupted');
+                loginTitle.classList.add('login-title-corrupted');
+                emailLabel.classList.add('form-label-corrupted');
+                passwordLabel.classList.add('form-label-corrupted');
+                emailInput.classList.add('form-input-corrupted');
+                passwordInput.classList.add('form-input-corrupted');
+            }
+
+            if (corruption > 60) {
+                loginBtn.classList.add('login-button-corrupted');
+                forgotPassword.classList.add('forgot-password-corrupted');
+                eyes.classList.add('eyes-visible');
+            }
+
+            if (corruption > 80) {
+                // Text corruption effects
+                [emailLabel, passwordLabel, loginTitle].forEach(el => {
+                    if (Math.random() > 0.7) {
+                        el.classList.add('corrupt-text');
+                        setTimeout(() => el.classList.remove('corrupt-text'), 300);
+                    }
+                });
+            }
+        }
+
+        function showWarning() {
+            warningOverlay.style.display = 'flex';
+            setTimeout(() => {
+                warningOverlay.classList.add('warning-show');
+            }, 100);
+        }
+
+        function closeWarning() {
+            warningOverlay.classList.remove('warning-show');
+            setTimeout(() => {
+                warningOverlay.style.display = 'none';
+                // Reset everything
+                location.reload();
+            }, 300);
+        }
+
+                // Event listeners
+                emailInput.addEventListener('focus', startCorruption);
+        passwordInput.addEventListener('focus', startCorruption);
+        loginBtn.addEventListener('click', startCorruption);
+
+        // Form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            startCorruption();
+            
+            loginBtn.textContent = 'Authenticating...';
+            setTimeout(() => {
+                loginBtn.textContent = 'System Compromised';
+                
+
+
+
+                // ✅ Delay message until after the effect shows
+                setTimeout(() => {
+                    window.parent.postMessage({
+                        action: "stanley-connected",
+                        gamertag: document.getElementById('emailInput').value || "Anonymous"
+                    }, "*");
+                }, 600);
+
+
+
+
+            }, 2000);
+        });
+
+        // Forgot password link
+        forgotLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            startCorruption();
+            alert('🔐 SECURITY TIP: Legitimate sites use secure password recovery. Be wary of sites that ask for personal info via email or phone.');
+        });
+
+        // Mouse tracking for 3D effect
+        let mouseX = 0, mouseY = 0;
+        let containerX = 0, containerY = 0;
+
+        document.addEventListener('mousemove', function(e) {
+            mouseX = (e.clientX - window.innerWidth / 2) / 50;
+            mouseY = (e.clientY - window.innerHeight / 2) / 50;
+        });
+
+        function animate() {
+            containerX += (mouseX - containerX) * 0.1;
+            containerY += (mouseY - containerY) * 0.1;
+            
+            if (!loginContainer.classList.contains('login-container-corrupted')) {
+                loginContainer.style.transform = `rotateX(${5 - containerY}deg) rotateY(${-2 + containerX}deg)`;
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Random glitch effects
+        setInterval(() => {
+            if (corruptionLevel > 50 && Math.random() > 0.9) {
+                headerTitle.classList.add('glitch-title');
+                setTimeout(() => {
+                    headerTitle.classList.remove('glitch-title');
+                }, 600);
+            }
+        }, 1000);
+
+        // Make warning overlay global
+        window.closeWarning = closeWarning;
+    </script>
+</body>
+</html>

@@ -1,39 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Data_Bleed</title>
+<meta charset="UTF-8">
+<title>Data_Bleed</title>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css">
+<style>
+  /* --- Base & Login Screen Styles --- */
+  body { margin: 0; background: #000; font-family: 'Inter', sans-serif; overflow: hidden; color: white; }
+  #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+  .glitch-title { color: white; font-family: 'IBM Plex Mono', monospace; font-size: 2.5rem; text-align: center; }
+
+  /* --- Character Login Container Logic --- */
+  .character-login {
+    position: relative;
+    width: 800px;
+    height: 600px;
+  }
+
+  /* --- Iframe Styling --- */
+  iframe.login-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  /* --- Character Selector (Glitch Cards) --- */
+  #character-selector {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  .character-card {
+    width: 180px;
+    padding: 15px;
+    background: #111;
+    border: 2px solid #555;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    text-align: center;
+  }
+  .character-card:hover {
+    transform: scale(1.1);
+    border-color: #00FFFF;
+  }
+  .character-card h2 { margin: 0; font-size: 1.2rem; }
+  .character-card p { font-size: 0.85rem; color: #aaa; }
+
+  /* --- Chat, Video & Fireworks Styles --- */
+  #fireworks { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+  #video-container { position: fixed; bottom: 20px; right: 20px; width: 80px; height: 80px; cursor: pointer; border-radius: 50%; overflow: hidden; box-shadow: 0 0 12px rgba(0, 255, 255, 0.5); transition: transform 0.3s ease; z-index: 10; }
+  #video-container:hover { transform: scale(1.15); }
+  #chroma-video { width: 100%; height: 100%; object-fit: cover; }
+  #chat-box { position: fixed; bottom: 120px; right: 20px; width: 280px; height: 380px; background: rgba(20,20,20,0.92); border: 2px solid #00FFFF; border-radius: 12px; display: none; flex-direction: column; padding: 10px; z-index: 20; }
+  #chat-box header { font-weight: bold; margin-bottom: 10px; text-align: center; position: relative; }
+  #chat-box .close-btn { position: absolute; right: 0; top: 0; background: transparent; border: none; color: white; font-size: 16px; cursor: pointer; }
+  #chat-box .messages { flex: 1; overflow-y: auto; font-size: 14px; }
+  #chat-box form { display: flex; margin-top: 8px; }
+  #chat-box input { flex: 1; padding: 6px; border: 1px solid #7928CA; background: #333; color: white; border-radius: 6px; }
+  #chat-box button[type="submit"] { margin-left: 6px; padding: 6px 10px; border: none; border-radius: 6px; background: #FF0080; color: white; cursor: pointer; transition: background 0.2s; }
+  .typing-indicator { font-style: italic; color: #888; }
+</style>
 </head>
 <body>
   <canvas id="fireworks"></canvas>
 
-  <!-- LOGIN SCREEN -->
   <div id="login-screen">
-    <h1 class="glitch-title">DATA_BLEED</h1>
-    <form id="login-form">
-      <input type="text" id="gamertag" placeholder="Gamertag" required>
-      <input type="password" id="password" placeholder="Password" required>
-      <select id="character">
-        <option value="maya">Maya</option>
-        <option value="eli">Eli</option>
-        <option value="stanley">Stanley</option>
-      </select>
-      <button type="submit">CONNECT</button>
-    </form>
-    <!-- Character Preview Image -->
-    <div id="character-preview">
-      <img id="character-img" src="chroma-bot/assets/img/login/maya_login.png" alt="Character Preview">
+    <!-- Global looping title animation -->
+    <div id="title-container">
+      <video id="title-animation" autoplay loop muted playsinline>
+        <source src="assets/vid/data_bleed_main.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <!-- Character Selection (Glitch Cards) -->
+    <div id="character-selector">
+      <div class="character-card maya" data-character="maya">
+        <h2>Maya</h2>
+        <p>Cyber-security / Dating App Warnings</p>
+      </div>
+      <div class="character-card eli" data-character="eli">
+        <h2>Eli</h2>
+        <p>Gaming Exploitation / Peer Pressure</p>
+      </div>
+      <div class="character-card stanley" data-character="stanley">
+        <h2>Stanley</h2>
+        <p>Identity Theft / Catfishing</p>
+      </div>
+    </div>
+
+    <!-- ✅ Use iframes for all three -->
+    <div id="eli-login" class="character-login" style="display:none;">
+      <iframe class="login-frame" src="./Log_in_formats/Eli.html" title="Eli's Access Terminal"></iframe>
+    </div>
+
+    <div id="maya-login" class="character-login" style="display:block;">
+      <iframe class="login-frame" src="./Log_in_formats/Maya.html" title="Maya's Interface"></iframe>
+    </div>
+
+    <div id="stanley-login" class="character-login" style="display:none;">
+      <iframe class="login-frame" src="./Log_in_formats/Stanley.html" title="Stanley's Portal"></iframe>
     </div>
   </div>
 
-  <!-- Video trigger (hidden until login complete) -->
   <div id="video-container" style="display:none;">
     <video id="chroma-video" autoplay loop muted playsinline>
       <source src="./chroma-bot/assets/vid/Chroma_Vid.mp4" type="video/mp4">
@@ -41,7 +115,6 @@
     </video>
   </div>
 
-  <!-- Chat -->
   <div id="chat-box" style="display:none;">
     <header>
       💬 Chroma Bot
@@ -56,8 +129,8 @@
     </form>
   </div>
 
-  <script>
-    const loginForm = document.getElementById("login-form");
+<script>
+    // --- DOM ELEMENT REFERENCES ---
     const loginScreen = document.getElementById("login-screen");
     const videoContainer = document.getElementById("video-container");
     const video = document.getElementById("chroma-video");
@@ -71,104 +144,128 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const characterSelect = document.getElementById("character");
-    const characterImg = document.getElementById("character-img");
+    const eliLogin = document.getElementById("eli-login");
+    const mayaLogin = document.getElementById("maya-login");
+    const stanleyLogin = document.getElementById("stanley-login");
 
-    // --- Character Preview Logic ---
-    characterSelect.addEventListener("change", () => {
-      const choice = characterSelect.value;
-      let imgPath = "chroma-bot/assets/img/login/maya_login.png"; // default
-      if (choice === "eli") imgPath = "chroma-bot/assets/img/login/eli_login.png";
-      if (choice === "stanley") imgPath = "chroma-bot/assets/img/login/stanley_login.png";
-      characterImg.src = imgPath;
+    // --- CHARACTER SWITCH LOGIC (Glitch Cards) ---
+    document.querySelectorAll(".character-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const choice = card.dataset.character;
+
+        eliLogin.style.display = "none";
+        mayaLogin.style.display = "none";
+        stanleyLogin.style.display = "none";
+
+        if (choice === "eli") eliLogin.style.display = "block";
+        if (choice === "maya") mayaLogin.style.display = "block";
+        if (choice === "stanley") stanleyLogin.style.display = "block";
+      });
     });
 
-    // --- Login Logic ---
-    loginForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const gamertag = document.getElementById("gamertag").value;
-      const character = document.getElementById("character").value;
-      sessionStorage.setItem("gamertag", gamertag);
-      sessionStorage.setItem("character", character);
-      loginScreen.style.display = "none";
-      videoContainer.style.display = "block";
+    // --- IFRAME COMMUNICATION LISTENER ---
+    window.addEventListener("message", (event) => {
+        if (event.data.action === "eli-connected") {
+            handleExternalConnect("eli", event.data.gamertag);
+        }
+        if (event.data.action === "maya-connected") {
+            handleExternalConnect("maya", event.data.gamertag);
+        }
+        if (event.data.action === "stanley-connected") {
+            handleExternalConnect("stanley", event.data.gamertag);
+        }
     });
 
-    // --- Toggle UI ---
+    // --- CONNECT HANDLER ---
+    function handleExternalConnect(characterKey, gamertag) {
+        sessionStorage.setItem("character", characterKey);
+        sessionStorage.setItem("gamertag", gamertag);
+        loginScreen.style.display = "none";
+        videoContainer.style.display = "block";
+    }
+
+    // --- TOGGLE UI (VIDEO/CHAT) ---
     videoContainer.addEventListener("click", (e) => {
-      createFirework(e.clientX, e.clientY, "explode");
-      video.pause();
-      videoContainer.style.display = "none";
-      chatBox.style.display = "flex";
+        createFirework(e.clientX, e.clientY, "explode");
+        video.pause();
+        videoContainer.style.display = "none";
+        chatBox.style.display = "flex";
     });
 
     closeChat.addEventListener("click", () => {
-      const rect = videoContainer.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      createFirework(centerX, centerY, "implode");
-      chatBox.style.display = "none";
-      videoContainer.style.display = "block";
-      video.play();
-      video.loop = true;
+        const rect = videoContainer.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        createFirework(centerX, centerY, "implode");
+        chatBox.style.display = "none";
+        videoContainer.style.display = "block";
+        video.play();
+        video.loop = true;
     });
 
-    // --- Chat Logic ---
+    // --- CHAT LOGIC ---
     function addMessage(sender, text) {
-      const msg = document.createElement("p");
-      msg.innerHTML = `<b>${sender}:</b> ${text}`;
-      messages.appendChild(msg);
-      messages.scrollTop = messages.scrollHeight;
+        const msg = document.createElement("p");
+        msg.innerHTML = `<b>${sender}:</b> ${text}`;
+        messages.appendChild(msg);
+        messages.scrollTop = messages.scrollHeight;
     }
 
     async function getBotResponse(userMessage) {
-      const activeCharacter = sessionStorage.getItem("character") || "maya";
-      const gamertag = sessionStorage.getItem("gamertag") || "Player";
-      addMessage("Bot", `<span class="typing-indicator">...</span>`);
-      try {
-        const response = await fetch("http://127.0.0.1:3001/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMessage, character: activeCharacter, sessionId: gamertag })
-        });
-        if (!response.ok) throw new Error(`Server responded ${response.status}`);
-        const data = await response.json();
-        messages.removeChild(messages.lastChild);
-        addMessage("Bot", data.reply);
-      } catch (err) {
-        console.error("Fetch error:", err);
-        messages.removeChild(messages.lastChild);
-        addMessage("Bot", "⚠️ Connection error, try again later.");
-      }
+        const activeCharacter = sessionStorage.getItem("character") || "maya";
+        const gamertag = sessionStorage.getItem("gamertag") || "Player";
+        addMessage("Bot", `<span class="typing-indicator">...</span>`);
+        try {
+            const response = await fetch("http://127.0.0.1:3001/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userMessage, character: activeCharacter, sessionId: gamertag })
+            });
+            if (!response.ok) throw new Error(`Server responded ${response.status}`);
+            const data = await response.json();
+            messages.removeChild(messages.lastChild);
+            addMessage("Bot", data.reply);
+        } catch (err) {
+            console.error("Fetch error:", err);
+            messages.removeChild(messages.lastChild);
+            addMessage("Bot", "⚠️ Connection error, try again later.");
+        }
     }
 
     if (chatForm) {
-      chatForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const text = userInput.value.trim();
-        if (!text) return;
-        const gamertag = sessionStorage.getItem("gamertag") || "You";
-        addMessage(gamertag, text);
-        userInput.value = "";
-        await getBotResponse(text);
-      });
+        chatForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
+            const gamertag = sessionStorage.getItem("gamertag") || "You";
+            addMessage(gamertag, text);
+            userInput.value = "";
+            await getBotResponse(text);
+        });
     }
 
-    // --- Fireworks ---
+    // --- FIREWORKS ---
     class Firework {
       constructor(x, y, color, velocity) {
-        this.x = x; this.y = y;
+        this.x = x;
+        this.y = y;
         this.color = color;
         this.velocity = velocity;
-        this.alpha = 1; this.radius = 2;
+        this.alpha = 1;
+        this.radius = 2;
       }
       draw() {
-        ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
-        ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
       }
       update() {
-        this.x += this.velocity.x; this.y += this.velocity.y;
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
         this.alpha -= 0.02;
         this.draw();
       }
@@ -184,16 +281,21 @@
       ];
       const particleCount = mode === "explode" ? 100 : 70;
       const baseSpeed = mode === "explode" ? 5 : 4;
+
       for (let i = 0; i < particleCount; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = Math.random() * baseSpeed + 1;
-        let velocity;
-        if (mode === "explode") {
-          velocity = { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed };
-        } else {
-          velocity = { x: -Math.cos(angle) * speed * 0.5, y: -Math.sin(angle) * speed * 0.5 };
-        }
-        fireworks.push(new Firework(x, y, metallicColors[Math.floor(Math.random() * metallicColors.length)], velocity));
+        let velocity = mode === "explode"
+          ? { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }
+          : { x: -Math.cos(angle) * speed * 0.5, y: -Math.sin(angle) * speed * 0.5 };
+        fireworks.push(
+          new Firework(
+            x,
+            y,
+            metallicColors[Math.floor(Math.random() * metallicColors.length)],
+            velocity
+          )
+        );
       }
     }
 
@@ -202,10 +304,15 @@
       ctx.fillStyle = "rgba(0,0,0,0.1)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       fireworks.forEach((f, i) => {
-        f.update();
-        if (f.alpha <= 0) fireworks.splice(i, 1);
+        if (f.alpha <= 0) {
+          fireworks.splice(i, 1);
+        } else {
+          f.update();
+        }
       });
     }
+
+    // --- INITIALIZE ---
     animate();
   </script>
 </body>

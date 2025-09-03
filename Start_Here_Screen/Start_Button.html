@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA_BLEED - Game Intro</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=IBM+Plex+Mono:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(ellipse at center, #0a1a2a 0%, #000810 100%);
+            font-family: 'Orbitron', monospace;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridFlow 25s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes gridFlow {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(60px, 60px) rotate(1deg); }
+        }
+
+        /* Floating data particles */
+        .data-stream {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        .data-particle {
+            position: absolute;
+            color: rgba(0, 255, 255, 0.4);
+            font-size: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            animation: dataFloat 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes dataFloat {
+            0% { 
+                transform: translateY(100vh) translateX(-50px) scale(0);
+                opacity: 0;
+            }
+            5% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+            95% { 
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(-100px) translateX(50px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Main intro container */
+        .intro-container {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        /* Logo container with hex design */
+        .logo-container {
+            margin-bottom: 60px;
+            position: relative;
+            display: inline-block;
+            animation: logoGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes logoGlow {
+            from {
+                filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.3));
+            }
+            to {
+                filter: drop-shadow(0 0 40px rgba(0, 255, 255, 0.6)) drop-shadow(0 0 60px rgba(255, 0, 128, 0.2));
+            }
+        }
+
+        /* Recreate the hexagonal logo design */
+        .hex-logo {
+            width: 300px;
+            height: 300px;
+            position: relative;
+            margin: 0 auto 30px;
+        }
+
+        .hex-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        }
+
+        .hex-layer-1 {
+            width: 280px;
+            height: 280px;
+            border-color: #00ffff;
+            animation: hexRotate1 15s linear infinite;
+        }
+
+        .hex-layer-2 {
+            width: 240px;
+            height: 240px;
+            border-color: #ff0080;
+            animation: hexRotate2 12s linear infinite reverse;
+        }
+
+        .hex-layer-3 {
+            width: 200px;
+            height: 200px;
+            border-color: #7928ca;
+            animation: hexRotate3 10s linear infinite;
+        }
+
+        .hex-layer-4 {
+            width: 160px;
+            height: 160px;
+            border-color: #00ffff;
+            animation: hexRotate4 8s linear infinite reverse;
+        }
+
+        @keyframes hexRotate1 {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes hexRotate2 {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes hexRotate3 {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes hexRotate4 {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Circuit connections */
+        .circuit-line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+            height: 1px;
+            animation: circuitPulse 2s ease-in-out infinite alternate;
+        }
+
+        .circuit-1 {
+            top: 30%;
+            left: -50px;
+            width: 100px;
+            animation-delay: 0s;
+        }
+
+        .circuit-2 {
+            bottom: 30%;
+            right: -50px;
+            width: 80px;
+            animation-delay: 0.5s;
+        }
+
+        .circuit-3 {
+            top: 50%;
+            left: -80px;
+            width: 60px;
+            animation-delay: 1s;
+        }
+
+        @keyframes circuitPulse {
+            from { opacity: 0.3; transform: scaleX(0.5); }
+            to { opacity: 1; transform: scaleX(1); }
+        }
+
+        /* Circuit nodes */
+        .circuit-node {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #00ffff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ffff;
+            animation: nodePulse 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes nodePulse {
+            from { opacity: 0.5; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Logo text */
+        .logo-text {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #00ffff;
+            text-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.8),
+                0 0 60px rgba(0, 255, 255, 0.4);
+            letter-spacing: 8px;
+            margin-bottom: 20px;
+            animation: textGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes textGlow {
+            from {
+                text-shadow: 
+                    0 0 30px rgba(0, 255, 255, 0.8),
+                    0 0 60px rgba(0, 255, 255, 0.4);
+            }
+            to {
+                text-shadow: 
+                    0 0 40px rgba(0, 255, 255, 1),
+                    0 0 80px rgba(0, 255, 255, 0.6),
+                    0 0 120px rgba(255, 0, 128, 0.3);
+            }
+        }
+
+        /* Subtitle */
+        .subtitle {
+            color: rgba(0, 255, 255, 0.7);
+            font-size: 1.2rem;
+            font-weight: 400;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 80px;
+            animation: subtitleFade 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes subtitleFade {
+            from { opacity: 0.5; }
+            to { opacity: 1; }
+        }
+
+        /* Start button */
+        .start-button {
+            background: rgba(0, 20, 40, 0.9);
+            border: 3px solid #00ffff;
+            color: #00ffff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            padding: 20px 60px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            clip-path: polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%);
+            animation: buttonPulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes buttonPulse {
+            from {
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+                border-color: rgba(0, 255, 255, 0.7);
+            }
+            to {
+                box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
+                border-color: #00ffff;
+            }
+        }
+
+        .start-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .start-button:hover {
+            background: rgba(0, 40, 80, 0.9);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 0 50px rgba(0, 255, 255, 0.8),
+                0 15px 30px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 0 20px rgba(0, 255, 255, 1);
+        }
+
+        .start-button:hover::before {
+            left: 100%;
+        }
+
+        .start-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        /* Press indicator */
+        .press-indicator {
+            color: rgba(0, 255, 255, 0.5);
+            font-size: 0.9rem;
+            margin-top: 30px;
+            animation: pressHint 2s ease-in-out infinite;
+        }
+
+        @keyframes pressHint {
+            0%, 100% { opacity: 0.3; transform: translateY(0px); }
+            50% { opacity: 0.8; transform: translateY(-5px); }
+        }
+
+        /* Loading state */
+        .loading .start-button {
+            background: rgba(0, 60, 100, 0.9);
+            pointer-events: none;
+            animation: loadingPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes loadingPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .hex-logo {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .logo-text {
+                font-size: 2.5rem;
+                letter-spacing: 4px;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .start-button {
+                font-size: 1.2rem;
+                padding: 15px 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="data-stream" id="dataStream"></div>
+    
+    <div class="intro-container" id="introContainer">
+        <div class="logo-container">
+            <div class="hex-logo">
+                <div class="hex-layer hex-layer-1"></div>
+                <div class="hex-layer hex-layer-2"></div>
+                <div class="hex-layer hex-layer-3"></div>
+                <div class="hex-layer hex-layer-4"></div>
+                
+                <div class="circuit-line circuit-1"></div>
+                <div class="circuit-line circuit-2"></div>
+                <div class="circuit-line circuit-3"></div>
+                
+                <div class="circuit-node" style="top: 20%; left: 30%; animation-delay: 0s;"></div>
+                <div class="circuit-node" style="bottom: 25%; right: 20%; animation-delay: 0.5s;"></div>
+                <div class="circuit-node" style="top: 60%; left: 10%; animation-delay: 1s;"></div>
+                <div class="circuit-node" style="top: 40%; right: 15%; animation-delay: 1.5s;"></div>
+            </div>
+            
+            <h1 class="logo-text">DATA_BLEED</h1>
+        </div>
+        
+        <p class="subtitle">Neural Interface Protocol</p>
+        
+        <button class="start-button" id="startButton" onclick="startGame()">
+            INITIALIZE SYSTEM
+        </button>
+        
+        <div class="press-indicator">
+            Press to enter the data stream
+        </div>
+    </div>
+
+    <script>
+        // Create floating data particles
+        function createDataParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'data-particle';
+            
+            const dataStrings = [
+                '01101000', '11010101', '00110110', 'FF2A1C', 'A7B3C2', 
+                'NEURAL', 'SYNC', 'DATA', 'BLEED', '>>>', '<<<', '{...}',
+                'QUANTUM', 'LINK', 'CIPHER', 'NODE', '0xFFFF', '0x00AA'
+            ];
+            
+            particle.textContent = dataStrings[Math.floor(Math.random() * dataStrings.length)];
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            
+            document.getElementById('dataStream').appendChild(particle);
+            
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 20000);
+        }
+
+        // Generate particles continuously
+        setInterval(createDataParticle, 800);
+
+        // Start game function
+        function startGame() {
+            const button = document.getElementById('startButton');
+            const container = document.getElementById('introContainer');
+            
+            // Change button state
+            button.textContent = 'CONNECTING...';
+            button.style.pointerEvents = 'none';
+            container.classList.add('loading');
+            
+            // Simulate connection process
+            setTimeout(() => {
+                button.textContent = 'ESTABLISHING LINK...';
+            }, 1000);
+            
+            setTimeout(() => {
+                button.textContent = 'NEURAL SYNC...';
+            }, 2000);
+            
+            setTimeout(() => {
+                button.textContent = 'ACCESS GRANTED';
+                
+                // Transition to main game
+                setTimeout(() => {
+                    // Fade out intro
+                    container.style.transition = 'opacity 1s ease, transform 1s ease';
+                    container.style.opacity = '0';
+                    container.style.transform = 'scale(0.8)';
+                    
+                    // Redirect to main game after fade
+                    setTimeout(() => {
+                        // Replace this with your actual game file
+                        window.location.href = './index.html'; // Your main game file
+                        
+                        // Or if integrating into same page:
+                        // loadMainGame();
+                    }, 1000);
+                }, 500);
+            }, 3000);
+        }
+
+        // Optional: Add keyboard support
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                startGame();
+            }
+        });
+
+        // Optional: Auto-start after delay (remove if not wanted)
+        // setTimeout(() => {
+        //     document.querySelector('.press-indicator').textContent = 'Press ENTER or click to continue...';
+        // }, 5000);
+    </script>
+</body>
+</html>

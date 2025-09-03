@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FriendBleed - Digital Safety Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 0, 120, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 120, 160, 0.15) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 50%, #0a1a2a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Glitch effect background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 20, 147, 0.03) 2px,
+                    rgba(255, 20, 147, 0.03) 4px
+                );
+            animation: scanlines 0.1s linear infinite;
+            z-index: -2;
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(4px); }
+        }
+
+        /* Digital corruption effects */
+        .corruption-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .glitch-block {
+            position: absolute;
+            background: rgba(255, 20, 147, 0.1);
+            animation: glitchMove 3s ease-in-out infinite;
+        }
+
+        .glitch-1 {
+            width: 200px;
+            height: 20px;
+            top: 20%;
+            left: 10%;
+            animation-delay: -1s;
+        }
+
+        .glitch-2 {
+            width: 150px;
+            height: 15px;
+            top: 60%;
+            right: 20%;
+            background: rgba(0, 191, 255, 0.1);
+            animation-delay: -2s;
+        }
+
+        .glitch-3 {
+            width: 100px;
+            height: 25px;
+            bottom: 30%;
+            left: 30%;
+            animation-delay: -0.5s;
+        }
+
+        @keyframes glitchMove {
+            0%, 100% { 
+                transform: translateX(0) scaleX(1);
+                opacity: 0.1;
+            }
+            25% { 
+                transform: translateX(20px) scaleX(1.2);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: translateX(-10px) scaleX(0.8);
+                opacity: 0.2;
+            }
+            75% { 
+                transform: translateX(15px) scaleX(1.1);
+                opacity: 0.4;
+            }
+        }
+
+        /* Character silhouettes integrated into login form */
+        .silhouettes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Background ambient silhouettes */
+        .bg-silhouette {
+            position: absolute;
+            width: 120px;
+            height: 180px;
+            background: 
+                radial-gradient(ellipse at 50% 30%, rgba(0, 191, 255, 0.08) 30%, transparent 60%),
+                linear-gradient(180deg, rgba(255, 20, 147, 0.05) 0%, rgba(0, 0, 0, 0.15) 100%);
+            border-radius: 50% 50% 0 0 / 60% 60% 40% 40%;
+            filter: blur(2px);
+        }
+
+        .bg-silhouette-1 {
+            top: 10%;
+            left: 8%;
+            transform: rotate(-10deg) scale(0.8);
+            animation: ghostFloat 6s ease-in-out infinite;
+        }
+
+        .bg-silhouette-2 {
+            bottom: 15%;
+            right: 10%;
+            transform: rotate(8deg) scale(0.9);
+            background: 
+                radial-gradient(ellipse at 50% 30%, rgba(255, 20, 147, 0.08) 30%, transparent 60%),
+                linear-gradient(180deg, rgba(0, 191, 255, 0.05) 0%, rgba(0, 0, 0, 0.15) 100%);
+            animation: ghostFloat 8s ease-in-out infinite reverse;
+        }
+
+        @keyframes ghostFloat {
+            0%, 100% { 
+                transform: translateY(0px) rotate(-10deg) scale(0.8);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: translateY(-15px) rotate(-8deg) scale(0.85);
+                opacity: 0.5;
+            }
+        }
+
+        /* Login container silhouettes - positioned around the form */
+        .form-silhouettes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .form-silhouette {
+            position: absolute;
+            opacity: 0.4;
+            transition: all 0.3s ease;
+        }
+
+        /* Left silhouette - positioned next to username field */
+        .form-silhouette-left {
+            top: 35%;
+            left: -80px;
+            width: 60px;
+            height: 90px;
+            background: 
+                radial-gradient(ellipse at 50% 25%, rgba(0, 191, 255, 0.3) 20%, transparent 50%),
+                linear-gradient(180deg, rgba(0, 191, 255, 0.2) 0%, rgba(0, 0, 0, 0.4) 100%);
+            border-radius: 50% 50% 0 0 / 60% 60% 40% 40%;
+            transform: rotate(-15deg);
+            animation: watcherPulse 3s ease-in-out infinite;
+        }
+
+        /* Right silhouette - positioned next to password field */
+        .form-silhouette-right {
+            top: 50%;
+            right: -75px;
+            width: 55px;
+            height: 85px;
+            background: 
+                radial-gradient(ellipse at 50% 25%, rgba(255, 20, 147, 0.3) 20%, transparent 50%),
+                linear-gradient(180deg, rgba(255, 20, 147, 0.2) 0%, rgba(0, 0, 0, 0.4) 100%);
+            border-radius: 50% 50% 0 0 / 60% 60% 40% 40%;
+            transform: rotate(12deg) scaleX(-1);
+            animation: watcherPulse 3s ease-in-out infinite reverse;
+        }
+
+        /* Bottom silhouettes - appearing behind the button */
+        .form-silhouette-bottom-left {
+            bottom: 10%;
+            left: -40px;
+            width: 45px;
+            height: 70px;
+            background: 
+                radial-gradient(ellipse at 50% 25%, rgba(255, 20, 147, 0.25) 20%, transparent 50%),
+                linear-gradient(180deg, rgba(255, 20, 147, 0.15) 0%, rgba(0, 0, 0, 0.3) 100%);
+            border-radius: 50% 50% 0 0 / 60% 60% 40% 40%;
+            transform: rotate(-8deg);
+            animation: watcherPulse 4s ease-in-out infinite;
+        }
+
+        .form-silhouette-bottom-right {
+            bottom: 5%;
+            right: -50px;
+            width: 50px;
+            height: 75px;
+            background: 
+                radial-gradient(ellipse at 50% 25%, rgba(0, 191, 255, 0.25) 20%, transparent 50%),
+                linear-gradient(180deg, rgba(0, 191, 255, 0.15) 0%, rgba(0, 0, 0, 0.3) 100%);
+            border-radius: 50% 50% 0 0 / 60% 60% 40% 40%;
+            transform: rotate(10deg) scaleX(-1);
+            animation: watcherPulse 4s ease-in-out infinite reverse;
+        }
+
+        /* Top watching silhouette */
+        .form-silhouette-top {
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%) rotate(0deg);
+            width: 40px;
+            height: 60px;
+            background: 
+                radial-gradient(ellipse at 50% 25%, rgba(255, 100, 100, 0.3) 20%, transparent 50%),
+                linear-gradient(180deg, rgba(255, 50, 50, 0.2) 0%, rgba(0, 0, 0, 0.4) 100%);
+            border-radius: 50% 50% 0 0 / 70% 70% 30% 30%;
+            animation: watcherPulse 2s ease-in-out infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes watcherPulse {
+            0%, 100% { 
+                opacity: 0.4;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.7;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Hover effects - silhouettes react when login container is hovered */
+        .login-container:hover .form-silhouette-left {
+            transform: rotate(-20deg) translateX(-10px);
+            opacity: 0.8;
+        }
+
+        .login-container:hover .form-silhouette-right {
+            transform: rotate(15deg) scaleX(-1) translateX(-8px);
+            opacity: 0.8;
+        }
+
+        .login-container:hover .form-silhouette-top {
+            transform: translateX(-50%) rotate(5deg) translateY(-5px);
+            opacity: 0.9;
+        }
+
+        .login-container:hover .form-silhouette-bottom-left,
+        .login-container:hover .form-silhouette-bottom-right {
+            opacity: 0.6;
+            transform: scale(1.1);
+        }
+
+        .login-container {
+            background: 
+                linear-gradient(135deg, 
+                    rgba(20, 10, 40, 0.9) 0%, 
+                    rgba(40, 10, 60, 0.8) 50%, 
+                    rgba(10, 30, 60, 0.9) 100%);
+            border: 2px solid;
+            border-image: linear-gradient(45deg, #ff1493, #00bfff, #ff1493) 1;
+            border-radius: 25px;
+            padding: 50px 40px;
+            width: 420px;
+            transform-style: preserve-3d;
+            transform: rotateX(3deg) rotateY(-3deg);
+            box-shadow: 
+                0 0 60px rgba(255, 20, 147, 0.3),
+                0 0 80px rgba(0, 191, 255, 0.2),
+                0 30px 60px rgba(0, 0, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            backdrop-filter: blur(15px);
+            z-index: 10;
+        }
+
+        .login-container:hover {
+            transform: rotateX(0deg) rotateY(0deg) translateZ(25px);
+            box-shadow: 
+                0 0 100px rgba(255, 20, 147, 0.5),
+                0 0 120px rgba(0, 191, 255, 0.3),
+                0 40px 80px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Animated border glow */
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #ff1493, #00bfff, #ff1493, #00bfff);
+            border-radius: 25px;
+            z-index: -1;
+            animation: borderRotate 4s linear infinite;
+            filter: blur(2px);
+        }
+
+        @keyframes borderRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+            transform: translateZ(35px);
+        }
+
+        .login-title {
+            background: linear-gradient(45deg, #ff1493 30%, #00bfff 70%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.8em;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255, 20, 147, 0.5);
+            letter-spacing: 2px;
+            animation: titleGlitch 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlitch {
+            0%, 90%, 100% { 
+                text-shadow: 0 0 30px rgba(255, 20, 147, 0.5);
+                transform: translateX(0);
+            }
+            92% { 
+                text-shadow: 
+                    2px 0 rgba(255, 20, 147, 0.8),
+                    -2px 0 rgba(0, 191, 255, 0.8);
+                transform: translateX(2px);
+            }
+            94% { 
+                text-shadow: 
+                    -2px 0 rgba(255, 20, 147, 0.8),
+                    2px 0 rgba(0, 191, 255, 0.8);
+                transform: translateX(-2px);
+            }
+        }
+
+        .warning-text {
+            color: rgba(255, 100, 100, 0.8);
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+            animation: warningPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes warningPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; color: rgba(255, 50, 50, 1); }
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+            position: relative;
+            transform: translateZ(25px);
+        }
+
+        .form-label {
+            color: #ff1493;
+            font-size: 0.95em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            text-shadow: 0 0 8px rgba(255, 20, 147, 0.6);
+            letter-spacing: 1px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(10, 5, 20, 0.8);
+            border: 2px solid rgba(255, 20, 147, 0.3);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            backdrop-filter: blur(5px);
+        }
+
+        .form-input:focus {
+            background: rgba(20, 10, 40, 0.9);
+            border-color: #ff1493;
+            transform: translateZ(8px);
+            box-shadow: 
+                0 0 20px rgba(255, 20, 147, 0.4),
+                0 8px 16px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 20, 147, 0.2);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 20, 147, 0.4);
+        }
+
+        .signin-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.2) 0%, rgba(139, 0, 139, 0.3) 100%);
+            border: 2px solid #ff1493;
+            border-radius: 25px;
+            color: #ff1493;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            transform: translateZ(30px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .signin-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 20, 147, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .signin-button:hover {
+            transform: translateZ(40px) translateY(-2px);
+            box-shadow: 
+                0 0 30px rgba(255, 20, 147, 0.6),
+                0 12px 24px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.3) 0%, rgba(139, 0, 139, 0.5) 100%);
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 20, 147, 0.8);
+        }
+
+        .signin-button:hover::before {
+            left: 100%;
+        }
+
+        .signin-button:active {
+            transform: translateZ(25px) translateY(1px);
+        }
+
+        .security-warning {
+            text-align: center;
+            margin-top: 25px;
+            transform: translateZ(20px);
+            padding: 15px;
+            background: rgba(255, 50, 50, 0.1);
+            border: 1px solid rgba(255, 50, 50, 0.3);
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+
+        .security-warning p {
+            color: rgba(255, 150, 150, 0.9);
+            font-size: 0.8em;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .security-warning a {
+            color: #ff1493;
+            text-decoration: none;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .security-warning a:hover {
+            color: #00bfff;
+            text-shadow: 0 0 8px rgba(0, 191, 255, 0.8);
+        }
+
+        /* Loading states */
+        .loading .signin-button {
+            background: rgba(100, 50, 100, 0.5);
+            pointer-events: none;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .threat-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 50, 50, 0.2);
+            border: 1px solid rgba(255, 50, 50, 0.5);
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: rgba(255, 150, 150, 0.9);
+            font-size: 0.7em;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+        }
+
+        .threat-level {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255, 100, 100, 0.7);
+            font-size: 0.7em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @media (max-width: 500px) {
+            .login-container {
+                width: 90%;
+                padding: 40px 25px;
+                margin: 20px;
+            }
+            
+            .login-title {
+                font-size: 2.2em;
+            }
+
+            .silhouette {
+                width: 120px;
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="threat-indicator">
+        <span id="threatStatus">MONITORING ACTIVE</span>
+    </div>
+
+    <div class="threat-level">
+        CYBER THREAT LEVEL: <span id="threatLevel" style="color: #ff1493;">ELEVATED</span>
+    </div>
+
+    <div class="corruption-layer">
+        <div class="glitch-block glitch-1"></div>
+        <div class="glitch-block glitch-2"></div>
+        <div class="glitch-block glitch-3"></div>
+    </div>
+
+    <div class="silhouettes">
+        <div class="silhouette silhouette-left"></div>
+        <div class="silhouette silhouette-right"></div>
+    </div>
+
+
+
+
+
+
+    <div class="login-container" id="loginContainer">
+        <div class="login-header">
+            <!-- Maya’s unique looping animation -->
+            <div class="title-animation">
+              <video autoplay loop muted playsinline>
+                <source src="../assets/vid/maya_intro.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+    
+            <h1 class="login-title">FriendBleed</h1>
+            <p class="warning-text">Digital Safety Platform</p>
+        </div>
+
+
+
+
+
+
+
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input 
+                    type="password" 
+                    class="form-input" 
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="signin-button" id="signinBtn">
+                Sign In
+            </button>
+        </form>
+
+        <div class="security-warning">
+            <p>⚠️ Report suspicious digital activity immediately</p>
+            <a href="#" id="reportLink">Report Cyber Crime</a> | 
+            <a href="#" id="learnLink">Learn Safety Tips</a>
+        </div>
+    </div>
+
+    <script>
+        // Threat level cycling
+        const threatLevels = ['LOW', 'MODERATE', 'ELEVATED', 'HIGH', 'CRITICAL'];
+        const threatColors = ['#00ff00', '#ffff00', '#ff1493', '#ff4500', '#ff0000'];
+        let currentThreatIndex = 2;
+
+        function updateThreatLevel() {
+            const threatElement = document.getElementById('threatLevel');
+            currentThreatIndex = (currentThreatIndex + Math.floor(Math.random() * 2)) % threatLevels.length;
+            threatElement.textContent = threatLevels[currentThreatIndex];
+            threatElement.style.color = threatColors[currentThreatIndex];
+        }
+
+        setInterval(updateThreatLevel, 5000);
+
+                // Form handling with security simulation
+                const loginForm = document.getElementById('loginForm');
+        const signinBtn = document.getElementById('signinBtn');
+        const loginContainer = document.getElementById('loginContainer');
+        const threatStatus = document.getElementById('threatStatus');
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Security check sequence
+            signinBtn.textContent = 'Scanning...';
+            threatStatus.textContent = 'SECURITY SCAN';
+            loginContainer.classList.add('loading');
+            
+            setTimeout(() => {
+                signinBtn.textContent = 'Verifying Identity...';
+                threatStatus.textContent = 'ID VERIFICATION';
+            }, 1500);
+
+            setTimeout(() => {
+                signinBtn.textContent = 'Checking Threats...';
+                threatStatus.textContent = 'THREAT ANALYSIS';
+            }, 3000);
+
+            setTimeout(() => {
+                signinBtn.textContent = 'Access Granted';
+                threatStatus.textContent = 'SECURE CONNECTION';
+                setTimeout(() => {
+                    signinBtn.textContent = 'Sign In';
+                    threatStatus.textContent = 'MONITORING ACTIVE';
+                    loginContainer.classList.remove('loading');
+                    
+                    // User feedback
+                    alert('🛡️ FriendBleed Access Granted\n\nWelcome to the Digital Safety Platform\nStay vigilant against cyber threats.');
+                    
+                    // ✅ Send message back to parent after success
+                    window.parent.postMessage({
+                        action: "maya-connected",
+                        gamertag: document.getElementById('username').value
+                    }, "*");
+
+                }, 2000);
+            }, 4500);
+        });
+
+        // Interactive 3D movement
+        let mouseX = 0, mouseY = 0;
+        let containerX = 0, containerY = 0;
+
+        document.addEventListener('mousemove', function(e) {
+            mouseX = (e.clientX - window.innerWidth / 2) / 40;
+            mouseY = (e.clientY - window.innerHeight / 2) / 40;
+        });
+
+        function animate() {
+            containerX += (mouseX - containerX) * 0.1;
+            containerY += (mouseY - containerY) * 0.1;
+            
+            loginContainer.style.transform = `rotateX(${3 - containerY}deg) rotateY(${-3 + containerX}deg)`;
+            
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Security links
+        document.getElementById('reportLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('🚨 CYBER CRIME REPORTING\n\nThis would redirect to:\n• FBI IC3 (Internet Crime Complaint Center)\n• Local law enforcement cyber units\n• Platform-specific reporting tools');
+        });
+
+        document.getElementById('learnLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('🎓 DIGITAL SAFETY EDUCATION\n\nTopics covered:\n• Identifying phishing attempts\n• Social engineering tactics\n• Romance scams\n• Financial fraud prevention\n• Privacy protection');
+        });
+
+        // Random glitch effects
+        function triggerGlitch() {
+            const title = document.querySelector('.login-title');
+            title.style.animation = 'none';
+            setTimeout(() => {
+                title.style.animation = 'titleGlitch 3s ease-in-out infinite';
+            }, 50);
+        }
+
+        setInterval(triggerGlitch, 10000);
+    </script>
+</body>
+</html>
