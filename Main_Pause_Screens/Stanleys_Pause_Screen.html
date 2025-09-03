@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FriendSpace - Pause Menu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pause-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .background-app {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0.3;
+        }
+
+        .fake-friendspace {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            opacity: 0.8;
+        }
+
+        .fake-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .fake-logo {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .fake-content {
+            padding: 20px;
+            height: calc(100% - 80px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .fake-profile-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+            position: relative;
+        }
+
+        .fake-profile-header {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .fake-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 20px;
+        }
+
+        .fake-profile-info h3 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .fake-profile-info p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .warning-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        .pause-menu {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .pause-header {
+            margin-bottom: 30px;
+        }
+
+        .pause-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .pause-subtitle {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .character-status {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .character-status .status-label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .menu-btn.danger {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        .menu-btn.danger:hover {
+            background: #e74c3c;
+            color: white;
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .menu-btn.warning {
+            border-color: #f39c12;
+            color: #f39c12;
+        }
+
+        .menu-btn.warning:hover {
+            background: #f39c12;
+            color: white;
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3);
+        }
+
+        .emotional-state {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        .fake-messages {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .message-bubble {
+            background: #667eea;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            max-width: 70%;
+            font-size: 14px;
+            position: relative;
+            animation: fadeInMessage 0.5s ease-in;
+        }
+
+        .message-bubble.received {
+            background: #f1f3f4;
+            color: #2c3e50;
+            margin-right: auto;
+        }
+
+        .message-bubble.sent {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+        }
+
+        @keyframes fadeInMessage {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glitch-effect {
+            position: relative;
+        }
+
+        .glitch-effect::before {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: #ff6b6b;
+            opacity: 0;
+            animation: glitch 4s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% { opacity: 0; transform: translate(0); }
+            91% { opacity: 0.8; transform: translate(-2px, 2px); }
+            92% { opacity: 0; transform: translate(2px, -2px); }
+            93% { opacity: 0.8; transform: translate(-2px, 2px); }
+        }
+
+        .vulnerability-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Fake FriendSpace app in background -->
+    <div class="fake-friendspace">
+        <div class="fake-header">
+            <div class="fake-logo">FriendSpace</div>
+            <div style="font-size: 14px; opacity: 0.8;">Online</div>
+        </div>
+        <div class="fake-content">
+            <div class="fake-profile-card">
+                <div class="warning-overlay">SUSPICIOUS</div>
+                <div class="fake-profile-header">
+                    <div class="fake-avatar">SL</div>
+                    <div class="fake-profile-info">
+                        <h3 class="glitch-effect" data-text="Sarah_Lovely24">Sarah_Lovely24</h3>
+                        <p>24 years old • Lives nearby • Interested in you</p>
+                    </div>
+                </div>
+                <p style="color: #5a6c7d; line-height: 1.5;">
+                    "I feel like we have such a special connection... I've never met anyone like you before 💕"
+                </p>
+            </div>
+
+            <div class="fake-messages">
+                <div class="message-bubble received">
+                    Hey handsome! How was your day? 😘
+                </div>
+                <div class="message-bubble sent">
+                    It was good, better now that I'm talking to you
+                </div>
+                <div class="message-bubble received">
+                    You're so sweet... I wish we could meet soon ❤️
+                </div>
+                <div class="message-bubble received">
+                    I just need some help with something first...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pause Menu Overlay -->
+    <div class="pause-overlay">
+        <div class="vulnerability-indicator">
+            EMOTIONAL VULNERABILITY: HIGH
+        </div>
+        
+        <div class="pause-menu">
+            <div class="pause-header">
+                <h2 class="pause-title">Game Paused</h2>
+                <p class="pause-subtitle">Stanley's Digital Romance</p>
+            </div>
+
+            <div class="character-status">
+                <span class="status-label">Current State:</span>
+                Stanley is deeply invested in his online relationship with "Sarah". 
+                Red flags are mounting, but loneliness clouds his judgment.
+            </div>
+
+            <div class="menu-options">
+                <button class="menu-btn" data-action="continue">
+                    Continue Conversation
+                </button>
+                <button class="menu-btn warning" data-action="review">
+                    Review Warning Signs
+                </button>
+                <button class="menu-btn" data-action="journal">
+                    Read Harold's Journal
+                </button>
+                <button class="menu-btn" data-action="settings">
+                    Game Settings
+                </button>
+                <button class="menu-btn danger" data-action="exit">
+                    Exit to Main Menu
+                </button>
+            </div>
+
+            <div class="emotional-state">
+                "She really understands me..."
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Menu button interactions
+        document.querySelectorAll('.menu-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.dataset.action;
+                
+                // Visual feedback
+                this.style.transform = 'translateY(-5px) scale(0.98)';
+                
+                setTimeout(() => {
+                    this.style.transform = 'translateY(-2px)';
+                }, 150);
+
+                // Handle different actions
+                switch(action) {
+                    case 'continue':
+                        console.log('Continuing Harold\'s story...');
+                        document.querySelector('.pause-overlay').style.animation = 'fadeOut 0.5s forwards';
+                        break;
+                    case 'review':
+                        console.log('Showing warning signs Harold missed...');
+                        showWarnings();
+                        break;
+                    case 'journal':
+                        console.log('Opening Harold\'s journal entries...');
+                        break;
+                    case 'settings':
+                        console.log('Opening settings...');
+                        break;
+                    case 'exit':
+                        console.log('Returning to main menu...');
+                        document.body.style.animation = 'fadeToBlack 1s forwards';
+                        break;
+                }
+            });
+        });
+
+        // Simulate warning signs appearing
+        function showWarnings() {
+            const warnings = [
+                "Profile created 2 days ago",
+                "Stock photos detected",
+                "Asking for personal information",
+                "Avoiding video calls",
+                "Stories don't add up"
+            ];
+
+            let warningIndex = 0;
+            const showNextWarning = () => {
+                if (warningIndex < warnings.length) {
+                    const warningEl = document.createElement('div');
+                    warningEl.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: #e74c3c;
+                        color: white;
+                        padding: 10px 20px;
+                        border-radius: 6px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        z-index: 1000;
+                        animation: slideDown 0.5s ease-out;
+                    `;
+                    warningEl.textContent = `⚠️ ${warnings[warningIndex]}`;
+                    document.body.appendChild(warningEl);
+
+                    setTimeout(() => {
+                        warningEl.remove();
+                    }, 2000);
+
+                    warningIndex++;
+                    setTimeout(showNextWarning, 500);
+                }
+            };
+            showNextWarning();
+        }
+
+        // Emotional state rotation
+        const emotionalStates = [
+            "She really understands me...",
+            "I haven't felt this way in years...",
+            "Maybe I should send that money...",
+            "She needs my help...",
+            "Something feels off...",
+            "But she loves me..."
+        ];
+
+        let stateIndex = 0;
+        setInterval(() => {
+            const stateEl = document.querySelector('.emotional-state');
+            stateEl.style.opacity = '0';
+            setTimeout(() => {
+                stateEl.textContent = emotionalStates[stateIndex];
+                stateEl.style.opacity = '1';
+                stateIndex = (stateIndex + 1) % emotionalStates.length;
+            }, 500);
+        }, 4000);
+
+        // Random glitch effects on the fake profile
+        setInterval(() => {
+            const glitchElements = document.querySelectorAll('.glitch-effect');
+            if (Math.random() < 0.3) {
+                glitchElements.forEach(el => {
+                    el.style.animation = 'none';
+                    setTimeout(() => {
+                        el.style.animation = 'glitch 1s';
+                    }, 10);
+                });
+            }
+        }, 3000);
+
+        // Add enhanced CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                to { opacity: 0; visibility: hidden; transform: scale(0.95); }
+            }
+            @keyframes fadeToBlack {
+                to { background: black; filter: brightness(0); }
+            }
+            @keyframes slideInNotification {
+                from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+            @keyframes slideOutNotification {
+                from { transform: translateX(-50%) translateY(0); opacity: 1; }
+                to { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+            }
+            @keyframes ripple {
+                to { transform: scale(4); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
