@@ -54,8 +54,8 @@
     position: relative;
     width: 90%;
     max-width: 800px;
-    height: 80vh;          /* scale with viewport */
-    overflow-y: auto;      /* scroll if needed */
+    height: 80vh;
+    overflow-y: auto;
     border-radius: 12px;
   }
 
@@ -112,7 +112,6 @@
 
   <!-- Login Screen -->
   <div id="login-screen">
-    <!-- Character Selection (Glitch Cards) -->
     <div id="character-selector">
       <div class="character-card maya" data-character="maya">
         <h2>Maya</h2>
@@ -128,7 +127,7 @@
       </div>
     </div>
 
-    <!-- ✅ Use iframes for all three -->
+    <!-- Iframes -->
     <div id="eli-login" class="character-login hidden">
       <iframe class="login-frame" src="./Log_in_formats/Eli.html" title="Eli's Access Terminal"></iframe>
     </div>
@@ -142,9 +141,9 @@
 
   <!-- Background Audio (Main + Character Themes) -->
   <audio id="intro-audio" src="./Main_Animations/intro_theme.mp3"></audio>
-  <audio id="eli-audio" src="./Main_Animations/eli_theme.mp3" loop></audio>
-  <audio id="maya-audio" src="./Main_Animations/maya_theme.mp3" loop></audio>
-  <audio id="stanley-audio" src="./Main_Animations/stanley_theme.mp3" loop></audio>
+  <audio id="eli-audio" src="./Main_Login_Audio/Eli_Rage_Glitch.mp3" loop></audio>
+  <audio id="maya-audio" src="./Main_Login_Audio/Maya_The_Connection_Trap.mp3" loop></audio>
+  <audio id="stanley-audio" src="./Main_Login_Audio/Stanely_The Digital Doppelganger.mp3" loop></audio>
 
   <div id="video-container" style="display:none;">
     <video id="chroma-video" autoplay loop muted playsinline>
@@ -167,232 +166,206 @@
   </div>
 
 <script>
-    // --- DOM ELEMENT REFERENCES ---
-    const loginScreen = document.getElementById("login-screen");
-    const videoContainer = document.getElementById("video-container");
-    const video = document.getElementById("chroma-video");
-    const chatBox = document.getElementById("chat-box");
-    const chatForm = document.getElementById("chat-form");
-    const userInput = document.getElementById("userInput");
-    const messages = document.getElementById("messages");
-    const closeChat = document.getElementById("close-chat");
-    const canvas = document.getElementById("fireworks");
-    const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+  // --- DOM REFERENCES ---
+  const loginScreen = document.getElementById("login-screen");
+  const videoContainer = document.getElementById("video-container");
+  const video = document.getElementById("chroma-video");
+  const chatBox = document.getElementById("chat-box");
+  const chatForm = document.getElementById("chat-form");
+  const userInput = document.getElementById("userInput");
+  const messages = document.getElementById("messages");
+  const closeChat = document.getElementById("close-chat");
+  const canvas = document.getElementById("fireworks");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
-    const eliLogin = document.getElementById("eli-login");
-    const mayaLogin = document.getElementById("maya-login");
-    const stanleyLogin = document.getElementById("stanley-login");
+  const eliLogin = document.getElementById("eli-login");
+  const mayaLogin = document.getElementById("maya-login");
+  const stanleyLogin = document.getElementById("stanley-login");
 
-    // --- AUDIO ELEMENTS ---
-    const introAudio = document.getElementById("intro-audio");
-    const eliAudio = document.getElementById("eli-audio");
-    const mayaAudio = document.getElementById("maya-audio");
-    const stanleyAudio = document.getElementById("stanley-audio");
+  // --- AUDIO ELEMENTS ---
+  const introAudio = document.getElementById("intro-audio");
+  const eliAudio = document.getElementById("eli-audio");
+  const mayaAudio = document.getElementById("maya-audio");
+  const stanleyAudio = document.getElementById("stanley-audio");
 
-    // --- INTRO FLOW ---
-    const introScreen = document.getElementById("intro-screen");
-    const startButton = document.getElementById("startButton");
-    const introVideo = document.getElementById("intro-video");
-    const logoAnimation = document.getElementById("logo-animation");
+  // --- INTRO FLOW ---
+  const introScreen = document.getElementById("intro-screen");
+  const startButton = document.getElementById("startButton");
+  const introVideo = document.getElementById("intro-video");
+  const logoAnimation = document.getElementById("logo-animation");
 
-    startButton.addEventListener("click", () => {
-      introScreen.style.display = "none";
-      introVideo.style.display = "block";
-      logoAnimation.play();
+  startButton.addEventListener("click", () => {
+    introScreen.style.display = "none";
+    introVideo.style.display = "block";
+    logoAnimation.play();
 
-      // ✅ Play intro theme only after click
-      introAudio.volume = 1.0;
-      introAudio.play().catch(err => console.warn("Audio blocked:", err));
+    introAudio.volume = 1.0;
+    introAudio.play().catch(err => console.warn("Audio blocked:", err));
 
-      logoAnimation.addEventListener("ended", () => {
-        introVideo.style.display = "none";
-        loginScreen.style.display = "flex";
-        // Default highlight Eli
-        document.querySelector(".character-card.eli").classList.add("active");
-        eliLogin.style.display = "block";
-        switchTheme("eli");
+    logoAnimation.addEventListener("ended", () => {
+      introVideo.style.display = "none";
+      loginScreen.style.display = "flex";
+      document.querySelector(".character-card.eli").classList.add("active");
+      eliLogin.style.display = "block";
+      switchTheme("eli");
+    });
+  });
+
+  // --- CHARACTER SWITCH ---
+  document.querySelectorAll(".character-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const choice = card.dataset.character;
+
+      eliLogin.style.display = "none";
+      mayaLogin.style.display = "none";
+      stanleyLogin.style.display = "none";
+      document.querySelectorAll(".character-card").forEach(c => c.classList.remove("active"));
+
+      if (choice === "eli") { eliLogin.style.display = "block"; card.classList.add("active"); switchTheme("eli"); }
+      if (choice === "maya") { mayaLogin.style.display = "block"; card.classList.add("active"); switchTheme("maya"); }
+      if (choice === "stanley") { stanleyLogin.style.display = "block"; card.classList.add("active"); switchTheme("stanley"); }
+    });
+  });
+
+  // --- THEME SWITCHER ---
+  function switchTheme(character) {
+    [eliAudio, mayaAudio, stanleyAudio].forEach(a => { a.pause(); a.currentTime = 0; });
+    introAudio.pause();
+    if (character === "eli") eliAudio.play().catch(()=>{});
+    if (character === "maya") mayaAudio.play().catch(()=>{});
+    if (character === "stanley") stanleyAudio.play().catch(()=>{});
+  }
+
+  // --- IFRAME LISTENER ---
+  window.addEventListener("message", (event) => {
+    if (event.data.action === "eli-connected") handleExternalConnect("eli", event.data.gamertag);
+    if (event.data.action === "maya-connected") handleExternalConnect("maya", event.data.gamertag);
+    if (event.data.action === "stanley-connected") handleExternalConnect("stanley", event.data.gamertag);
+  });
+
+  // --- CONNECT HANDLER ---
+  function handleExternalConnect(characterKey, gamertag) {
+    sessionStorage.setItem("character", characterKey);
+    sessionStorage.setItem("gamertag", gamertag);
+    loginScreen.style.display = "none";
+    videoContainer.style.display = "block";
+  }
+
+  // --- TOGGLE UI ---
+  videoContainer.addEventListener("click", (e) => {
+    createFirework(e.clientX, e.clientY, "explode");
+    video.pause();
+    videoContainer.style.display = "none";
+    chatBox.style.display = "flex";
+  });
+
+  closeChat.addEventListener("click", () => {
+    const rect = videoContainer.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    createFirework(centerX, centerY, "implode");
+    chatBox.style.display = "none";
+    videoContainer.style.display = "block";
+    video.play();
+    video.loop = true;
+  });
+
+  // --- CHAT LOGIC ---
+  function addMessage(sender, text) {
+    const msg = document.createElement("p");
+    msg.innerHTML = `<b>${sender}:</b> ${text}`;
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  async function getBotResponse(userMessage) {
+    const activeCharacter = sessionStorage.getItem("character") || "maya";
+    const gamertag = sessionStorage.getItem("gamertag") || "Player";
+    addMessage("Bot", `<span class="typing-indicator">...</span>`);
+    try {
+      const response = await fetch("http://127.0.0.1:3001/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage, character: activeCharacter, sessionId: gamertag })
       });
+      if (!response.ok) throw new Error(`Server responded ${response.status}`);
+      const data = await response.json();
+      messages.removeChild(messages.lastChild);
+      addMessage("Bot", data.reply);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      messages.removeChild(messages.lastChild);
+      addMessage("Bot", "⚠️ Connection error, try again later.");
+    }
+  }
+
+  if (chatForm) {
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = userInput.value.trim();
+      if (!text) return;
+      const gamertag = sessionStorage.getItem("gamertag") || "You";
+      addMessage(gamertag, text);
+      userInput.value = "";
+      await getBotResponse(text);
     });
+  }
 
-    // --- CHARACTER SWITCH LOGIC (Glitch Cards) ---
-    document.querySelectorAll(".character-card").forEach(card => {
-      card.addEventListener("click", () => {
-        const choice = card.dataset.character;
+  // --- FIREWORKS ---
+  class Firework {
+    constructor(x, y, color, velocity) {
+      this.x = x; this.y = y; this.color = color; this.velocity = velocity;
+      this.alpha = 1; this.radius = 2;
+    }
+    draw() {
+      ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill(); ctx.restore();
+    }
+    update() {
+      this.x += this.velocity.x; this.y += this.velocity.y;
+      this.alpha -= 0.02; this.draw();
+    }
+  }
 
-        eliLogin.style.display = "none";
-        mayaLogin.style.display = "none";
-        stanleyLogin.style.display = "none";
-        document.querySelectorAll(".character-card").forEach(c => c.classList.remove("active"));
+  let fireworks = [];
+  function createFirework(x, y, mode = "explode") {
+    const metallicColors = [
+      "rgba(192,192,192,1)",
+      "rgba(220,220,220,0.9)",
+      "rgba(255,255,255,0.8)",
+      "rgba(169,169,169,0.9)"
+    ];
+    const particleCount = mode === "explode" ? 100 : 70;
+    const baseSpeed = mode === "explode" ? 5 : 4;
 
-        if (choice === "eli") { eliLogin.style.display = "block"; card.classList.add("active"); switchTheme("eli"); }
-        if (choice === "maya") { mayaLogin.style.display = "block"; card.classList.add("active"); switchTheme("maya"); }
-        if (choice === "stanley") { stanleyLogin.style.display = "block"; card.classList.add("active"); switchTheme("stanley"); }
-      });
+    for (let i = 0; i < particleCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * baseSpeed + 1;
+      let velocity = mode === "explode"
+        ? { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }
+        : { x: -Math.cos(angle) * speed * 0.5, y: -Math.sin(angle) * speed * 0.5 };
+      fireworks.push(new Firework(
+        x, y,
+        metallicColors[Math.floor(Math.random() * metallicColors.length)],
+        velocity
+      ));
+    }
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    ctx.fillStyle = "rgba(0,0,0,0.1)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    fireworks.forEach((f, i) => {
+      if (f.alpha <= 0) fireworks.splice(i, 1); else f.update();
     });
+  }
 
-    // --- SWITCH THEME AUDIO ---
-    function switchTheme(character) {
-      // stop all
-      [eliAudio, mayaAudio, stanleyAudio].forEach(a => { a.pause(); a.currentTime = 0; });
-      introAudio.pause();
-      if (character === "eli") eliAudio.play().catch(()=>{});
-      if (character === "maya") mayaAudio.play().catch(()=>{});
-      if (character === "stanley") stanleyAudio.play().catch(()=>{});
-    }
-
-    // --- IFRAME COMMUNICATION LISTENER ---
-    window.addEventListener("message", (event) => {
-        if (event.data.action === "eli-connected") {
-            handleExternalConnect("eli", event.data.gamertag);
-        }
-        if (event.data.action === "maya-connected") {
-            handleExternalConnect("maya", event.data.gamertag);
-        }
-        if (event.data.action === "stanley-connected") {
-            handleExternalConnect("stanley", event.data.gamertag);
-        }
-    });
-
-    // --- CONNECT HANDLER ---
-    function handleExternalConnect(characterKey, gamertag) {
-        sessionStorage.setItem("character", characterKey);
-        sessionStorage.setItem("gamertag", gamertag);
-        loginScreen.style.display = "none";
-        videoContainer.style.display = "block";
-    }
-
-    // --- TOGGLE UI (VIDEO/CHAT) ---
-    videoContainer.addEventListener("click", (e) => {
-        createFirework(e.clientX, e.clientY, "explode");
-        video.pause();
-        videoContainer.style.display = "none";
-        chatBox.style.display = "flex";
-    });
-
-    closeChat.addEventListener("click", () => {
-        const rect = videoContainer.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        createFirework(centerX, centerY, "implode");
-        chatBox.style.display = "none";
-        videoContainer.style.display = "block";
-        video.play();
-        video.loop = true;
-    });
-
-    // --- CHAT LOGIC ---
-    function addMessage(sender, text) {
-        const msg = document.createElement("p");
-        msg.innerHTML = `<b>${sender}:</b> ${text}`;
-        messages.appendChild(msg);
-        messages.scrollTop = messages.scrollHeight;
-    }
-
-    async function getBotResponse(userMessage) {
-        const activeCharacter = sessionStorage.getItem("character") || "maya";
-        const gamertag = sessionStorage.getItem("gamertag") || "Player";
-        addMessage("Bot", `<span class="typing-indicator">...</span>`);
-        try {
-            const response = await fetch("http://127.0.0.1:3001/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userMessage, character: activeCharacter, sessionId: gamertag })
-            });
-            if (!response.ok) throw new Error(`Server responded ${response.status}`);
-            const data = await response.json();
-            messages.removeChild(messages.lastChild);
-            addMessage("Bot", data.reply);
-        } catch (err) {
-            console.error("Fetch error:", err);
-            messages.removeChild(messages.lastChild);
-            addMessage("Bot", "⚠️ Connection error, try again later.");
-        }
-    }
-
-    if (chatForm) {
-        chatForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const text = userInput.value.trim();
-            if (!text) return;
-            const gamertag = sessionStorage.getItem("gamertag") || "You";
-            addMessage(gamertag, text);
-            userInput.value = "";
-            await getBotResponse(text);
-        });
-    }
-
-    // --- FIREWORKS ---
-    class Firework {
-      constructor(x, y, color, velocity) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.velocity = velocity;
-        this.alpha = 1;
-        this.radius = 2;
-      }
-      draw() {
-        ctx.save();
-        ctx.globalAlpha = this.alpha;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-      update() {
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
-        this.alpha -= 0.02;
-        this.draw();
-      }
-    }
-
-    let fireworks = [];
-    function createFirework(x, y, mode = "explode") {
-      const metallicColors = [
-        "rgba(192,192,192,1)",
-        "rgba(220,220,220,0.9)",
-        "rgba(255,255,255,0.8)",
-        "rgba(169,169,169,0.9)"
-      ];
-      const particleCount = mode === "explode" ? 100 : 70;
-      const baseSpeed = mode === "explode" ? 5 : 4;
-
-      for (let i = 0; i < particleCount; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * baseSpeed + 1;
-        let velocity = mode === "explode"
-          ? { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }
-          : { x: -Math.cos(angle) * speed * 0.5, y: -Math.sin(angle) * speed * 0.5 };
-        fireworks.push(
-          new Firework(
-            x,
-            y,
-            metallicColors[Math.floor(Math.random() * metallicColors.length)],
-            velocity
-          )
-        );
-      }
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      ctx.fillStyle = "rgba(0,0,0,0.1)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      fireworks.forEach((f, i) => {
-        if (f.alpha <= 0) {
-          fireworks.splice(i, 1);
-        } else {
-          f.update();
-        }
-      });
-    }
-
-    // --- INITIALIZE ---
-    animate();
-  </script>
+  // --- INITIALIZE ---
+  animate();
+</script>
 </body>
 </html>
