@@ -50,7 +50,14 @@
   .glitch-title { color: white; font-family: 'IBM Plex Mono', monospace; font-size: 2.5rem; text-align: center; }
 
   /* --- Character Login Container Logic --- */
-  .character-login { position: relative; width: 800px; height: 600px; overflow: auto; }
+  .character-login {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    height: 80vh;          /* scale with viewport */
+    overflow-y: auto;      /* scroll if needed */
+    border-radius: 12px;
+  }
 
   /* --- Iframe Styling --- */
   iframe.login-frame { width: 100%; height: 100%; border: none; }
@@ -98,7 +105,7 @@
 
   <!-- Intro Animation -->
   <div id="intro-video">
-    <video id="logo-animation" muted playsinline>
+    <video id="logo-animation" autoplay playsinline>
       <source src="./Main_Animations/DataBleed_Logo_Animation_Adobe_Take_10.mp4" type="video/mp4">
     </video>
   </div>
@@ -132,6 +139,12 @@
       <iframe class="login-frame" src="./Log_in_formats/Stanley.html" title="Stanley's Portal"></iframe>
     </div>
   </div>
+
+  <!-- Background Audio (Main + Character Themes) -->
+  <audio id="intro-audio" src="./Main_Animations/intro_theme.mp3"></audio>
+  <audio id="eli-audio" src="./Main_Animations/eli_theme.mp3" loop></audio>
+  <audio id="maya-audio" src="./Main_Animations/maya_theme.mp3" loop></audio>
+  <audio id="stanley-audio" src="./Main_Animations/stanley_theme.mp3" loop></audio>
 
   <div id="video-container" style="display:none;">
     <video id="chroma-video" autoplay loop muted playsinline>
@@ -172,6 +185,12 @@
     const mayaLogin = document.getElementById("maya-login");
     const stanleyLogin = document.getElementById("stanley-login");
 
+    // --- AUDIO ELEMENTS ---
+    const introAudio = document.getElementById("intro-audio");
+    const eliAudio = document.getElementById("eli-audio");
+    const mayaAudio = document.getElementById("maya-audio");
+    const stanleyAudio = document.getElementById("stanley-audio");
+
     // --- INTRO FLOW ---
     const introScreen = document.getElementById("intro-screen");
     const startButton = document.getElementById("startButton");
@@ -183,12 +202,17 @@
       introVideo.style.display = "block";
       logoAnimation.play();
 
+      // ✅ Play intro theme only after click
+      introAudio.volume = 1.0;
+      introAudio.play().catch(err => console.warn("Audio blocked:", err));
+
       logoAnimation.addEventListener("ended", () => {
         introVideo.style.display = "none";
         loginScreen.style.display = "flex";
         // Default highlight Eli
         document.querySelector(".character-card.eli").classList.add("active");
         eliLogin.style.display = "block";
+        switchTheme("eli");
       });
     });
 
@@ -202,11 +226,21 @@
         stanleyLogin.style.display = "none";
         document.querySelectorAll(".character-card").forEach(c => c.classList.remove("active"));
 
-        if (choice === "eli") { eliLogin.style.display = "block"; card.classList.add("active"); }
-        if (choice === "maya") { mayaLogin.style.display = "block"; card.classList.add("active"); }
-        if (choice === "stanley") { stanleyLogin.style.display = "block"; card.classList.add("active"); }
+        if (choice === "eli") { eliLogin.style.display = "block"; card.classList.add("active"); switchTheme("eli"); }
+        if (choice === "maya") { mayaLogin.style.display = "block"; card.classList.add("active"); switchTheme("maya"); }
+        if (choice === "stanley") { stanleyLogin.style.display = "block"; card.classList.add("active"); switchTheme("stanley"); }
       });
     });
+
+    // --- SWITCH THEME AUDIO ---
+    function switchTheme(character) {
+      // stop all
+      [eliAudio, mayaAudio, stanleyAudio].forEach(a => { a.pause(); a.currentTime = 0; });
+      introAudio.pause();
+      if (character === "eli") eliAudio.play().catch(()=>{});
+      if (character === "maya") mayaAudio.play().catch(()=>{});
+      if (character === "stanley") stanleyAudio.play().catch(()=>{});
+    }
 
     // --- IFRAME COMMUNICATION LISTENER ---
     window.addEventListener("message", (event) => {
