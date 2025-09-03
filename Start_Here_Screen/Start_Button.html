@@ -434,8 +434,8 @@
         // Generate particles continuously
         setInterval(createDataParticle, 800);
 
-        // Start game function
-        function startGame() {
+                // Start game function
+                function startGame() {
             const button = document.getElementById('startButton');
             const container = document.getElementById('introContainer');
             
@@ -463,30 +463,46 @@
                     container.style.opacity = '0';
                     container.style.transform = 'scale(0.8)';
                     
-                    // Redirect to main game after fade
+                    // Notify parent (index.html) instead of redirecting
                     setTimeout(() => {
-                        // Replace this with your actual game file
-                        window.location.href = './index.html'; // Your main game file
-                        
-                        // Or if integrating into same page:
-                        // loadMainGame();
+                        window.parent.postMessage("start-clicked", "*");
                     }, 1000);
                 }, 500);
             }, 3000);
         }
 
-        // Optional: Add keyboard support
-        document.addEventListener('keydown', function(e) {
+                // Optional: Add keyboard support
+                document.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 startGame();
             }
         });
 
-        // Optional: Auto-start after delay (remove if not wanted)
-        // setTimeout(() => {
-        //     document.querySelector('.press-indicator').textContent = 'Press ENTER or click to continue...';
-        // }, 5000);
+        // ✅ Background music for Start Screen
+        const startMusic = new Audio("./The_Corrupted_Lullaby.mp3");
+        startMusic.loop = true;
+        startMusic.volume = 0.7;
+        startMusic.play().catch(() => {
+            console.warn("Autoplay blocked — waiting for user interaction.");
+            document.addEventListener("click", () => {
+                startMusic.play();
+            }, { once: true });
+        });
+
+        // ✅ Stop music once game starts
+        function stopStartMusic() {
+            startMusic.pause();
+            startMusic.currentTime = 0;
+        }
+
+        // Hook into your existing startGame()
+        const originalStartGame = startGame;
+        startGame = function() {
+            stopStartMusic();
+            originalStartGame();
+            window.parent.postMessage("start-clicked", "*");
+        };
     </script>
 </body>
 </html>

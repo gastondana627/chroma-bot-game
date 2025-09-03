@@ -15,30 +15,21 @@
 
   /* --- Intro Screen --- */
   #intro-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    flex-direction: column;
-    text-align: center;
+    background: black;
+    z-index: 9999;
   }
-  .start-button {
-    background: rgba(0, 20, 40, 0.9);
-    border: 3px solid #00ffff;
-    color: #00ffff;
-    font-size: 1.5rem;
-    font-weight: 700;
-    font-family: 'IBM Plex Mono', monospace;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    padding: 20px 60px;
-    cursor: pointer;
-    border-radius: 10px;
-    animation: buttonPulse 2s ease-in-out infinite alternate;
-  }
-  @keyframes buttonPulse {
-    from { box-shadow: 0 0 20px rgba(0, 255, 255, 0.3); }
-    to { box-shadow: 0 0 40px rgba(0, 255, 255, 0.7); }
+  iframe#start-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
   }
 
   /* --- Animation Container --- */
@@ -99,13 +90,12 @@
 
   <!-- Intro Start Screen -->
   <div id="intro-screen">
-    <h1 class="glitch-title">DATA_BLEED</h1>
-    <button id="startButton" class="start-button">START HERE</button>
+    <iframe id="start-frame" src="./Start_Here_Screen/Start_Button.html"></iframe>
   </div>
 
   <!-- Intro Animation -->
   <div id="intro-video">
-    <video id="logo-animation" autoplay playsinline>
+    <video id="logo-animation" playsinline>
       <source src="./Main_Animations/DataBleed_Logo_Animation_Adobe_Take_10.mp4" type="video/mp4">
     </video>
   </div>
@@ -139,7 +129,8 @@
     </div>
   </div>
 
-  <!-- Background Audio (Main + Character Themes) -->
+  <!-- Background Audio (Start Screen + Main + Character Themes) -->
+  <audio id="start-audio" src="./Start_Here_Screen/The_Corrupted_Lullaby.mp3" loop></audio>
   <audio id="intro-audio" src="./Main_Animations/intro_theme.mp3"></audio>
   <audio id="eli-audio" src="./Main_Login_Audio/Eli_Rage_Glitch.mp3" loop></audio>
   <audio id="maya-audio" src="./Main_Login_Audio/Maya_The_Connection_Trap.mp3" loop></audio>
@@ -185,6 +176,7 @@
   const stanleyLogin = document.getElementById("stanley-login");
 
   // --- AUDIO ELEMENTS ---
+  const startAudio = document.getElementById("start-audio");
   const introAudio = document.getElementById("intro-audio");
   const eliAudio = document.getElementById("eli-audio");
   const mayaAudio = document.getElementById("maya-audio");
@@ -192,25 +184,32 @@
 
   // --- INTRO FLOW ---
   const introScreen = document.getElementById("intro-screen");
-  const startButton = document.getElementById("startButton");
   const introVideo = document.getElementById("intro-video");
   const logoAnimation = document.getElementById("logo-animation");
 
-  startButton.addEventListener("click", () => {
-    introScreen.style.display = "none";
-    introVideo.style.display = "block";
-    logoAnimation.play();
+  // ✅ Listen for start button click from inside iframe
+  const startFrame = document.getElementById("start-frame");
+  window.addEventListener("message", (event) => {
+    if (event.data === "start-clicked") {
+      // stop start screen audio
+      startAudio.pause();
+      startAudio.currentTime = 0;
 
-    introAudio.volume = 1.0;
-    introAudio.play().catch(err => console.warn("Audio blocked:", err));
+      introScreen.style.display = "none";
+      introVideo.style.display = "block";
+      logoAnimation.play();
 
-    logoAnimation.addEventListener("ended", () => {
-      introVideo.style.display = "none";
-      loginScreen.style.display = "flex";
-      document.querySelector(".character-card.eli").classList.add("active");
-      eliLogin.style.display = "block";
-      switchTheme("eli");
-    });
+      introAudio.volume = 1.0;
+      introAudio.play().catch(err => console.warn("Intro audio blocked:", err));
+
+      logoAnimation.addEventListener("ended", () => {
+        introVideo.style.display = "none";
+        loginScreen.style.display = "flex";
+        document.querySelector(".character-card.eli").classList.add("active");
+        eliLogin.style.display = "block";
+        switchTheme("eli");
+      });
+    }
   });
 
   // --- CHARACTER SWITCH ---
@@ -238,14 +237,13 @@
     if (character === "stanley") stanleyAudio.play().catch(()=>{});
   }
 
-  // --- IFRAME LISTENER ---
+  // --- IFRAME LISTENER FOR CHARACTER LOGINS ---
   window.addEventListener("message", (event) => {
     if (event.data.action === "eli-connected") handleExternalConnect("eli", event.data.gamertag);
     if (event.data.action === "maya-connected") handleExternalConnect("maya", event.data.gamertag);
     if (event.data.action === "stanley-connected") handleExternalConnect("stanley", event.data.gamertag);
   });
 
-  // --- CONNECT HANDLER ---
   function handleExternalConnect(characterKey, gamertag) {
     sessionStorage.setItem("character", characterKey);
     sessionStorage.setItem("gamertag", gamertag);
