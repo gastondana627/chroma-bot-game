@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRUST MATRIX - Session Paused</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a1f3a 50%, #0d1421 100%);
+            color: #64b5f6;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .network-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23404080" stroke-width="0.5" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.4;
+            animation: grid-pulse 4s infinite ease-in-out;
+        }
+        
+        .trust-matrix-label {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #64b5f6;
+            text-shadow: 0 0 15px rgba(100, 181, 246, 0.8);
+            letter-spacing: 2px;
+        }
+        
+        .network-nodes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .node {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #64b5f6;
+            background: rgba(10, 15, 28, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            animation: node-pulse 3s infinite ease-in-out;
+        }
+        
+        .node.suspicious {
+            border-color: #f06292;
+            color: #f06292;
+            animation: warning-pulse 1.5s infinite;
+        }
+        
+        .node.verified {
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+        
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #64b5f6, transparent);
+            opacity: 0.6;
+            animation: data-flow 2s infinite ease-in-out;
+        }
+        
+        .connection-line.suspicious {
+            background: linear-gradient(90deg, transparent, #f06292, transparent);
+            animation: warning-flow 1s infinite ease-in-out;
+        }
+        
+        .main-pause-menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 15, 28, 0.95);
+            border: 2px solid #64b5f6;
+            border-radius: 12px;
+            padding: 40px;
+            min-width: 400px;
+            box-shadow: 
+                0 0 50px rgba(100, 181, 246, 0.3),
+                inset 0 0 20px rgba(100, 181, 246, 0.1);
+            backdrop-filter: blur(15px);
+        }
+        
+        .menu-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-align: center;
+            color: #64b5f6;
+            text-shadow: 0 0 20px rgba(100, 181, 246, 0.8);
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+        }
+        
+        .menu-subtitle {
+            text-align: center;
+            color: #9c27b0;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .menu-btn {
+            background: transparent;
+            border: 2px solid #64b5f6;
+            color: #64b5f6;
+            padding: 15px 25px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(100, 181, 246, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .menu-btn:hover {
+            background: rgba(100, 181, 246, 0.1);
+            box-shadow: 0 0 25px rgba(100, 181, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .menu-btn:hover::before {
+            left: 100%;
+        }
+        
+        .menu-btn.danger {
+            border-color: #f06292;
+            color: #f06292;
+        }
+        
+        .menu-btn.danger:hover {
+            background: rgba(240, 98, 146, 0.1);
+            box-shadow: 0 0 25px rgba(240, 98, 146, 0.5);
+        }
+        
+        .case-files-panel {
+            position: absolute;
+            top: 60px;
+            right: 40px;
+            width: 320px;
+            background: rgba(10, 15, 28, 0.9);
+            border: 2px solid #f06292;
+            border-radius: 8px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(240, 98, 146, 0.3);
+        }
+        
+        .case-files-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            color: #f06292;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .case-item {
+            background: rgba(240, 98, 146, 0.1);
+            border-left: 3px solid #f06292;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .case-item:hover {
+            background: rgba(240, 98, 146, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .case-type {
+            color: #f06292;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .case-description {
+            color: #b3e5fc;
+            line-height: 1.4;
+        }
+        
+        .target-profiles-panel {
+            position: absolute;
+            bottom: 60px;
+            left: 40px;
+            width: 350px;
+            background: rgba(10, 15, 28, 0.9);
+            border: 2px solid #ff9800;
+            border-radius: 8px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(255, 152, 0, 0.3);
+        }
+        
+        .profiles-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            color: #ff9800;
+            text-align: center;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .profile-entry {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-entry:hover {
+            background: rgba(255, 152, 0, 0.2);
+            transform: scale(1.02);
+        }
+        
+        .profile-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .profile-info {
+            flex: 1;
+        }
+        
+        .profile-name {
+            color: #ff9800;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .profile-status {
+            color: #b3e5fc;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .danger-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+        
+        .danger-indicator.high {
+            background: #f44336;
+            animation: danger-blink 1s infinite;
+        }
+        
+        .danger-indicator.medium {
+            background: #ff9800;
+        }
+        
+        .danger-indicator.low {
+            background: #4caf50;
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .status-item {
+            background: rgba(10, 15, 28, 0.8);
+            border: 1px solid #64b5f6;
+            border-radius: 15px;
+            padding: 8px 15px;
+            color: #64b5f6;
+        }
+        
+        .status-item.warning {
+            border-color: #f06292;
+            color: #f06292;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: rgba(10, 15, 28, 0.95);
+            border: 2px solid #64b5f6;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            text-align: center;
+            backdrop-filter: blur(15px);
+        }
+        
+        .modal-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: #f06292;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .modal-text {
+            color: #b3e5fc;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .modal-btn {
+            background: transparent;
+            border: 2px solid #64b5f6;
+            color: #64b5f6;
+            padding: 10px 25px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .modal-btn:hover {
+            background: rgba(100, 181, 246, 0.2);
+        }
+        
+        @keyframes grid-pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.6; }
+        }
+        
+        @keyframes node-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 5px rgba(100, 181, 246, 0.5); }
+            50% { transform: scale(1.1); box-shadow: 0 0 15px rgba(100, 181, 246, 0.8); }
+        }
+        
+        @keyframes warning-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 5px rgba(240, 98, 146, 0.5); }
+            50% { transform: scale(1.1); box-shadow: 0 0 15px rgba(240, 98, 146, 1); }
+        }
+        
+        @keyframes data-flow {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.3; }
+        }
+        
+        @keyframes warning-flow {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        
+        @keyframes danger-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="network-canvas"></div>
+    <div class="trust-matrix-label">TRUST MATRIX</div>
+    
+    <!-- Animated network nodes -->
+    <div class="network-nodes">
+        <!-- Normal nodes -->
+        <div class="node" style="top: 15%; left: 10%;">👤</div>
+        <div class="node" style="top: 25%; left: 20%;">👤</div>
+        <div class="node verified" style="top: 35%; left: 15%;">✓</div>
+        <div class="node" style="top: 45%; left: 8%;">👤</div>
+        
+        <!-- Suspicious nodes -->
+        <div class="node suspicious" style="top: 20%; left: 75%;">⚠️</div>
+        <div class="node suspicious" style="top: 30%; left: 85%;">🚫</div>
+        <div class="node suspicious" style="top: 60%; left: 80%;">💸</div>
+        
+        <!-- More nodes -->
+        <div class="node" style="top: 70%; left: 25%;">👤</div>
+        <div class="node" style="top: 80%; left: 15%;">👤</div>
+        <div class="node verified" style="top: 65%; left: 45%;">✓</div>
+        <div class="node" style="top: 75%; left: 55%;">👤</div>
+        
+        <!-- Connection lines -->
+        <div class="connection-line" style="top: 25%; left: 20%; width: 300px; transform: rotate(15deg);"></div>
+        <div class="connection-line suspicious" style="top: 25%; left: 60%; width: 250px; transform: rotate(-20deg);"></div>
+        <div class="connection-line" style="top: 50%; left: 15%; width: 400px; transform: rotate(45deg);"></div>
+        <div class="connection-line suspicious" style="top: 45%; left: 70%; width: 200px; transform: rotate(-45deg);"></div>
+    </div>
+    
+    <!-- Main Pause Menu -->
+    <div class="main-pause-menu">
+        <div class="menu-title">MAYA</div>
+        <div class="menu-subtitle">Connection Analysis Paused</div>
+        
+        <div class="menu-buttons">
+            <button class="menu-btn" onclick="resumeMatching()">RESUME</button>
+            <button class="menu-btn" onclick="accessSettings()">SETTINGS</button>
+            <button class="menu-btn danger" onclick="logOff()">LOG OFF</button>
+        </div>
+        
+        <div style="text-align: center; color: #9c27b0; font-size: 0.85rem; font-style: italic;">
+            "Every swipe reveals another layer of deception..."
+        </div>
+    </div>
+    
+    <!-- Case Files Panel -->
+    <div class="case-files-panel">
+        <div class="case-files-title">CASE FILES</div>
+        
+        <div class="case-item" onclick="showCaseDetail('Romance scammer using stolen military photos')">
+            <div class="case-type">Evidence</div>
+            <div class="case-description">Photo analysis reveals stolen military images</div>
+        </div>
+        
+        <div class="case-item" onclick="showCaseDetail('Conversation logs show identical scripts used across multiple profiles')">
+            <div class="case-type">Chat Logs</div>
+            <div class="case-description">Identical pickup lines detected from 7 users</div>
+        </div>
+        
+        <div class="case-item" onclick="showCaseDetail('Financial records show victim lost $3,400 to romance scam')">
+            <div class="case-type">Evidence</div>
+            <div class="case-description">Emergency fund request patterns identified</div>
+        </div>
+        
+        <div class="case-item" onclick="showCaseDetail('Location spoofing detected - claimed to be local but IP shows different country')">
+            <div class="case-type">Target Profiles</div>
+            <div class="case-description">Location inconsistencies in 23 profiles</div>
+        </div>
+    </div>
+    
+    <!-- Target Profiles Panel -->
+    <div class="target-profiles-panel">
+        <div class="profiles-title">ACTIVE CONNECTIONS</div>
+        
+        <div class="profile-entry" onclick="showProfile('Marcus claims to be a doctor but photo analysis suggests otherwise')">
+            <div class="profile-avatar">🏥</div>
+            <div class="profile-info">
+                <div class="profile-name">Marcus, 34</div>
+                <div class="profile-status">"Doctor" - 2 miles away</div>
+            </div>
+            <div class="danger-indicator high"></div>
+        </div>
+        
+        <div class="profile-entry" onclick="showProfile('James keeps asking personal questions about your finances')">
+            <div class="profile-avatar">💼</div>
+            <div class="profile-info">
+                <div class="profile-name">James, 28</div>
+                <div class="profile-status">"Entrepreneur" - 5 miles away</div>
+            </div>
+            <div class="danger-indicator high"></div>
+        </div>
+        
+        <div class="profile-entry" onclick="showProfile('David seems genuine but reverse image search shows concerns')">
+            <div class="profile-avatar">📸</div>
+            <div class="profile-info">
+                <div class="profile-name">David, 31</div>
+                <div class="profile-status">"Photographer" - 3 miles away</div>
+            </div>
+            <div class="danger-indicator medium"></div>
+        </div>
+        
+        <div class="profile-entry" onclick="showProfile('Alex appears to be a legitimate match with verified profile')">
+            <div class="profile-avatar">✅</div>
+            <div class="profile-info">
+                <div class="profile-name">Alex, 29</div>
+                <div class="profile-status">"Teacher" - 1 mile away</div>
+            </div>
+            <div class="danger-indicator low"></div>
+        </div>
+    </div>
+    
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-item">MATCHES: 47</div>
+        <div class="status-item warning">SUSPICIOUS: 23</div>
+        <div class="status-item">VERIFIED: 8</div>
+        <div class="status-item warning">SCAM ALERTS: 12</div>
+    </div>
+    
+    <!-- Modal for alerts -->
+    <div class="modal" id="alertModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Alert</div>
+            <div class="modal-text" id="modalText"></div>
+            <button class="modal-btn" onclick="closeModal()">ACKNOWLEDGE</button>
+        </div>
+    </div>
+    
+    <script>
+        function showModal(title, message) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = message;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+        
+        function resumeMatching() {
+            showModal(
+                'RESUMING ANALYSIS',
+                'Trust Matrix will continue monitoring your connections. Stay vigilant - 68% of profiles show suspicious activity patterns.'
+            );
+        }
+        
+        function accessSettings() {
+            showModal(
+                'SECURITY SETTINGS',
+                'Privacy shields active. Background verification running. Remember: if someone seems too good to be true, they probably are.'
+            );
+        }
+        
+        function logOff() {
+            showModal(
+                'DISCONNECTION WARNING',
+                'Logging off will pause all safety monitoring. Your vulnerability score increases when the Trust Matrix is offline. Are you sure?'
+            );
+        }
+        
+        function showCaseDetail(detail) {
+            showModal('CASE ANALYSIS', detail);
+        }
+        
+        function showProfile(detail) {
+            showModal('PROFILE ANALYSIS', detail);
+        }
+        
+        // Animate connection lines
+        setInterval(() => {
+            const lines = document.querySelectorAll('.connection-line');
+            lines.forEach(line => {
+                if (Math.random() < 0.3) {
+                    line.style.opacity = Math.random() < 0.5 ? '0.3' : '0.8';
+                }
+            });
+        }, 1000);
+        
+        // Update suspicious activity counter
+        let suspiciousCount = 23;
+        let scamAlerts = 12;
+        
+        setInterval(() => {
+            if (Math.random() < 0.3) {
+                suspiciousCount += Math.floor(Math.random() * 3);
+                scamAlerts += Math.floor(Math.random() * 2);
+                
+                document.querySelector('.status-bar .status-item:nth-child(2)').textContent = `SUSPICIOUS: ${suspiciousCount}`;
+                document.querySelector('.status-bar .status-item:nth-child(4)').textContent = `SCAM ALERTS: ${scamAlerts}`;
+            }
+        }, 5000);
+        
+        // Configuration object for database integration
+        window.TrustMatrixConfig = {
+            user: {
+                name: 'Maya',
+                totalMatches: 47,
+                suspiciousProfiles: 23,
+                verifiedProfiles: 8,
+                scamAlerts: 12
+            },
+            caseFiles: [
+                { type: 'Evidence', description: 'Photo analysis reveals stolen military images', detail: 'Romance scammer using stolen military photos' },
+                { type: 'Chat Logs', description: 'Identical pickup lines detected from 7 users', detail: 'Conversation logs show identical scripts used across multiple profiles' },
+                { type: 'Evidence', description: 'Emergency fund request patterns identified', detail: 'Financial records show victim lost $3,400 to romance scam' },
+                { type: 'Target Profiles', description: 'Location inconsistencies in 23 profiles', detail: 'Location spoofing detected - claimed to be local but IP shows different country' }
+            ],
+            activeConnections: [
+                { name: 'Marcus, 34', status: '"Doctor" - 2 miles away', danger: 'high', detail: 'Marcus claims to be a doctor but photo analysis suggests otherwise' },
+                { name: 'James, 28', status: '"Entrepreneur" - 5 miles away', danger: 'high', detail: 'James keeps asking personal questions about your finances' },
+                { name: 'David, 31', status: '"Photographer" - 3 miles away', danger: 'medium', detail: 'David seems genuine but reverse image search shows concerns' },
+                { name: 'Alex, 29', status: '"Teacher" - 1 mile away', danger: 'low', detail: 'Alex appears to be a legitimate match with verified profile' }
+            ]
+        };
+    </script>
+</body>
+</html>
