@@ -364,3 +364,13 @@ iframe.login-frame {
   border: none;
   overflow-y: auto;  /* allow scrolling inside iframe */
 }
+
+
+.character-login {
+  position: relative;
+  width: 90%;           /* scale with screen size */
+  max-width: 800px;
+  height: 80vh;         /* make it relative to viewport */
+  overflow-y: auto;     /* allow scroll if needed */
+  border-radius: 12px;
+}
