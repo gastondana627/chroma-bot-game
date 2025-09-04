@@ -311,20 +311,30 @@
     });
   }
 
-  // --- FIREWORKS ---
-  class Firework {
+    // --- FIREWORKS ---
+    class Firework {
     constructor(x, y, color, velocity) {
-      this.x = x; this.y = y; this.color = color; this.velocity = velocity;
-      this.alpha = 1; this.radius = 2;
+      this.x = x;
+      this.y = y;
+      this.color = color;
+      this.velocity = velocity;
+      this.alpha = 1;
+      this.radius = 2;
     }
     draw() {
-      ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
-      ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fill(); ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = this.alpha;
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
     update() {
-      this.x += this.velocity.x; this.y += this.velocity.y;
-      this.alpha -= 0.02; this.draw();
+      this.x += this.velocity.x;
+      this.y += this.velocity.y;
+      this.alpha -= 0.02;
+      this.draw();
     }
   }
 
@@ -342,23 +352,30 @@
     for (let i = 0; i < particleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = Math.random() * baseSpeed + 1;
-      let velocity = mode === "explode"
-        ? { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }
-        : { x: -Math.cos(angle) * speed * 0.5, y: -Math.sin(angle) * speed * 0.5 };
-      fireworks.push(new Firework(
-        x, y,
-        metallicColors[Math.floor(Math.random() * metallicColors.length)],
-        velocity
-      ));
+      const velocity =
+        mode === "explode"
+          ? { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }
+          : { x: -Math.cos(angle) * speed * 0.5, y: -Math.sin(angle) * speed * 0.5 };
+      fireworks.push(
+        new Firework(
+          x,
+          y,
+          metallicColors[Math.floor(Math.random() * metallicColors.length)],
+          velocity
+        )
+      );
     }
   }
 
   function animate() {
     requestAnimationFrame(animate);
-    ctx.fillStyle = "rgba(0,0,0,0.1)";
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    fireworks.forEach((f, i) => {
-      if (f.alpha <= 0) fireworks.splice(i, 1); else f.update();
+
+    fireworks = fireworks.filter((f) => {
+      if (f.alpha <= 0) return false;
+      f.update();
+      return true;
     });
   }
 

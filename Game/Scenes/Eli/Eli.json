@@ -1,0 +1,53 @@
+{
+    "character": "eli",
+    "theme": {
+      "color": "#220000",
+      "music": "./Main_Login_Audio/Eli_The_Codebreaker.mp3"
+    },
+    "nodes": {
+      "S1": {
+        "scene": "/game/scenes/eli/S1.html",
+        "choices": [
+          { "label": "Start Investigation", "next": "S2" }
+        ]
+      },
+      "S2": {
+        "scene": "/game/scenes/eli/S2.html",
+        "choices": [
+          { "label": "Decrypt File", "next": "S3" },
+          { "label": "Ignore", "next": "FailS2" }
+        ]
+      },
+      "S3": {
+        "scene": "/game/scenes/eli/S3.html",
+        "choices": [
+          { "label": "Follow the Trace", "next": "S4" }
+        ]
+      },
+      "S4": {
+        "scene": "/game/scenes/eli/S4.html",
+        "choices": [
+          { "label": "Dive Deeper", "next": "S5" }
+        ]
+      },
+      "S5": {
+        "scene": "/game/scenes/eli/S5.html",
+        "choices": [
+          { "label": "Respond", "next": "FailS5" },
+          { "label": "Stay Silent", "next": "S6" }
+        ]
+      },
+      "S6": {
+        "scene": "/game/scenes/eli/S6.html",
+        "end": "success"
+      },
+      "FailS2": {
+        "scene": "/game/scenes/eli/S2_fail.html",
+        "end": "failure"
+      },
+      "FailS5": {
+        "scene": "/game/scenes/eli/S5_fail.html",
+        "end": "failure"
+      }
+    }
+  }

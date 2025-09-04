@@ -1,0 +1,53 @@
+{
+    "character": "maya",
+    "theme": {
+      "color": "#111",
+      "music": "./Main_Login_Audio/Maya_The_Archivist.mp3"
+    },
+    "nodes": {
+      "S1": {
+        "scene": "/game/scenes/maya/S1.html",
+        "choices": [
+          { "label": "Begin Session", "next": "S2" }
+        ]
+      },
+      "S2": {
+        "scene": "/game/scenes/maya/S2.html",
+        "choices": [
+          { "label": "Open Archive", "next": "S3" },
+          { "label": "Turn Away", "next": "FailS2" }
+        ]
+      },
+      "S3": {
+        "scene": "/game/scenes/maya/S3.html",
+        "choices": [
+          { "label": "Restore Memory", "next": "S4" }
+        ]
+      },
+      "S4": {
+        "scene": "/game/scenes/maya/S4.html",
+        "choices": [
+          { "label": "Continue Reading", "next": "S5" }
+        ]
+      },
+      "S5": {
+        "scene": "/game/scenes/maya/S5.html",
+        "choices": [
+          { "label": "Trust the Voice", "next": "FailS5" },
+          { "label": "Close the Archive", "next": "S6" }
+        ]
+      },
+      "S6": {
+        "scene": "/game/scenes/maya/S6.html",
+        "end": "success"
+      },
+      "FailS2": {
+        "scene": "/game/scenes/maya/S2_fail.html",
+        "end": "failure"
+      },
+      "FailS5": {
+        "scene": "/game/scenes/maya/S5_fail.html",
+        "end": "failure"
+      }
+    }
+  }

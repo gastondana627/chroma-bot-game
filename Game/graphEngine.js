@@ -1,76 +1,76 @@
-// /game/graphEngine.js
+// graphEngine.js
 
-class GraphEngine {
-    constructor(containerId) {
-      this.container = document.getElementById(containerId);
-      this.story = null;
-      this.currentNode = null;
+let currentStory = null;
+let currentNode = null;
+let audio = null;
+
+// Load character story JSON dynamically
+async function loadStory(character) {
+  try {
+    const res = await fetch(`/game/scenes/${character}/${character}.json`);
+    currentStory = await res.json();
+
+    // Apply theme (CSS body class)
+    document.body.className = character;
+
+    // Load and play theme music
+    if (audio) {
+      audio.pause();
+      audio = null;
     }
-  
-    async loadStory(storyPath) {
-      try {
-        const res = await fetch(storyPath);
-        this.story = await res.json();
-  
-        // Apply theme from JSON
-        document.body.className = this.story.theme.class;
-  
-        // Start at S1 (Stanley Login)
-        this.goToNode("S1");
-      } catch (err) {
-        console.error("Error loading story:", err);
-      }
-    }
-  
-    goToNode(nodeId) {
-      const node = this.story.nodes[nodeId];
-      if (!node) {
-        console.error(`Node ${nodeId} not found`);
-        return;
-      }
-  
-      this.currentNode = node;
-  
-      // Load scene HTML into container
-      fetch(node.scene)
-        .then(res => res.text())
-        .then(html => {
-          this.container.innerHTML = html;
-          this.bindChoices(node);
-        })
-        .catch(err => console.error("Error loading scene:", err));
-    }
-  
-    bindChoices(node) {
-      if (node.end) {
-        this.showEnding(node.end, node.narration);
-        return;
-      }
-  
-      const buttons = this.container.querySelectorAll("[data-choice]");
-      buttons.forEach((btn, i) => {
-        btn.addEventListener("click", () => {
-          const choice = node.choices[i];
-          if (choice && choice.next) {
-            this.goToNode(choice.next);
-          }
-        });
-      });
-    }
-  
-    showEnding(type, text) {
-      this.container.innerHTML = `
-        <div class="ending ${type}">
-          <h2>${type === "success" ? "✅ Success" : "❌ Failure"}</h2>
-          <p>${text}</p>
-          <button onclick="window.location.reload()">Restart</button>
-        </div>
-      `;
+    audio = new Audio(currentStory.theme.music);
+    audio.loop = true;
+    audio.volume = 0.7;
+    audio.play().catch(err => {
+      console.warn("⚠️ Autoplay blocked, waiting for user interaction", err);
+      document.addEventListener("click", () => audio.play(), { once: true });
+    });
+
+    // Start story
+    goToNode("S1");
+  } catch (err) {
+    console.error(`Failed to load story for ${character}:`, err);
+  }
+}
+
+// Go to a node (scene)
+function goToNode(nodeId) {
+  currentNode = currentStory.nodes[nodeId];
+
+  if (!currentNode) {
+    console.error("Invalid node:", nodeId);
+    return;
+  }
+
+  // Load scene HTML into iframe or container
+  const sceneFrame = document.getElementById("sceneFrame");
+  sceneFrame.src = currentNode.scene;
+
+  // Render choices
+  const choicesContainer = document.getElementById("choices");
+  choicesContainer.innerHTML = "";
+  if (currentNode.choices) {
+    currentNode.choices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.classList.add("choice-btn");
+      btn.textContent = choice.label;
+      btn.onclick = () => goToNode(choice.next);
+      choicesContainer.appendChild(btn);
+    });
+  }
+
+  if (currentNode.end) {
+    if (currentNode.end === "success") {
+      alert("✅ You survived Stanley’s arc!");
+    } else {
+      alert("💀 Game Over. Refresh to try again.");
     }
   }
-  
-  // --- Initialize Engine ---
-  document.addEventListener("DOMContentLoaded", () => {
-    const engine = new GraphEngine("game-container");
-    engine.loadStory("./stories/stanley.json");
-  });
+}
+
+// Example: Hook into login message from iframe
+window.addEventListener("message", (event) => {
+  if (event.data?.action === "eli-connected") loadStory("eli");
+  if (event.data?.action === "maya-connected") loadStory("maya");
+  if (event.data?.action === "stanley-connected") loadStory("stanley");
+});
