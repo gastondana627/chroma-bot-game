@@ -615,6 +615,10 @@
         passwordInput.addEventListener('focus', startCorruption);
         loginBtn.addEventListener('click', startCorruption);
 
+
+
+
+
         // Form submission
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -623,23 +627,20 @@
             loginBtn.textContent = 'Authenticating...';
             setTimeout(() => {
                 loginBtn.textContent = 'System Compromised';
-                
-
-
 
                 // ✅ Delay message until after the effect shows
                 setTimeout(() => {
                     window.parent.postMessage({
                         action: "stanley-connected",
-                        gamertag: document.getElementById('emailInput').value || "Anonymous"
+                        gamertag: document.getElementById('email').value || "Anonymous"
                     }, "*");
                 }, 600);
 
-
-
-
             }, 2000);
         });
+
+
+
 
         // Forgot password link
         forgotLink.addEventListener('click', function(e) {
