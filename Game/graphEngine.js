@@ -1,52 +1,76 @@
-// graphEngine.js
-// Loads story arcs (JSON) and swaps scenes dynamically
+// /game/graphEngine.js
 
-let currentNode = null;
-let storyGraph = null;
-
-// Load JSON story arc for a character
-async function loadStory(character) {
-  try {
-    const res = await fetch(`/game/scenes/${character}/${character}.json`);
-    storyGraph = await res.json();
-    console.log(`Loaded story for: ${character}`, storyGraph);
-
-    // Start at first node (S1)
-    goToNode("S1");
-  } catch (err) {
-    console.error("Error loading story:", err);
+class GraphEngine {
+    constructor(containerId) {
+      this.container = document.getElementById(containerId);
+      this.story = null;
+      this.currentNode = null;
+    }
+  
+    async loadStory(storyPath) {
+      try {
+        const res = await fetch(storyPath);
+        this.story = await res.json();
+  
+        // Apply theme from JSON
+        document.body.className = this.story.theme.class;
+  
+        // Start at S1 (Stanley Login)
+        this.goToNode("S1");
+      } catch (err) {
+        console.error("Error loading story:", err);
+      }
+    }
+  
+    goToNode(nodeId) {
+      const node = this.story.nodes[nodeId];
+      if (!node) {
+        console.error(`Node ${nodeId} not found`);
+        return;
+      }
+  
+      this.currentNode = node;
+  
+      // Load scene HTML into container
+      fetch(node.scene)
+        .then(res => res.text())
+        .then(html => {
+          this.container.innerHTML = html;
+          this.bindChoices(node);
+        })
+        .catch(err => console.error("Error loading scene:", err));
+    }
+  
+    bindChoices(node) {
+      if (node.end) {
+        this.showEnding(node.end, node.narration);
+        return;
+      }
+  
+      const buttons = this.container.querySelectorAll("[data-choice]");
+      buttons.forEach((btn, i) => {
+        btn.addEventListener("click", () => {
+          const choice = node.choices[i];
+          if (choice && choice.next) {
+            this.goToNode(choice.next);
+          }
+        });
+      });
+    }
+  
+    showEnding(type, text) {
+      this.container.innerHTML = `
+        <div class="ending ${type}">
+          <h2>${type === "success" ? "✅ Success" : "❌ Failure"}</h2>
+          <p>${text}</p>
+          <button onclick="window.location.reload()">Restart</button>
+        </div>
+      `;
+    }
   }
-}
-
-// Render a scene
-function goToNode(nodeId) {
-  if (!storyGraph || !storyGraph.nodes[nodeId]) return;
-
-  currentNode = storyGraph.nodes[nodeId];
-  console.log("Now at:", nodeId, currentNode);
-
-  // Load scene HTML into iframe or container
-  const container = document.getElementById("game-container");
-  container.innerHTML = `<iframe src="${currentNode.scene}" class="scene-frame"></iframe>`;
-}
-
-// Handle choice clicks from scene
-function makeChoice(choiceId) {
-  if (!currentNode) return;
-
-  const choice = currentNode.choices?.find(c => c.label === choiceId);
-  if (choice) {
-    goToNode(choice.next);
-  }
-}
-
-// Listen for postMessage from iframes
-window.addEventListener("message", (event) => {
-  if (event.data.choice) {
-    makeChoice(event.data.choice);
-  }
-});
-
-// Export to global scope
-window.loadStory = loadStory;
-window.makeChoice = makeChoice;
+  
+  // --- Initialize Engine ---
+  document.addEventListener("DOMContentLoaded", () => {
+    const engine = new GraphEngine("game-container");
+    engine.loadStory("./stories/stanley.json");
+  });
