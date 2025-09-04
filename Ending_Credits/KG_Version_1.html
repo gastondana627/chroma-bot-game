@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Bleed - Interactive Credits</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a2332 50%, #0f1419 100%);
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        #graph-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 20, 40, 0.9);
+            border: 1px solid #00ffff;
+            padding: 15px;
+            border-radius: 8px;
+            color: #00ffff;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        #info-panel.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .info-title {
+            color: #ff00ff;
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+
+        .info-type {
+            color: #ffff00;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-details {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        #legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 20, 40, 0.9);
+            border: 1px solid #00ffff;
+            padding: 15px;
+            border-radius: 8px;
+            color: #00ffff;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        #title {
+            position: absolute;
+            top: 20px;
+            right: 50%;
+            transform: translateX(50%);
+            color: #00ffff;
+            font-size: 24px;
+            text-shadow: 0 0 20px #00ffff;
+            z-index: 100;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .connection-count {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #00ffff;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="graph-container">
+        <canvas id="canvas"></canvas>
+        <div id="title">DATA BLEED - DEVELOPMENT GRAPH</div>
+        
+        <div id="info-panel">
+            <div class="info-type" id="info-type">NODE TYPE</div>
+            <div class="info-title" id="info-title">Select a node</div>
+            <div class="info-details" id="info-details">Hover over nodes and connections to explore the development network</div>
+        </div>
+
+        <div id="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background-color: #ff00ff; color: #ff00ff;"></div>
+                Team Members
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background-color: #00ffff; color: #00ffff;"></div>
+                Software/Tools
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background-color: #ffff00; color: #ffff00;"></div>
+                Projects/Features
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background-color: #00ff00; color: #00ff00;"></div>
+                Skills/Technologies
+            </div>
+        </div>
+
+        <div class="connection-count">
+            <div>Active Connections: <span id="connection-count">0</span></div>
+            <div>Total Nodes: <span id="node-count">0</span></div>
+        </div>
+    </div>
+
+    <script>
+        class KnowledgeGraph {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.nodes = [];
+                this.edges = [];
+                this.hoveredNode = null;
+                this.selectedNode = null;
+                this.mouse = { x: 0, y: 0 };
+                this.time = 0;
+
+                this.resize();
+                this.initializeData();
+                this.setupEventListeners();
+                this.animate();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.width = this.canvas.width;
+                this.height = this.canvas.height;
+            }
+
+            initializeData() {
+                // Define node types with colors matching the logo
+                const nodeTypes = {
+                    person: { color: '#ff00ff', size: 8 },
+                    software: { color: '#00ffff', size: 6 },
+                    project: { color: '#ffff00', size: 10 },
+                    skill: { color: '#00ff00', size: 5 }
+                };
+
+                // Sample data structure
+                const graphData = {
+                    nodes: [
+                        // Team Members
+                        { id: 'alex_dev', label: 'Alex Chen', type: 'person', role: 'Lead Developer', hours: 1200, details: 'Core engine development, AI systems implementation' },
+                        { id: 'sarah_art', label: 'Sarah Kim', type: 'person', role: 'Art Director', hours: 800, details: 'Visual design, UI/UX, concept art direction' },
+                        { id: 'mike_sound', label: 'Mike Rodriguez', type: 'person', role: 'Sound Designer', hours: 400, details: 'Audio implementation, music composition, sound effects' },
+                        { id: 'jen_qa', label: 'Jennifer Wu', type: 'person', role: 'QA Lead', hours: 600, details: 'Quality assurance, bug testing, user experience testing' },
+                        
+                        // Software/Tools
+                        { id: 'unity', label: 'Unity Engine', type: 'software', version: '2023.1', details: 'Primary game engine for development' },
+                        { id: 'blender', label: 'Blender', type: 'software', version: '4.0', details: '3D modeling and animation software' },
+                        { id: 'photoshop', label: 'Adobe Photoshop', type: 'software', version: 'CC 2024', details: 'Texture creation and image editing' },
+                        { id: 'neo4j', label: 'Neo4j', type: 'software', version: '5.0', details: 'Graph database for game knowledge systems' },
+                        { id: 'github', label: 'GitHub', type: 'software', details: 'Version control and project management' },
+                        { id: 'jira', label: 'Jira', type: 'software', details: 'Task tracking and team coordination' },
+                        { id: 'audacity', label: 'Audacity', type: 'software', details: 'Audio editing and processing' },
+                        
+                        // Projects/Features
+                        { id: 'core_engine', label: 'Core Engine', type: 'project', hours: 2000, details: 'Main game engine and framework development' },
+                        { id: 'ai_system', label: 'AI System', type: 'project', hours: 800, details: 'NPC behavior and decision-making algorithms' },
+                        { id: 'ui_system', label: 'UI System', type: 'project', hours: 600, details: 'User interface design and implementation' },
+                        { id: 'audio_engine', label: 'Audio Engine', type: 'project', hours: 400, details: 'Sound processing and music integration' },
+                        { id: 'data_visualization', label: 'Data Visualization', type: 'project', hours: 300, details: 'Knowledge graph and data representation systems' },
+                        
+                        // Skills/Technologies
+                        { id: 'csharp', label: 'C#', type: 'skill', details: 'Primary programming language' },
+                        { id: 'javascript', label: 'JavaScript', type: 'skill', details: 'Web integration and tools' },
+                        { id: 'python', label: 'Python', type: 'skill', details: 'Data processing and automation scripts' },
+                        { id: 'glsl', label: 'GLSL', type: 'skill', details: 'Shader programming for visual effects' },
+                        { id: 'cypher', label: 'Cypher', type: 'skill', details: 'Neo4j query language for graph databases' }
+                    ],
+                    edges: [
+                        // Person to Software relationships
+                        { source: 'alex_dev', target: 'unity', relationship: 'USES', strength: 0.9 },
+                        { source: 'alex_dev', target: 'github', relationship: 'MANAGES', strength: 0.8 },
+                        { source: 'alex_dev', target: 'neo4j', relationship: 'IMPLEMENTS', strength: 0.7 },
+                        { source: 'sarah_art', target: 'photoshop', relationship: 'MASTERS', strength: 0.9 },
+                        { source: 'sarah_art', target: 'blender', relationship: 'USES', strength: 0.8 },
+                        { source: 'mike_sound', target: 'audacity', relationship: 'USES', strength: 0.9 },
+                        { source: 'jen_qa', target: 'jira', relationship: 'COORDINATES', strength: 0.8 },
+                        
+                        // Person to Project relationships
+                        { source: 'alex_dev', target: 'core_engine', relationship: 'LEADS', strength: 1.0 },
+                        { source: 'alex_dev', target: 'ai_system', relationship: 'DEVELOPS', strength: 0.9 },
+                        { source: 'alex_dev', target: 'data_visualization', relationship: 'ARCHITECTS', strength: 0.8 },
+                        { source: 'sarah_art', target: 'ui_system', relationship: 'DESIGNS', strength: 1.0 },
+                        { source: 'mike_sound', target: 'audio_engine', relationship: 'BUILDS', strength: 1.0 },
+                        { source: 'jen_qa', target: 'core_engine', relationship: 'TESTS', strength: 0.7 },
+                        { source: 'jen_qa', target: 'ui_system', relationship: 'VALIDATES', strength: 0.8 },
+                        
+                        // Person to Skill relationships
+                        { source: 'alex_dev', target: 'csharp', relationship: 'EXPERT', strength: 1.0 },
+                        { source: 'alex_dev', target: 'python', relationship: 'PROFICIENT', strength: 0.8 },
+                        { source: 'alex_dev', target: 'cypher', relationship: 'LEARNS', strength: 0.6 },
+                        { source: 'sarah_art', target: 'glsl', relationship: 'APPLIES', strength: 0.7 },
+                        { source: 'sarah_art', target: 'javascript', relationship: 'USES', strength: 0.6 },
+                        
+                        // Software to Project relationships
+                        { source: 'unity', target: 'core_engine', relationship: 'POWERS', strength: 1.0 },
+                        { source: 'neo4j', target: 'data_visualization', relationship: 'ENABLES', strength: 0.9 },
+                        { source: 'blender', target: 'ui_system', relationship: 'CREATES_ASSETS', strength: 0.7 },
+                        
+                        // Cross-team collaborations
+                        { source: 'alex_dev', target: 'sarah_art', relationship: 'COLLABORATES', strength: 0.8 },
+                        { source: 'sarah_art', target: 'mike_sound', relationship: 'COORDINATES', strength: 0.6 },
+                        { source: 'jen_qa', target: 'alex_dev', relationship: 'REPORTS_TO', strength: 0.7 }
+                    ]
+                };
+
+                // Convert to nodes and edges with positions
+                this.nodes = graphData.nodes.map((node, i) => {
+                    const angle = (i / graphData.nodes.length) * Math.PI * 2;
+                    const radius = Math.min(this.width, this.height) * 0.3;
+                    return {
+                        ...node,
+                        x: this.width/2 + Math.cos(angle) * radius + (Math.random() - 0.5) * 100,
+                        y: this.height/2 + Math.sin(angle) * radius + (Math.random() - 0.5) * 100,
+                        vx: 0,
+                        vy: 0,
+                        ...nodeTypes[node.type]
+                    };
+                });
+
+                this.edges = graphData.edges.map(edge => ({
+                    ...edge,
+                    sourceNode: this.nodes.find(n => n.id === edge.source),
+                    targetNode: this.nodes.find(n => n.id === edge.target)
+                }));
+
+                document.getElementById('node-count').textContent = this.nodes.length;
+            }
+
+            setupEventListeners() {
+                this.canvas.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                    this.updateHover();
+                });
+
+                this.canvas.addEventListener('click', (e) => {
+                    if (this.hoveredNode) {
+                        this.selectedNode = this.hoveredNode;
+                        this.updateInfoPanel();
+                    }
+                });
+
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            updateHover() {
+                let closestNode = null;
+                let minDistance = 30; // Hover threshold
+
+                this.nodes.forEach(node => {
+                    const dx = this.mouse.x - node.x;
+                    const dy = this.mouse.y - node.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestNode = node;
+                    }
+                });
+
+                this.hoveredNode = closestNode;
+                this.canvas.style.cursor = closestNode ? 'pointer' : 'crosshair';
+                
+                if (closestNode) {
+                    this.updateInfoPanel();
+                }
+            }
+
+            updateInfoPanel() {
+                const panel = document.getElementById('info-panel');
+                const node = this.hoveredNode || this.selectedNode;
+                
+                if (!node) {
+                    panel.classList.remove('active');
+                    return;
+                }
+
+                panel.classList.add('active');
+                document.getElementById('info-type').textContent = node.type.toUpperCase();
+                document.getElementById('info-title').textContent = node.label;
+                
+                let details = node.details || '';
+                if (node.role) details = `${node.role} - ${details}`;
+                if (node.hours) details += `\n\nHours contributed: ${node.hours}`;
+                if (node.version) details += `\nVersion: ${node.version}`;
+                
+                document.getElementById('info-details').textContent = details;
+
+                // Count active connections
+                const connections = this.edges.filter(edge => 
+                    edge.sourceNode === node || edge.targetNode === node
+                ).length;
+                
+                document.getElementById('connection-count').textContent = connections;
+            }
+
+            applyForces() {
+                // Simple force simulation
+                this.nodes.forEach(node => {
+                    node.vx *= 0.8; // Damping
+                    node.vy *= 0.8;
+
+                    // Repulsion from other nodes
+                    this.nodes.forEach(other => {
+                        if (node !== other) {
+                            const dx = node.x - other.x;
+                            const dy = node.y - other.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy) + 0.1;
+                            const force = 500 / (distance * distance);
+                            
+                            node.vx += (dx / distance) * force;
+                            node.vy += (dy / distance) * force;
+                        }
+                    });
+
+                    // Attraction from connected nodes
+                    this.edges.forEach(edge => {
+                        if (edge.sourceNode === node) {
+                            const dx = edge.targetNode.x - node.x;
+                            const dy = edge.targetNode.y - node.y;
+                            const force = 0.01 * edge.strength;
+                            
+                            node.vx += dx * force;
+                            node.vy += dy * force;
+                        }
+                        if (edge.targetNode === node) {
+                            const dx = edge.sourceNode.x - node.x;
+                            const dy = edge.sourceNode.y - node.y;
+                            const force = 0.01 * edge.strength;
+                            
+                            node.vx += dx * force;
+                            node.vy += dy * force;
+                        }
+                    });
+
+                    // Center attraction
+                    const centerForce = 0.0005;
+                    node.vx += (this.width/2 - node.x) * centerForce;
+                    node.vy += (this.height/2 - node.y) * centerForce;
+
+                    // Update positions
+                    node.x += node.vx;
+                    node.y += node.vy;
+
+                    // Boundary constraints
+                    const margin = 50;
+                    if (node.x < margin) { node.x = margin; node.vx = 0; }
+                    if (node.x > this.width - margin) { node.x = this.width - margin; node.vx = 0; }
+                    if (node.y < margin) { node.y = margin; node.vy = 0; }
+                    if (node.y > this.height - margin) { node.y = this.height - margin; node.vy = 0; }
+                });
+            }
+
+            drawEdges() {
+                this.edges.forEach(edge => {
+                    const alpha = edge.strength * 0.6;
+                    const isHighlighted = this.hoveredNode && 
+                        (edge.sourceNode === this.hoveredNode || edge.targetNode === this.hoveredNode);
+
+                    this.ctx.save();
+                    this.ctx.globalAlpha = isHighlighted ? 1.0 : alpha;
+                    this.ctx.strokeStyle = isHighlighted ? '#ffffff' : '#00ffff';
+                    this.ctx.lineWidth = isHighlighted ? 2 : 1;
+                    
+                    // Add slight curve to edges
+                    const dx = edge.targetNode.x - edge.sourceNode.x;
+                    const dy = edge.targetNode.y - edge.sourceNode.y;
+                    const midX = (edge.sourceNode.x + edge.targetNode.x) / 2 + dy * 0.1;
+                    const midY = (edge.sourceNode.y + edge.targetNode.y) / 2 - dx * 0.1;
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(edge.sourceNode.x, edge.sourceNode.y);
+                    this.ctx.quadraticCurveTo(midX, midY, edge.targetNode.x, edge.targetNode.y);
+                    this.ctx.stroke();
+
+                    // Draw relationship label for highlighted edges
+                    if (isHighlighted) {
+                        this.ctx.fillStyle = '#ffffff';
+                        this.ctx.font = '10px Courier New';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillText(edge.relationship, midX, midY - 5);
+                    }
+                    
+                    this.ctx.restore();
+                });
+            }
+
+            drawNodes() {
+                this.nodes.forEach(node => {
+                    const isHovered = node === this.hoveredNode;
+                    const isSelected = node === this.selectedNode;
+                    const pulseEffect = Math.sin(this.time * 0.005) * 0.3 + 0.7;
+
+                    this.ctx.save();
+
+                    // Outer glow effect
+                    const glowSize = isHovered ? node.size * 3 : node.size * 1.5;
+                    const gradient = this.ctx.createRadialGradient(
+                        node.x, node.y, 0,
+                        node.x, node.y, glowSize
+                    );
+                    gradient.addColorStop(0, node.color + '80');
+                    gradient.addColorStop(1, node.color + '00');
+                    
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(node.x, node.y, glowSize, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Main node
+                    this.ctx.fillStyle = node.color;
+                    this.ctx.globalAlpha = isSelected ? 1.0 : pulseEffect;
+                    this.ctx.beginPath();
+                    this.ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Node border
+                    this.ctx.strokeStyle = isHovered ? '#ffffff' : node.color;
+                    this.ctx.lineWidth = isHovered ? 2 : 1;
+                    this.ctx.globalAlpha = 1.0;
+                    this.ctx.stroke();
+
+                    // Label
+                    if (isHovered || isSelected) {
+                        this.ctx.fillStyle = '#ffffff';
+                        this.ctx.font = '12px Courier New';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillText(node.label, node.x, node.y - node.size - 8);
+                    }
+
+                    this.ctx.restore();
+                });
+            }
+
+            animate() {
+                this.time += 16;
+                
+                // Clear canvas with fade effect
+                this.ctx.fillStyle = 'rgba(10, 15, 28, 0.1)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                // Apply physics
+                this.applyForces();
+
+                // Draw graph
+                this.drawEdges();
+                this.drawNodes();
+
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Initialize the knowledge graph
+        new KnowledgeGraph();
+    </script>
+</body>
+</html>

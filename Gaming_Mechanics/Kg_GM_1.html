@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Bleed - 3D Credits Experience</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #1a2332 0%, #0a0f1c 70%, #000000 100%);
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00ffff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s ease;
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        #custom-cursor.active {
+            width: 40px;
+            height: 40px;
+            border-color: #ff00ff;
+            box-shadow: 0 0 30px #ff00ff;
+        }
+
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        #title-bar {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+        }
+
+        .main-title {
+            font-size: 28px;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            letter-spacing: 1px;
+        }
+
+        #info-display {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(255, 0, 255, 0.1) 100%);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        #info-display.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .info-name {
+            font-size: 20px;
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+
+        .info-role {
+            font-size: 12px;
+            color: #ffff00;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-details {
+            font-size: 14px;
+            color: #ffffff;
+            line-height: 1.4;
+        }
+
+        .info-stats {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            text-align: right;
+        }
+
+        .stat-item {
+            font-size: 12px;
+            color: #00ff00;
+            margin-bottom: 5px;
+        }
+
+        #controls {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            color: #888;
+            font-size: 12px;
+            text-align: right;
+        }
+
+        .control-item {
+            margin-bottom: 5px;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #particle-count {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            color: #00ffff;
+            font-size: 12px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="canvas"></canvas>
+        <div id="custom-cursor"></div>
+        
+        <div id="hud">
+            <div id="title-bar">
+                <div class="main-title">DATA BLEED</div>
+                <div class="subtitle">INTERACTIVE DEVELOPMENT CREDITS</div>
+            </div>
+
+            <div id="controls">
+                <div class="control-item">MOUSE: Navigate & Interact</div>
+                <div class="control-item">CLICK: Select Particle</div>
+                <div class="control-item">HOLD: Attract Particles</div>
+            </div>
+
+            <div id="info-display">
+                <div class="info-header">
+                    <div class="info-name" id="selected-name">Select a particle to view details</div>
+                    <div class="info-role" id="selected-role">CONTRIBUTOR</div>
+                </div>
+                <div class="info-details" id="selected-details">
+                    Move your cursor through the particle field to discover team members, tools, and project components that made Data Bleed possible.
+                </div>
+                <div class="info-stats">
+                    <div class="stat-item">Hours: <span id="selected-hours">--</span></div>
+                    <div class="stat-item">Type: <span id="selected-type">--</span></div>
+                    <div class="stat-item">Impact: <span id="selected-impact">--</span></div>
+                </div>
+            </div>
+
+            <div id="particle-count">
+                <div>Active Particles: <span id="count">0</span></div>
+                <div>Interactions: <span id="interactions">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Particle3DCredits {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.mouse = { x: 0, y: 0, pressed: false };
+                this.selectedParticle = null;
+                this.time = 0;
+                this.interactionCount = 0;
+
+                this.resize();
+                this.initializeParticles();
+                this.setupEventListeners();
+                this.animate();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.width = this.canvas.width;
+                this.height = this.canvas.height;
+            }
+
+            initializeParticles() {
+                const credits = [
+                    // Core Team
+                    { name: 'Alex Chen', role: 'Lead Developer', type: 'PERSON', hours: 1200, impact: 95, 
+                      details: 'Architected the core engine systems, implemented data visualization frameworks, and led the technical vision for Data Bleed.' },
+                    { name: 'Sarah Kim', role: 'Art Director', type: 'PERSON', hours: 900, impact: 90, 
+                      details: 'Created the distinctive cyberpunk visual identity, designed UI systems, and directed all artistic elements.' },
+                    { name: 'Mike Rodriguez', role: 'Sound Designer', type: 'PERSON', hours: 450, impact: 75, 
+                      details: 'Composed atmospheric soundscapes, designed interactive audio systems, and created immersive sound effects.' },
+                    { name: 'Jennifer Wu', role: 'QA Lead', type: 'PERSON', hours: 600, impact: 80, 
+                      details: 'Established testing protocols, managed bug tracking systems, and ensured quality across all builds.' },
+                    { name: 'David Park', role: 'Backend Developer', type: 'PERSON', hours: 800, impact: 85, 
+                      details: 'Built robust server architecture, implemented Neo4j integrations, and optimized data processing pipelines.' },
+
+                    // Tools & Software
+                    { name: 'Unity 2023.1', role: 'Game Engine', type: 'SOFTWARE', hours: 2000, impact: 100, 
+                      details: 'Primary development platform providing rendering, physics, and cross-platform deployment capabilities.' },
+                    { name: 'Neo4j Database', role: 'Graph Database', type: 'SOFTWARE', hours: 300, impact: 85, 
+                      details: 'Powers the knowledge graph systems, relationship mapping, and dynamic data visualization features.' },
+                    { name: 'Blender 4.0', role: '3D Software', type: 'SOFTWARE', hours: 400, impact: 70, 
+                      details: 'Used for 3D asset creation, animation pipelines, and procedural modeling workflows.' },
+                    { name: 'Adobe Creative Suite', role: 'Design Tools', type: 'SOFTWARE', hours: 500, impact: 80, 
+                      details: 'Essential for texture creation, UI design, marketing materials, and visual asset production.' },
+                    { name: 'GitHub Enterprise', role: 'Version Control', type: 'SOFTWARE', hours: 1500, impact: 90, 
+                      details: 'Managed source code, facilitated team collaboration, and maintained project history.' },
+
+                    // Project Components
+                    { name: 'Core Engine', role: 'System Architecture', type: 'PROJECT', hours: 1800, impact: 100, 
+                      details: 'The fundamental framework powering all game systems, rendering pipelines, and data processing.' },
+                    { name: 'AI Behavior System', role: 'Intelligence Framework', type: 'PROJECT', hours: 600, impact: 85, 
+                      details: 'Advanced NPC decision-making, dynamic story adaptation, and emergent gameplay behaviors.' },
+                    { name: 'Data Visualization', role: 'Knowledge Graphs', type: 'PROJECT', hours: 400, impact: 95, 
+                      details: 'Interactive graph systems for displaying relationships, credits, and narrative connections.' },
+                    { name: 'Audio Engine', role: 'Sound Processing', type: 'PROJECT', hours: 350, impact: 75, 
+                      details: 'Dynamic audio mixing, spatial sound processing, and interactive music composition systems.' },
+                    { name: 'UI Framework', role: 'Interface System', type: 'PROJECT', hours: 500, impact: 80, 
+                      details: 'Modular interface components, responsive design systems, and accessibility features.' },
+
+                    // Technologies
+                    { name: 'C# Programming', role: 'Primary Language', type: 'TECHNOLOGY', hours: 2500, impact: 100, 
+                      details: 'Main development language for game logic, system architecture, and performance-critical code.' },
+                    { name: 'HLSL Shaders', role: 'Graphics Programming', type: 'TECHNOLOGY', hours: 300, impact: 85, 
+                      details: 'Custom visual effects, post-processing pipelines, and advanced rendering techniques.' },
+                    { name: 'Cypher Queries', role: 'Graph Language', type: 'TECHNOLOGY', hours: 150, impact: 70, 
+                      details: 'Database queries for relationship mapping, data analysis, and dynamic content generation.' },
+                    { name: 'Python Automation', role: 'Build Tools', type: 'TECHNOLOGY', hours: 200, impact: 60, 
+                      details: 'Automated build processes, data conversion scripts, and development workflow optimization.' }
+                ];
+
+                this.particles = credits.map((credit, i) => {
+                    const colors = {
+                        'PERSON': '#ff00ff',
+                        'SOFTWARE': '#00ffff', 
+                        'PROJECT': '#ffff00',
+                        'TECHNOLOGY': '#00ff00'
+                    };
+
+                    return {
+                        ...credit,
+                        x: Math.random() * this.width,
+                        y: Math.random() * this.height,
+                        z: Math.random() * 500 - 250,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        vz: (Math.random() - 0.5) * 2,
+                        color: colors[credit.type] || '#ffffff',
+                        baseSize: Math.max(3, credit.impact / 20),
+                        size: Math.max(3, credit.impact / 20),
+                        alpha: 1,
+                        targetAlpha: 1,
+                        connections: []
+                    };
+                });
+
+                // Create some connections between related particles
+                this.createConnections();
+                document.getElementById('count').textContent = this.particles.length;
+            }
+
+            createConnections() {
+                // Connect people to their primary tools and projects
+                const connections = [
+                    ['Alex Chen', 'Unity 2023.1'], ['Alex Chen', 'Core Engine'], ['Alex Chen', 'C# Programming'],
+                    ['Sarah Kim', 'Adobe Creative Suite'], ['Sarah Kim', 'UI Framework'], ['Sarah Kim', 'Blender 4.0'],
+                    ['Mike Rodriguez', 'Audio Engine'], ['David Park', 'Neo4j Database'], ['David Park', 'Cypher Queries'],
+                    ['Jennifer Wu', 'GitHub Enterprise'], ['Core Engine', 'C# Programming'], ['Data Visualization', 'Neo4j Database']
+                ];
+
+                connections.forEach(([source, target]) => {
+                    const sourceParticle = this.particles.find(p => p.name === source);
+                    const targetParticle = this.particles.find(p => p.name === target);
+                    
+                    if (sourceParticle && targetParticle) {
+                        sourceParticle.connections.push(targetParticle);
+                        targetParticle.connections.push(sourceParticle);
+                    }
+                });
+            }
+
+            setupEventListeners() {
+                const cursor = document.getElementById('custom-cursor');
+
+                document.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                    
+                    cursor.style.left = e.clientX + 'px';
+                    cursor.style.top = e.clientY + 'px';
+
+                    this.updateHover();
+                });
+
+                document.addEventListener('mousedown', () => {
+                    this.mouse.pressed = true;
+                    cursor.classList.add('active');
+                });
+
+                document.addEventListener('mouseup', () => {
+                    this.mouse.pressed = false;
+                    cursor.classList.remove('active');
+                    
+                    if (this.hoveredParticle) {
+                        this.selectParticle(this.hoveredParticle);
+                    }
+                });
+
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            updateHover() {
+                let closestParticle = null;
+                let minDistance = 50;
+
+                this.particles.forEach(particle => {
+                    const dx = this.mouse.x - particle.x;
+                    const dy = this.mouse.y - particle.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestParticle = particle;
+                    }
+                });
+
+                this.hoveredParticle = closestParticle;
+            }
+
+            selectParticle(particle) {
+                this.selectedParticle = particle;
+                this.interactionCount++;
+                
+                const infoDisplay = document.getElementById('info-display');
+                infoDisplay.classList.add('active');
+
+                document.getElementById('selected-name').textContent = particle.name;
+                document.getElementById('selected-role').textContent = particle.role;
+                document.getElementById('selected-details').textContent = particle.details;
+                document.getElementById('selected-hours').textContent = particle.hours;
+                document.getElementById('selected-type').textContent = particle.type;
+                document.getElementById('selected-impact').textContent = particle.impact + '%';
+                document.getElementById('interactions').textContent = this.interactionCount;
+            }
+
+            updateParticles() {
+                this.particles.forEach(particle => {
+                    // Apply forces
+                    if (this.mouse.pressed && this.hoveredParticle === particle) {
+                        const dx = this.mouse.x - particle.x;
+                        const dy = this.mouse.y - particle.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance > 0) {
+                            particle.vx += (dx / distance) * 0.5;
+                            particle.vy += (dy / distance) * 0.5;
+                        }
+                    } else {
+                        // Mouse attraction when near
+                        const dx = this.mouse.x - particle.x;
+                        const dy = this.mouse.y - particle.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 100) {
+                            const force = (100 - distance) / 1000;
+                            particle.vx += (dx / distance) * force;
+                            particle.vy += (dy / distance) * force;
+                        }
+                    }
+
+                    // Connection forces
+                    particle.connections.forEach(connected => {
+                        const dx = connected.x - particle.x;
+                        const dy = connected.y - particle.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const idealDistance = 80;
+                        
+                        if (distance > idealDistance) {
+                            const force = (distance - idealDistance) / 2000;
+                            particle.vx += (dx / distance) * force;
+                            particle.vy += (dy / distance) * force;
+                        }
+                    });
+
+                    // Gentle drift
+                    particle.vx += (Math.random() - 0.5) * 0.1;
+                    particle.vy += (Math.random() - 0.5) * 0.1;
+                    particle.vz += (Math.random() - 0.5) * 0.1;
+
+                    // Apply velocity
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.z += particle.vz;
+
+                    // Damping
+                    particle.vx *= 0.98;
+                    particle.vy *= 0.98;
+                    particle.vz *= 0.98;
+
+                    // 3D rotation effect
+                    const rotationSpeed = 0.001;
+                    const centerX = this.width / 2;
+                    const centerY = this.height / 2;
+                    
+                    particle.z += Math.sin(this.time * rotationSpeed + particle.x * 0.01) * 0.5;
+
+                    // Boundaries with wrapping
+                    if (particle.x < -50) particle.x = this.width + 50;
+                    if (particle.x > this.width + 50) particle.x = -50;
+                    if (particle.y < -50) particle.y = this.height + 50;
+                    if (particle.y > this.height + 50) particle.y = -50;
+                    if (particle.z < -300) particle.z = 300;
+                    if (particle.z > 300) particle.z = -300;
+
+                    // Update visual properties
+                    const isHovered = particle === this.hoveredParticle;
+                    const isSelected = particle === this.selectedParticle;
+                    
+                    particle.targetAlpha = isHovered || isSelected ? 1.0 : 0.7;
+                    particle.alpha += (particle.targetAlpha - particle.alpha) * 0.1;
+                    
+                    // Size based on Z depth
+                    const depthScale = (particle.z + 300) / 600;
+                    particle.size = particle.baseSize * (0.5 + depthScale * 0.5);
+                    
+                    if (isHovered) particle.size *= 1.5;
+                    if (isSelected) particle.size *= 1.2;
+                });
+            }
+
+            drawConnections() {
+                this.particles.forEach(particle => {
+                    if (particle === this.hoveredParticle || particle === this.selectedParticle) {
+                        particle.connections.forEach(connected => {
+                            const alpha = Math.min(particle.alpha, connected.alpha) * 0.5;
+                            
+                            this.ctx.save();
+                            this.ctx.globalAlpha = alpha;
+                            this.ctx.strokeStyle = '#ffffff';
+                            this.ctx.lineWidth = 1;
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(particle.x, particle.y);
+                            this.ctx.lineTo(connected.x, connected.y);
+                            this.ctx.stroke();
+                            this.ctx.restore();
+                        });
+                    }
+                });
+            }
+
+            drawParticles() {
+                // Sort by Z depth
+                const sortedParticles = [...this.particles].sort((a, b) => a.z - b.z);
+
+                sortedParticles.forEach(particle => {
+                    const isHovered = particle === this.hoveredParticle;
+                    const isSelected = particle === this.selectedParticle;
+
+                    this.ctx.save();
+                    this.ctx.globalAlpha = particle.alpha;
+
+                    // Outer glow
+                    const glowSize = particle.size * 2.5;
+                    const gradient = this.ctx.createRadialGradient(
+                        particle.x, particle.y, 0,
+                        particle.x, particle.y, glowSize
+                    );
+                    gradient.addColorStop(0, particle.color + '60');
+                    gradient.addColorStop(1, particle.color + '00');
+                    
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, glowSize, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Core particle
+                    this.ctx.fillStyle = particle.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    // Border for hovered/selected
+                    if (isHovered || isSelected) {
+                        this.ctx.strokeStyle = '#ffffff';
+                        this.ctx.lineWidth = isSelected ? 3 : 2;
+                        this.ctx.stroke();
+                    }
+
+                    // Label for hovered particles
+                    if (isHovered) {
+                        this.ctx.fillStyle = '#ffffff';
+                        this.ctx.font = '12px Courier New';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillText(particle.name, particle.x, particle.y - particle.size - 15);
+                        
+                        this.ctx.font = '10px Courier New';
+                        this.ctx.fillStyle = particle.color;
+                        this.ctx.fillText(particle.role, particle.x, particle.y - particle.size - 5);
+                    }
+
+                    this.ctx.restore();
+                });
+            }
+
+            animate() {
+                this.time += 16;
+
+                // Clear with fade
+                this.ctx.fillStyle = 'rgba(10, 15, 28, 0.05)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                this.updateParticles();
+                this.drawConnections();
+                this.drawParticles();
+
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        new Particle3DCredits();
+    </script>
+</body>
+</html>
