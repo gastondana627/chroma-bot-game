@@ -1,0 +1,56 @@
+/* --- Base Theme (default, dark neon) --- */
+:root {
+    --bg-color: #000;
+    --text-color: #fff;
+    --accent: #00FFFF;
+    --warning: #FF0080;
+    --font-main: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  
+  body {
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-main);
+    margin: 0;
+    overflow-x: hidden;
+  }
+  
+  /* --- Maya Theme --- */
+  body.maya {
+    --accent: #00FFFF;
+    --warning: #FF69B4;
+    background: radial-gradient(circle at center, #0a0a0a, #111);
+  }
+  
+  /* --- Eli Theme --- */
+  body.eli {
+    --accent: #FF4500;
+    --warning: #FFD700;
+    background: radial-gradient(circle at center, #0f0f0f, #220000);
+  }
+  
+  /* --- Stanley Theme --- */
+  body.stanley {
+    --accent: #32CD32;
+    --warning: #8B0000;
+    background: radial-gradient(circle at center, #050505, #1a1a1a);
+  }
+  
+  /* Buttons + Interactive Elements */
+  button, .choice-btn {
+    background: var(--accent);
+    border: none;
+    color: #000;
+    font-weight: bold;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  button:hover, .choice-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px var(--accent);
+  }

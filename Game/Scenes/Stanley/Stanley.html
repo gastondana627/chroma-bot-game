@@ -1,0 +1,53 @@
+{
+    "character": "stanley",
+    "theme": {
+      "color": "#1f2937",
+      "music": "./Main_Login_Audio/Stanley_The_Digital_Doppelganger.mp3"
+    },
+    "nodes": {
+      "S1": {
+        "scene": "/game/scenes/stanley/S1.html",
+        "choices": [
+          { "label": "Log In", "next": "S2" }
+        ]
+      },
+      "S2": {
+        "scene": "/game/scenes/stanley/S2.html",
+        "choices": [
+          { "label": "Accept Request", "next": "FailS2" },
+          { "label": "Ignore", "next": "S3" }
+        ]
+      },
+      "S3": {
+        "scene": "/game/scenes/stanley/S3.html",
+        "choices": [
+          { "label": "Block User + Enter 2FA", "next": "S4" }
+        ]
+      },
+      "S4": {
+        "scene": "/game/scenes/stanley/S4.html",
+        "choices": [
+          { "label": "Continue", "next": "S5" }
+        ]
+      },
+      "S5": {
+        "scene": "/game/scenes/stanley/S5.html",
+        "choices": [
+          { "label": "Reply", "next": "FailS5" },
+          { "label": "Ignore", "next": "S6" }
+        ]
+      },
+      "S6": {
+        "scene": "/game/scenes/stanley/S6.html",
+        "end": "success"
+      },
+      "FailS2": {
+        "scene": "/game/scenes/stanley/S2_fail.html",
+        "end": "failure"
+      },
+      "FailS5": {
+        "scene": "/game/scenes/stanley/S5_fail.html",
+        "end": "failure"
+      }
+    }
+  }
