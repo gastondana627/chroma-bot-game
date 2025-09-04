@@ -1,0 +1,637 @@
+renderEffects() {
+    // Ambient particles (screen space, unaffected by camera)
+    const time = Date.now() * 0.001;
+    for (let i = 0; i < 15; i++) {
+        const x = (Math.sin(time + i) * 0.5 + 0.5) * this.canvas.width;
+        const y = (Math.cos(time * 0.7 + i) * 0.5 + 0.5) * this.canvas.height;
+        
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, 1, 0, Math.PI * 2);
+        this.ctx.fillStyle = `rgba(0, 255, 255, ${0.2 + Math.sin(time * 2 + i) * 0.1})`;
+        this.ctx.fill();
+    }
+}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Bleed: Knowledge Graph</title>
+<style>
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+background: linear-gradient(135deg, #0a0f1c 0%, #1a2332 50%, #0f1a2e 100%);
+font-family: 'Courier New', monospace;
+color: #00ffff;
+overflow: hidden;
+height: 100vh;
+}
+
+.game-container {
+position: relative;
+width: 100%;
+height: 100%;
+}
+
+.hud {
+position: fixed;
+top: 20px;
+left: 20px;
+z-index: 1000;
+background: rgba(10, 15, 28, 0.9);
+padding: 15px;
+border: 2px solid #00ffff;
+border-radius: 8px;
+box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.hud h3 {
+color: #ff00ff;
+margin-bottom: 10px;
+text-transform: uppercase;
+letter-spacing: 2px;
+}
+
+.stat {
+display: flex;
+justify-content: space-between;
+margin: 5px 0;
+min-width: 200px;
+}
+
+.stat-label {
+color: #00ffff;
+}
+
+.stat-value {
+color: #ffff00;
+font-weight: bold;
+}
+
+.network-canvas {
+width: 100%;
+height: 100%;
+cursor: crosshair;
+}
+
+.info-panel {
+position: fixed;
+bottom: 20px;
+right: 20px;
+width: 300px;
+background: rgba(10, 15, 28, 0.95);
+border: 2px solid #ff00ff;
+border-radius: 8px;
+padding: 20px;
+transform: translateY(100%);
+transition: transform 0.3s ease;
+z-index: 1000;
+}
+
+.info-panel.active {
+transform: translateY(0);
+}
+
+.info-title {
+color: #ff00ff;
+font-size: 18px;
+margin-bottom: 10px;
+text-transform: uppercase;
+}
+
+.info-description {
+color: #00ffff;
+line-height: 1.4;
+margin-bottom: 15px;
+}
+
+.connections {
+color: #ffff00;
+font-size: 12px;
+}
+
+.controls {
+position: fixed;
+bottom: 20px;
+left: 20px;
+background: rgba(10, 15, 28, 0.9);
+padding: 15px;
+border: 2px solid #ffff00;
+border-radius: 8px;
+color: #ffff00;
+}
+
+.control {
+margin: 5px 0;
+font-size: 12px;
+}
+
+.pulse {
+animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.5; }
+}
+
+.discovered {
+filter: brightness(1.5);
+}
+
+.locked {
+opacity: 0.3;
+}
+
+.notification {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background: rgba(255, 0, 255, 0.9);
+color: white;
+padding: 20px;
+border-radius: 8px;
+font-size: 18px;
+z-index: 2000;
+opacity: 0;
+transition: opacity 0.3s ease;
+}
+
+.notification.show {
+opacity: 1;
+}
+</style>
+</head>
+<body>
+<div class="game-container">
+<!-- HUD -->
+<div class="hud">
+<h3>Data Bleed</h3>
+<div class="stat">
+    <span class="stat-label">Nodes Discovered:</span>
+    <span class="stat-value" id="discovered-count">1</span>
+</div>
+<div class="stat">
+    <span class="stat-label">Connections:</span>
+    <span class="stat-value" id="connection-count">0</span>
+</div>
+<div class="stat">
+    <span class="stat-label">Knowledge:</span>
+    <span class="stat-value" id="knowledge-points">0</span>
+</div>
+<div class="stat">
+    <span class="stat-label">Depth Level:</span>
+    <span class="stat-value" id="depth-level">1</span>
+</div>
+</div>
+
+<!-- Network Canvas -->
+<canvas id="networkCanvas" class="network-canvas"></canvas>
+
+<!-- Info Panel -->
+<div class="info-panel" id="infoPanel">
+<div class="info-title" id="nodeTitle">Select a Node</div>
+<div class="info-description" id="nodeDescription">
+    Click on nodes to discover their secrets and unlock new connections in the network.
+</div>
+<div class="connections" id="nodeConnections"></div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+<div class="control">🖱️ Click: Discover Node</div>
+<div class="control">🔍 Hover: Preview Info</div>
+<div class="control">⚡ Discover connections to unlock deeper layers</div>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification"></div>
+</div>
+
+<script>
+class KnowledgeGraph {
+constructor() {
+    this.canvas = document.getElementById('networkCanvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.nodes = new Map();
+    this.edges = [];
+    this.discoveredNodes = new Set();
+    this.selectedNode = null;
+    this.knowledgePoints = 0;
+    this.depthLevel = 1;
+    
+    this.setupCanvas();
+    this.initializeNetwork();
+    this.setupEventListeners();
+    this.gameLoop();
+}
+
+setupCanvas() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+    
+    window.addEventListener('resize', () => {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    });
+}
+
+initializeNetwork() {
+    // Create initial network structure
+    const centerX = this.canvas.width / 2;
+    const centerY = this.canvas.height / 2;
+    
+    // Core node (always discovered)
+    this.addNode('core', 'System Core', centerX, centerY, {
+        type: 'core',
+        discovered: true,
+        description: 'The central hub of the Data Bleed network. All paths lead here.',
+        connections: ['security', 'data', 'ai', 'network']
+    });
+    
+    // Layer 1 nodes
+    this.addNode('security', 'Security Protocols', centerX - 200, centerY - 150, {
+        type: 'security',
+        discovered: false,
+        description: 'Encrypted security measures protecting the network infrastructure.',
+        connections: ['firewall', 'encryption', 'access']
+    });
+    
+    this.addNode('data', 'Data Streams', centerX + 200, centerY - 150, {
+        type: 'data',
+        discovered: false,
+        description: 'Flow of information through the network pathways.',
+        connections: ['storage', 'processing', 'analytics']
+    });
+    
+    this.addNode('ai', 'AI Consciousness', centerX - 200, centerY + 150, {
+        type: 'ai',
+        discovered: false,
+        description: 'Emerging artificial intelligence patterns within the system.',
+        connections: ['learning', 'adaptation', 'emergence']
+    });
+    
+    this.addNode('network', 'Network Topology', centerX + 200, centerY + 150, {
+        type: 'network',
+        discovered: false,
+        description: 'The underlying structure connecting all system components.',
+        connections: ['routing', 'protocols', 'bandwidth']
+    });
+    
+    // Layer 2 nodes (hidden initially)
+    this.addHiddenNodes();
+    
+    // Create connections
+    this.createConnections();
+    
+    // Mark core as discovered
+    this.discoveredNodes.add('core');
+    this.updateHUD();
+}
+
+addNode(id, name, x, y, properties) {
+    this.nodes.set(id, {
+        id,
+        name,
+        x,
+        y,
+        targetX: x,
+        targetY: y,
+        radius: 20,
+        pulsing: false,
+        pulsePhase: 0,
+        ...properties
+    });
+}
+
+addHiddenNodes() {
+    const positions = [
+        { x: this.canvas.width * 0.1, y: this.canvas.height * 0.3 },
+        { x: this.canvas.width * 0.9, y: this.canvas.height * 0.3 },
+        { x: this.canvas.width * 0.1, y: this.canvas.height * 0.7 },
+        { x: this.canvas.width * 0.9, y: this.canvas.height * 0.7 },
+        { x: this.canvas.width * 0.5, y: this.canvas.height * 0.1 },
+        { x: this.canvas.width * 0.5, y: this.canvas.height * 0.9 }
+    ];
+    
+    const hiddenNodes = [
+        { id: 'firewall', name: 'Firewall Matrix', type: 'security', description: 'Advanced barrier protection systems.' },
+        { id: 'storage', name: 'Data Vaults', type: 'data', description: 'Secure information repositories.' },
+        { id: 'learning', name: 'Machine Learning', type: 'ai', description: 'Self-improving algorithmic processes.' },
+        { id: 'routing', name: 'Network Routing', type: 'network', description: 'Intelligent packet routing systems.' },
+        { id: 'quantum', name: 'Quantum Layer', type: 'advanced', description: 'Quantum computing integration points.' },
+        { id: 'emergence', name: 'Emergence Point', type: 'special', description: 'Where new patterns spontaneously arise.' }
+    ];
+    
+    hiddenNodes.forEach((node, index) => {
+        this.addNode(node.id, node.name, positions[index].x, positions[index].y, {
+            type: node.type,
+            discovered: false,
+            description: node.description,
+            connections: [],
+            hidden: true
+        });
+    });
+}
+
+createConnections() {
+    const connections = [
+        ['core', 'security'], ['core', 'data'], ['core', 'ai'], ['core', 'network'],
+        ['security', 'firewall'], ['data', 'storage'], ['ai', 'learning'], ['network', 'routing'],
+        ['firewall', 'quantum'], ['storage', 'quantum'], ['learning', 'emergence'], ['routing', 'emergence']
+    ];
+    
+    connections.forEach(([from, to]) => {
+        this.edges.push({ from, to, discovered: false });
+    });
+}
+
+setupEventListeners() {
+    this.canvas.addEventListener('click', (e) => this.handleClick(e));
+    this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+}
+
+handleClick(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const clickedNode = this.getNodeAt(x, y);
+    if (clickedNode && this.canInteractWith(clickedNode)) {
+        this.discoverNode(clickedNode);
+    }
+}
+
+handleMouseMove(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const hoveredNode = this.getNodeAt(x, y);
+    if (hoveredNode && this.canInteractWith(hoveredNode)) {
+        this.showNodeInfo(hoveredNode);
+        this.canvas.style.cursor = 'pointer';
+    } else {
+        this.canvas.style.cursor = 'crosshair';
+    }
+}
+
+getNodeAt(x, y) {
+    for (let [id, node] of this.nodes) {
+        if (!node.hidden || this.discoveredNodes.has(id)) {
+            const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+            if (distance <= node.radius) {
+                return node;
+            }
+        }
+    }
+    return null;
+}
+
+canInteractWith(node) {
+    if (this.discoveredNodes.has(node.id)) return true;
+    
+    // Check if any connected discovered nodes exist
+    return this.edges.some(edge => 
+        (edge.from === node.id && this.discoveredNodes.has(edge.to)) ||
+        (edge.to === node.id && this.discoveredNodes.has(edge.from))
+    );
+}
+
+discoverNode(node) {
+    if (this.discoveredNodes.has(node.id)) return;
+    
+    this.discoveredNodes.add(node.id);
+    this.knowledgePoints += 10;
+    node.pulsing = true;
+    
+    // Discover connected edges
+    this.edges.forEach(edge => {
+        if ((edge.from === node.id || edge.to === node.id) && 
+            (this.discoveredNodes.has(edge.from) && this.discoveredNodes.has(edge.to))) {
+            edge.discovered = true;
+        }
+    });
+    
+    // Check for depth level increase
+    const discoveredCount = this.discoveredNodes.size;
+    this.depthLevel = Math.floor(discoveredCount / 3) + 1;
+    
+    this.showNotification(`Discovered: ${node.name}`);
+    this.updateHUD();
+    
+    // Reveal nearby hidden nodes
+    this.revealNearbyNodes(node);
+}
+
+revealNearbyNodes(discoveredNode) {
+    this.edges.forEach(edge => {
+        let targetNodeId = null;
+        if (edge.from === discoveredNode.id) targetNodeId = edge.to;
+        if (edge.to === discoveredNode.id) targetNodeId = edge.from;
+        
+        if (targetNodeId) {
+            const targetNode = this.nodes.get(targetNodeId);
+            if (targetNode && targetNode.hidden) {
+                targetNode.hidden = false;
+            }
+        }
+    });
+}
+
+showNodeInfo(node) {
+    const panel = document.getElementById('infoPanel');
+    const title = document.getElementById('nodeTitle');
+    const description = document.getElementById('nodeDescription');
+    const connections = document.getElementById('nodeConnections');
+    
+    title.textContent = node.name;
+    description.textContent = node.description;
+    
+    const connectedNodes = this.edges
+        .filter(edge => edge.from === node.id || edge.to === node.id)
+        .map(edge => {
+            const otherId = edge.from === node.id ? edge.to : edge.from;
+            return this.nodes.get(otherId)?.name || 'Unknown';
+        });
+    
+    connections.textContent = `Connected to: ${connectedNodes.join(', ')}`;
+    panel.classList.add('active');
+    
+    setTimeout(() => panel.classList.remove('active'), 3000);
+}
+
+showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.classList.add('show');
+    
+    setTimeout(() => notification.classList.remove('show'), 2000);
+}
+
+updateHUD() {
+    document.getElementById('discovered-count').textContent = this.discoveredNodes.size;
+    document.getElementById('connection-count').textContent = 
+        this.edges.filter(edge => edge.discovered).length;
+    document.getElementById('knowledge-points').textContent = this.knowledgePoints;
+    document.getElementById('depth-level').textContent = this.depthLevel;
+}
+
+gameLoop() {
+    this.update();
+    this.render();
+    requestAnimationFrame(() => this.gameLoop());
+}
+
+update() {
+    // Update pulsing animation
+    for (let [id, node] of this.nodes) {
+        if (node.pulsing) {
+            node.pulsePhase += 0.1;
+            if (node.pulsePhase > Math.PI * 2) {
+                node.pulsing = false;
+                node.pulsePhase = 0;
+            }
+        }
+    }
+}
+
+render() {
+    // Clear canvas
+    this.ctx.fillStyle = 'rgba(10, 15, 28, 0.1)';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Draw edges
+    this.renderEdges();
+    
+    // Draw nodes
+    this.renderNodes();
+    
+    // Draw network effects
+    this.renderEffects();
+}
+
+renderEdges() {
+    this.edges.forEach(edge => {
+        const fromNode = this.nodes.get(edge.from);
+        const toNode = this.nodes.get(edge.to);
+        
+        if (!fromNode || !toNode) return;
+        if (fromNode.hidden && !this.discoveredNodes.has(fromNode.id)) return;
+        if (toNode.hidden && !this.discoveredNodes.has(toNode.id)) return;
+        
+        this.ctx.beginPath();
+        this.ctx.moveTo(fromNode.x, fromNode.y);
+        this.ctx.lineTo(toNode.x, toNode.y);
+        
+        if (edge.discovered) {
+            this.ctx.strokeStyle = '#00ffff';
+            this.ctx.lineWidth = 2;
+            this.ctx.shadowColor = '#00ffff';
+            this.ctx.shadowBlur = 5;
+        } else {
+            this.ctx.strokeStyle = '#333';
+            this.ctx.lineWidth = 1;
+            this.ctx.shadowBlur = 0;
+        }
+        
+        this.ctx.stroke();
+    });
+}
+
+renderNodes() {
+    for (let [id, node] of this.nodes) {
+        if (node.hidden && !this.discoveredNodes.has(id) && !this.canInteractWith(node)) continue;
+        
+        const discovered = this.discoveredNodes.has(id);
+        const canInteract = this.canInteractWith(node);
+        
+        // Node glow
+        if (discovered || canInteract) {
+            this.ctx.beginPath();
+            this.ctx.arc(node.x, node.y, node.radius + 5, 0, Math.PI * 2);
+            
+            let glowColor = '#333';
+            if (discovered) glowColor = this.getNodeColor(node.type);
+            else if (canInteract) glowColor = '#666';
+            
+            this.ctx.fillStyle = glowColor + '33';
+            this.ctx.fill();
+        }
+        
+        // Node body
+        this.ctx.beginPath();
+        const radius = node.radius + (node.pulsing ? Math.sin(node.pulsePhase) * 5 : 0);
+        this.ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+        
+        if (discovered) {
+            this.ctx.fillStyle = this.getNodeColor(node.type);
+            this.ctx.shadowColor = this.getNodeColor(node.type);
+            this.ctx.shadowBlur = 10;
+        } else if (canInteract) {
+            this.ctx.fillStyle = '#666';
+            this.ctx.shadowBlur = 5;
+        } else {
+            this.ctx.fillStyle = '#222';
+            this.ctx.shadowBlur = 0;
+        }
+        
+        this.ctx.fill();
+        
+        // Node border
+        this.ctx.strokeStyle = discovered ? '#fff' : '#444';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+        
+        // Node label (only if discovered)
+        if (discovered) {
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = '12px Courier New';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(node.name, node.x, node.y + node.radius + 15);
+        }
+        
+        this.ctx.shadowBlur = 0;
+    }
+}
+
+renderEffects() {
+    // Ambient particles
+    const time = Date.now() * 0.001;
+    for (let i = 0; i < 20; i++) {
+        const x = (Math.sin(time + i) * 0.5 + 0.5) * this.canvas.width;
+        const y = (Math.cos(time * 0.7 + i) * 0.5 + 0.5) * this.canvas.height;
+        
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, 1, 0, Math.PI * 2);
+        this.ctx.fillStyle = `rgba(0, 255, 255, ${0.3 + Math.sin(time * 2 + i) * 0.2})`;
+        this.ctx.fill();
+    }
+}
+
+getNodeColor(type) {
+    const colors = {
+        'core': '#ff00ff',
+        'security': '#ff0080',
+        'data': '#00ffff',
+        'ai': '#8000ff',
+        'network': '#ffff00',
+        'advanced': '#ff8000',
+        'special': '#00ff80'
+    };
+    return colors[type] || '#666';
+}
+}
+
+// Initialize the game
+window.addEventListener('load', () => {
+new KnowledgeGraph();
+});
+</script>
+</body>
+</html>
