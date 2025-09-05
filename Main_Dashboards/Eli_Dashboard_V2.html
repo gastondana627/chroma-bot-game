@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eli's space</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #000;
+      overflow-x: hidden;
+    }
+
+    /* Breathing animation */
+    .breathing-bg {
+      animation: breathe 4s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.02); opacity: 1; }
+    }
+
+    /* Glitch effect */
+    .glitch { animation: glitch 0.3s infinite; }
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+      100% { transform: translate(0); }
+    }
+
+    /* Slide-in notification */
+    .slide-in-right { animation: slideInRight 0.5s ease-out; }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .progress-bar { transition: width 1s ease-in-out; }
+    .chat-message { transition: all 0.3s ease; }
+    .chat-message:hover { transform: translateX(5px); }
+    .action-button { transition: all 0.3s ease; }
+    .action-button:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+
+    /* Background gradient (initial state) */
+    #backgroundGradient {
+      background: radial-gradient(ellipse at center, rgba(139, 69, 19, 0.15), rgba(75, 0, 130, 0.25), rgba(0,0,0,0.9));
+    }
+
+    /* Glitch overlay base */
+    #glitchOverlay {
+      background: repeating-linear-gradient(90deg, transparent, rgba(255,0,100,0.2) 2px, transparent 4px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-black relative overflow-hidden">
+
+  <!-- Dynamic Background -->
+  <div id="backgroundGradient" class="absolute inset-0 breathing-bg"></div>
+
+  <!-- Glitch Overlay -->
+  <div id="glitchOverlay" class="absolute inset-0 pointer-events-none mix-blend-difference opacity-0"></div>
+
+  <!-- Header -->
+  <div class="relative z-10 p-6 border-b border-purple-500/20">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-white mb-1 flex items-center">
+          <span class="text-purple-400 mr-2">◉</span>
+          eli's space
+          <span class="text-xs ml-3 text-gray-500">probably shouldn't be here</span>
+        </h1>
+        <div class="text-sm text-gray-400">
+          🎵 <span id="currentTrack">lo-fi beats to cry to</span> • volume: way too loud
+        </div>
+      </div>
+
+      <div class="text-right">
+        <div id="currentTime" class="text-sm text-gray-400">3:47 AM</div>
+        <div class="text-xs text-purple-400">parents asleep</div>
+        <div class="flex items-center justify-end mt-1 text-xs">
+          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.07 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
+          </svg>
+          <span>connected (barely)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="relative z-10 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Main Dashboard -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Vibe Check -->
+      <div class="bg-gray-900/80 border border-gray-700 rounded-xl p-6 backdrop-blur-md">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center">
+            <span id="vibeEmoji" class="text-3xl mr-3">😐</span>
+            <div>
+              <h2 class="text-xl font-bold text-white">current vibe</h2>
+              <p id="vibeText" class="text-lg font-semibold text-yellow-400">CONFLICTED</p>
+            </div>
+          </div>
+          <div class="text-right text-sm text-gray-400">
+            <div>social battery: <span id="reputation">42</span>%</div>
+            <div>mental health: <span id="mentalState">78</span>%</div>
+          </div>
+        </div>
+
+        <!-- Peer Pressure Bar -->
+        <div class="mb-6">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-purple-300">peer pressure intensity</span>
+            <span id="pressurePercent" class="text-white font-bold">67%</span>
+          </div>
+          <div class="relative h-6 bg-gray-800 rounded-full overflow-hidden">
+            <div id="pressureBar" class="h-full progress-bar bg-yellow-500 shadow-yellow-500/50 shadow-lg" style="width: 67%"></div>
+            <div id="stressSpike" class="absolute inset-0 bg-red-400/30 opacity-0"></div>
+          </div>
+          <div class="flex justify-between text-xs mt-1 text-gray-500">
+            <span>😌 zen mode</span>
+            <span>😬 anxiety spike</span>
+            <span>🔥 panic mode</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="grid grid-cols-2 gap-4">
+          <button id="breatheBtn" class="action-button bg-blue-600/80 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            💙 take a breath
+          </button>
+          <button id="ignoreBtn" class="action-button bg-purple-600/80 hover:bg-purple-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            🎧 ignore them all
+          </button>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div id="notificationsArea" class="space-y-3"></div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="space-y-6">
+
+      <!-- Social Feed -->
+      <div class="bg-gray-900/80 border border-gray-700 rounded-xl p-5 backdrop-blur-md">
+        <div class="flex items-center mb-4">
+          <svg class="w-5 h-5 text-purple-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <h3 class="font-bold text-white">notifications</h3>
+          <span id="unreadCount" class="ml-auto text-xs text-red-400">3 unread</span>
+        </div>
+        <div id="chatFeed" class="space-y-3 max-h-80 overflow-y-auto"></div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="bg-gray-900/80 border border-gray-700 rounded-xl p-5 backdrop-blur-md">
+        <h3 class="font-bold text-white mb-4">life stats</h3>
+        <div class="space-y-4">
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">friends (real ones)</span><span class="text-green-400 font-bold">3</span></div>
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">homework done</span><span class="text-red-400 font-bold">12%</span></div>
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">hours of sleep</span><span class="text-orange-400 font-bold">4.2</span></div>
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">bad decisions avoided</span><span id="decisionsAvoided" class="text-purple-400 font-bold">47</span></div>
+        </div>
+      </div>
+
+      <!-- Playlist -->
+      <div class="bg-gray-900/80 border border-gray-700 rounded-xl p-5 backdrop-blur-md">
+        <h3 class="font-bold text-white mb-4">current playlist</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center text-purple-400"><span class="mr-2">🎵</span><span>anxiety beats vol. 47</span></div>
+          <div class="text-gray-400 text-xs">next: "why does nobody understand me"</div>
+          <div class="mt-3 bg-gray-800 rounded-full h-1">
+            <div id="musicProgress" class="bg-purple-400 h-1 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Game state
+    let gameState = { peerPressure: 67, reputation: 42, mentalState: 78, breathingPhase: 0, musicProgress: 0 };
+
+    // Initial chats
+    let chatMessages = [
+      { user: "sk8rboi2006", msg: "eli u coming to the party tonight?", time: "2m", mood: "pressure" },
+      { user: "gamequeen", msg: "dont be lame again...", time: "5m", mood: "toxic" },
+      { user: "your_mom", msg: "dinner in 20 mins", time: "12m", mood: "safe" }
+    ];
+    const toxicMessages = [
+      { user: "popular_kid_87", msg: "everyone saw you eat lunch alone lmao", mood: "toxic" },
+      { user: "coolest_person", msg: "why r u so weird eli", mood: "pressure" },
+      { user: "that_one_friend", msg: "just come out tonight, what could go wrong?", mood: "pressure" },
+      { user: "random_classmate", msg: "heard you're too scared to vape 💀", mood: "toxic" },
+      { user: "fake_friend", msg: "my older brother can get us stuff", mood: "pressure" }
+    ];
+
+    function updateVibeCheck() {
+      const vibeEmoji = document.getElementById('vibeEmoji');
+      const vibeText = document.getElementById('vibeText');
+      if (!vibeEmoji || !vibeText) return;
+      if (gameState.peerPressure > 80) { vibeEmoji.textContent = '😰'; vibeText.textContent = 'OVERWHELMED'; vibeText.className = 'text-lg font-semibold text-red-400'; }
+      else if (gameState.peerPressure > 60) { vibeEmoji.textContent = '😔'; vibeText.textContent = 'STRESSED'; vibeText.className = 'text-lg font-semibold text-orange-400'; }
+      else if (gameState.peerPressure > 40) { vibeEmoji.textContent = '😐'; vibeText.textContent = 'CONFLICTED'; vibeText.className = 'text-lg font-semibold text-yellow-400'; }
+      else { vibeEmoji.textContent = '😊'; vibeText.textContent = 'CHILL'; vibeText.className = 'text-lg font-semibold text-green-400'; }
+    }
+
+    function updatePressureBar() {
+      const pressureBar = document.getElementById('pressureBar');
+      const pressurePercent = document.getElementById('pressurePercent');
+      const stressSpike = document.getElementById('stressSpike');
+      if (!pressureBar || !pressurePercent) return;
+      pressurePercent.textContent = Math.round(gameState.peerPressure) + '%';
+      pressureBar.style.width = gameState.peerPressure + '%';
+      if (gameState.peerPressure < 30) pressureBar.className = 'h-full progress-bar bg-emerald-500 shadow-emerald-500/50 shadow-lg';
+      else if (gameState.peerPressure < 60) pressureBar.className = 'h-full progress-bar bg-yellow-500 shadow-yellow-500/50 shadow-lg';
+      else pressureBar.className = 'h-full progress-bar bg-red-500 shadow-red-500/50 shadow-lg';
+      if (gameState.peerPressure > 70) { stressSpike.style.opacity = '1'; stressSpike.classList.add('animate-pulse'); }
+      else { stressSpike.style.opacity = '0'; stressSpike.classList.remove('animate-pulse'); }
+    }
+
+    function updateChatFeed() {
+      const chatFeed = document.getElementById('chatFeed');
+      const unreadCount = document.getElementById('unreadCount');
+      if (!chatFeed) return;
+      chatFeed.innerHTML = '';
+      chatMessages.forEach(chat => {
+        const chatDiv = document.createElement('div');
+        chatDiv.className = `chat-message p-3 rounded-lg ${
+          chat.mood === 'toxic' ? 'bg-red-900/30 border border-red-500/20' :
+          chat.mood === 'pressure' ? 'bg-orange-900/30 border border-orange-500/20' :
+          'bg-green-900/30 border border-green-500/20'
+        }`;
+        chatDiv.innerHTML = `
+          <div class="flex justify-between text-xs mb-1">
+            <span class="font-semibold ${chat.mood === 'toxic' ? 'text-red-400' :
+              chat.mood === 'pressure' ? 'text-orange-400' : 'text-green-400'}">@${chat.user}</span>
+            <span class="text-gray-500">${chat.time}</span>
+          </div>
+          <div class="text-sm text-gray-300">${chat.msg}</div>`;
+        chatFeed.appendChild(chatDiv);
+      });
+      if (unreadCount) unreadCount.textContent = chatMessages.length + ' unread';
+    }
+
+    function showNotification(title, subtitle, icon, color) {
+      const notificationsArea = document.getElementById('notificationsArea');
+      if (!notificationsArea) return;
+      const notificationDiv = document.createElement('div');
+      notificationDiv.className = `notification bg-gray-800/90 border-l-4 ${color === 'blue' ? 'border-blue-400' : 'border-purple-400'} rounded-r-lg p-4 backdrop-blur-sm slide-in-right shadow-lg`;
+      notificationDiv.innerHTML = `<div class="flex items-center"><span class="text-2xl mr-3">${icon}</span><div><div class="font-bold text-white">${title}</div><div class="text-sm text-gray-300">${subtitle}</div></div></div>`;
+      notificationsArea.insertBefore(notificationDiv, notificationsArea.firstChild);
+      setTimeout(() => { notificationDiv.style.opacity = '0'; setTimeout(() => notificationDiv.remove(), 500); }, 4000);
+    }
+
+    function breathe() {
+      gameState.mentalState = Math.min(100, gameState.mentalState + 10);
+      gameState.peerPressure = Math.max(0, gameState.peerPressure - 20);
+      document.getElementById('mentalState').textContent = Math.round(gameState.mentalState);
+      updatePressureBar(); updateVibeCheck();
+      showNotification('+10 Self-Care', 'You took a moment to breathe', '💙', 'blue');
+    }
+
+    function ignoreEveryone() {
+      gameState.reputation = Math.max(0, gameState.reputation - 5);
+      gameState.peerPressure = Math.max(0, gameState.peerPressure - 30);
+      document.getElementById('reputation').textContent = gameState.reputation;
+      updatePressureBar(); updateVibeCheck();
+      showNotification('-5 Social Credit', 'But +30 Peace of Mind', '🎧', 'purple');
+    }
+
+    function ambientUpdate() {
+      gameState.breathingPhase += 0.1;
+      const breathIntensity = Math.sin(gameState.breathingPhase) * 0.05;
+      document.getElementById('backgroundGradient').style.background = `radial-gradient(ellipse at center, rgba(139,69,19,${0.1+breathIntensity}), rgba(75,0,130,${0.15+breathIntensity*1.5}), rgba(0,0,0,0.9) 70%)`;
+      const stressWave = Math.sin(Date.now()/10000)*15 + (Math.random()-0.5)*10;
+      gameState.peerPressure = Math.max(0, Math.min(100, gameState.peerPressure + stressWave*0.1));
+      document.getElementById('decisionsAvoided').textContent = Math.max(0, 47 - Math.floor(gameState.peerPressure/2));
+      if (gameState.peerPressure > 80 && Math.random() > 0.95) {
+        const glitchOverlay = document.getElementById('glitchOverlay');
+        glitchOverlay.style.opacity = '0.6';
+        glitchOverlay.style.background = `repeating-linear-gradient(${Math.random()*360}deg, transparent, rgba(255,0,100,0.3) 2px, transparent 4px)`;
+        setTimeout(() => glitchOverlay.style.opacity = '0', 150);
+      }
+      gameState.musicProgress = (gameState.musicProgress + 0.5) % 100;
+      document.getElementById('musicProgress').style.width = gameState.musicProgress + '%';
+      updatePressureBar(); updateVibeCheck();
+    }
+
+    function addChatMessage() {
+      if (Math.random() > 0.7) {
+        const randomMsg = toxicMessages[Math.floor(Math.random() * toxicMessages.length)];
+        chatMessages.unshift({ ...randomMsg, time: "now" });
+        chatMessages = chatMessages.slice(0, 10);
+        updateChatFeed();
+      }
+    }
+
+    function updateTime() {
+      document.getElementById('currentTime').textContent = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Init
+    document.getElementById('breatheBtn').addEventListener('click', breathe);
+    document.getElementById('ignoreBtn').addEventListener('click', ignoreEveryone);
+    updateChatFeed(); updateTime();
+    setInterval(ambientUpdate, 500);
+    setInterval(addChatMessage, 12000);
+    setInterval(updateTime, 1000);
+  </script>
+</body>
+</html>
