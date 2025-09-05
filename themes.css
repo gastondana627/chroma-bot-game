@@ -54,3 +54,14 @@
     transform: scale(1.05);
     box-shadow: 0 0 10px var(--accent);
   }
+
+
+
+  .character-ui {
+    margin: 20px;
+    padding: 20px;
+    border: 2px solid #00FFFF;
+    border-radius: 12px;
+    background: rgba(20, 20, 20, 0.85);
+  }
+  .hidden { display: none; }
