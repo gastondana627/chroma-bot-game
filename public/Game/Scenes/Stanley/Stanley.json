@@ -1,0 +1,69 @@
+{
+    "character": "stanley",
+    "theme": {
+      "class": "stanley",
+      "music": "./Main_Login_Audio/Stanley_The_Digital_Doppelganger.mp3"
+    },
+    "nodes": {
+      "S1": {
+        "id": "S1",
+        "scene": "/game/scenes/stanley/S1.html",
+        "narration": "Stanley logs into FriendSpace. The interface looks normal, but a faint glitch hum lingers.",
+        "choices": [
+          { "label": "Log In", "next": "S2" }
+        ]
+      },
+      "S2": {
+        "id": "S2",
+        "scene": "/game/scenes/stanley/S2.html",
+        "narration": "A friend request appears from Clara. Her profile picture flickers slightly.",
+        "choices": [
+          { "label": "Accept Request", "next": "FailS2" },
+          { "label": "Ignore", "next": "S3" }
+        ]
+      },
+      "S3": {
+        "id": "S3",
+        "scene": "/game/scenes/stanley/S3.html",
+        "narration": "Suspicious login alerts trigger. Stanley’s account integrity is at risk.",
+        "choices": [
+          { "label": "Block User + Enter 2FA", "next": "S4" }
+        ]
+      },
+      "S4": {
+        "id": "S4",
+        "scene": "/game/scenes/stanley/S4.html",
+        "narration": "System demands another verification step. The screen glitches harder.",
+        "choices": [
+          { "label": "Continue", "next": "S5" }
+        ]
+      },
+      "S5": {
+        "id": "S5",
+        "scene": "/game/scenes/stanley/S5.html",
+        "narration": "Clara sends a DM: it’s a phishing link disguised as a game invite.",
+        "choices": [
+          { "label": "Reply", "next": "FailS5" },
+          { "label": "Ignore", "next": "S6" }
+        ]
+      },
+      "S6": {
+        "id": "S6",
+        "scene": "/game/scenes/stanley/S6.html",
+        "narration": "The system stabilizes. Stanley has survived the social engineering attempt.",
+        "end": "success"
+      },
+      "FailS2": {
+        "id": "FailS2",
+        "scene": "/game/scenes/stanley/S2_fail.html",
+        "narration": "Stanley accepts the request. His account is compromised immediately.",
+        "end": "failure"
+      },
+      "FailS5": {
+        "id": "FailS5",
+        "scene": "/game/scenes/stanley/S5_fail.html",
+        "narration": "Stanley replies. His data is stolen through the phishing exploit.",
+        "end": "failure"
+      }
+    }
+  }
