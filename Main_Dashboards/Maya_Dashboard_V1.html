@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maya's Nexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    body { font-family: 'JetBrains Mono', monospace; background: #000; overflow-x: hidden; }
+
+    /* Breathing grid background */
+    .breathing-bg { animation: breathe 5s ease-in-out infinite; }
+    @keyframes breathe { 0%,100% {opacity: 0.8;} 50% {opacity: 1;} }
+
+    /* Glitch overlay */
+    #glitchOverlay { background: repeating-linear-gradient(90deg, transparent, rgba(0,255,255,0.2) 2px, transparent 4px); }
+
+    /* Flicker effect */
+    .flicker { animation: flicker 1.5s infinite; }
+    @keyframes flicker {
+      0%,19%,21%,23%,25%,54%,56%,100% { opacity: 1; }
+      20%,24%,55% { opacity: 0.2; }
+    }
+
+    .progress-bar { transition: width 1s ease-in-out; }
+    .chat-message:hover { transform: translateX(5px); }
+    .action-button:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,255,255,0.3); }
+  </style>
+</head>
+<body class="min-h-screen bg-black relative overflow-hidden">
+
+  <!-- Background -->
+  <div id="backgroundGradient" class="absolute inset-0 breathing-bg" 
+       style="background: radial-gradient(circle, rgba(0,255,255,0.1), rgba(0,0,50,0.9));"></div>
+
+  <!-- Glitch Overlay -->
+  <div id="glitchOverlay" class="absolute inset-0 pointer-events-none mix-blend-difference opacity-0"></div>
+
+  <!-- Header -->
+  <div class="relative z-10 p-6 border-b border-cyan-400/20">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-white mb-1 flex items-center">
+          <span class="text-cyan-400 mr-2">◉</span> Maya’s Nexus
+          <span class="text-xs ml-3 text-gray-500">connection unstable...</span>
+        </h1>
+        <div class="text-sm text-gray-400">📡 <span id="currentSignal">42%</span> • ping: 312ms</div>
+      </div>
+      <div class="text-right">
+        <div id="currentTime" class="text-sm text-gray-400">02:14 AM</div>
+        <div class="text-xs text-cyan-400">network compromised</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="relative z-10 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Main Dashboard -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Signal Status -->
+      <div class="bg-gray-900/80 border border-cyan-500/30 rounded-xl p-6 backdrop-blur-md">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center">
+            <span id="signalEmoji" class="text-3xl mr-3">📶</span>
+            <div>
+              <h2 class="text-xl font-bold text-white">signal strength</h2>
+              <p id="signalText" class="text-lg font-semibold text-cyan-400">UNSTABLE</p>
+            </div>
+          </div>
+          <div class="text-right text-sm text-gray-400">
+            <div>trust network: <span id="trust">57</span>%</div>
+            <div>data integrity: <span id="integrity">81</span>%</div>
+          </div>
+        </div>
+
+        <!-- Signal Bar -->
+        <div class="mb-6">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-cyan-300">connection load</span>
+            <span id="signalPercent" class="text-white font-bold">42%</span>
+          </div>
+          <div class="relative h-6 bg-gray-800 rounded-full overflow-hidden">
+            <div id="signalBar" class="h-full progress-bar bg-cyan-500 shadow-cyan-500/50 shadow-lg" style="width: 42%"></div>
+            <div id="flickerSpike" class="absolute inset-0 bg-blue-400/30 opacity-0"></div>
+          </div>
+          <div class="flex justify-between text-xs mt-1 text-gray-500">
+            <span>🟢 stable</span>
+            <span>🟡 throttled</span>
+            <span>🔴 dropped</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="grid grid-cols-2 gap-4">
+          <button id="reconnectBtn" class="action-button bg-cyan-600/80 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            🔄 attempt reconnect
+          </button>
+          <button id="maskBtn" class="action-button bg-blue-600/80 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            🕶️ mask identity
+          </button>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div id="notificationsArea" class="space-y-3"></div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="space-y-6">
+
+      <!-- Leaked Feed -->
+      <div class="bg-gray-900/80 border border-cyan-500/30 rounded-xl p-5 backdrop-blur-md">
+        <div class="flex items-center mb-4">
+          <h3 class="font-bold text-white flex items-center">📰 leaked feed</h3>
+          <span id="unreadCount" class="ml-auto text-xs text-red-400">2 alerts</span>
+        </div>
+        <div id="feedArea" class="space-y-3 max-h-80 overflow-y-auto"></div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="bg-gray-900/80 border border-cyan-500/30 rounded-xl p-5 backdrop-blur-md">
+        <h3 class="font-bold text-white mb-4">system status</h3>
+        <div class="space-y-4">
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">compromised accounts</span><span class="text-red-400 font-bold">2</span></div>
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">trust anchors</span><span class="text-green-400 font-bold">5</span></div>
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">phantom connections</span><span class="text-yellow-400 font-bold">7</span></div>
+        </div>
+      </div>
+
+      <!-- Playlist -->
+      <div class="bg-gray-900/80 border border-cyan-500/30 rounded-xl p-5 backdrop-blur-md">
+        <h3 class="font-bold text-white mb-4">buffering playlist</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center text-cyan-400"><span class="mr-2">🎵</span><span>lost packets vol. 3</span></div>
+          <div class="text-gray-400 text-xs">next: "endless reconnect loop"</div>
+          <div class="mt-3 bg-gray-800 rounded-full h-1">
+            <div id="musicProgress" class="bg-cyan-400 h-1 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let state = { signal: 42, trust: 57, integrity: 81, musicProgress: 0 };
+
+    let feedMessages = [
+      { src: "sys_log", msg: "Unauthorized login attempt detected", mood: "alert" },
+      { src: "friend_dm", msg: "why did you ghost me maya?", mood: "personal" }
+    ];
+    const leakPool = [
+      { src: "mirror_net", msg: "connection rerouted through unknown node", mood: "alert" },
+      { src: "sys_log", msg: "data packet dropped (integrity 73%)", mood: "system" },
+      { src: "friend_dm", msg: "you can’t trust them", mood: "personal" }
+    ];
+
+    function updateSignal() {
+      document.getElementById("signalPercent").textContent = state.signal + "%";
+      document.getElementById("signalBar").style.width = state.signal + "%";
+      const signalText = document.getElementById("signalText");
+      if (state.signal > 70) { signalText.textContent = "STABLE"; signalText.className = "text-lg font-semibold text-green-400"; }
+      else if (state.signal > 40) { signalText.textContent = "UNSTABLE"; signalText.className = "text-lg font-semibold text-yellow-400"; }
+      else { signalText.textContent = "DROPPED"; signalText.className = "text-lg font-semibold text-red-400 flicker"; }
+    }
+
+    function updateFeed() {
+      const feedArea = document.getElementById("feedArea");
+      feedArea.innerHTML = "";
+      feedMessages.forEach(f => {
+        const div = document.createElement("div");
+        div.className = `chat-message p-3 rounded-lg ${
+          f.mood==="alert" ? "bg-red-900/30 border border-red-500/20" :
+          f.mood==="personal" ? "bg-yellow-900/30 border border-yellow-500/20" :
+          "bg-blue-900/30 border border-blue-500/20"
+        }`;
+        div.innerHTML = `<div class="text-xs text-gray-500">@${f.src}</div><div class="text-sm text-gray-300">${f.msg}</div>`;
+        feedArea.appendChild(div);
+      });
+      document.getElementById("unreadCount").textContent = feedMessages.length + " alerts";
+    }
+
+    function reconnect() {
+      state.signal = Math.min(100, state.signal + 15);
+      state.integrity = Math.max(0, state.integrity - 5);
+      showNotification("Reconnect Attempt", "signal boosted slightly", "📡", "blue");
+      updateSignal();
+    }
+
+    function maskIdentity() {
+      state.trust = Math.max(0, state.trust - 5);
+      showNotification("Masking Identity", "anonymity increased", "🕶️", "blue");
+    }
+
+    function showNotification(title, subtitle, icon, color) {
+      const area = document.getElementById("notificationsArea");
+      const div = document.createElement("div");
+      div.className = `notification bg-gray-800/90 border-l-4 border-${color}-400 rounded-r-lg p-4 slide-in-right`;
+      div.innerHTML = `<div class="flex items-center"><span class="text-2xl mr-3">${icon}</span><div><div class="font-bold text-white">${title}</div><div class="text-sm text-gray-300">${subtitle}</div></div></div>`;
+      area.insertBefore(div, area.firstChild);
+      setTimeout(()=>{ div.style.opacity="0"; setTimeout(()=>div.remove(),500); },4000);
+    }
+
+    function ambientUpdate() {
+      state.musicProgress = (state.musicProgress + 0.7) % 100;
+      document.getElementById("musicProgress").style.width = state.musicProgress + "%";
+      if (Math.random()>0.8) { feedMessages.unshift(leakPool[Math.floor(Math.random()*leakPool.length)]); feedMessages = feedMessages.slice(0,6); updateFeed(); }
+    }
+
+    function updateTime() {
+      document.getElementById("currentTime").textContent = new Date().toLocaleTimeString("en-US", { hour12:false,hour:"2-digit",minute:"2-digit"});
+    }
+
+    // Events
+    document.getElementById("reconnectBtn").addEventListener("click", reconnect);
+    document.getElementById("maskBtn").addEventListener("click", maskIdentity);
+
+    updateSignal(); updateFeed(); updateTime();
+    setInterval(ambientUpdate, 4000);
+    setInterval(updateTime, 1000);
+  </script>
+</body>
+</html>

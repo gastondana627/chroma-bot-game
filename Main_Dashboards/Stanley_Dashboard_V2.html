@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stanley’s Identity Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+    body { font-family: 'JetBrains Mono', monospace; background: #0a0a0a; color: #e5e5e5; }
+
+    .glass { backdrop-filter: blur(8px); background: rgba(20,20,20,0.85); border: 1px solid rgba(255,0,0,0.15); }
+    .glitch { animation: glitch 0.3s infinite; }
+    @keyframes glitch {
+      0%,100% { transform: translate(0) }
+      20% { transform: translate(-2px,2px) }
+      40% { transform: translate(2px,-2px) }
+      60% { transform: translate(-1px,1px) }
+      80% { transform: translate(1px,-1px) }
+    }
+    .progress-bar { transition: width 0.6s ease-in-out; }
+    #alertFeed { font-size: 0.75rem; white-space: nowrap; overflow: hidden; }
+    #alertFeed span { display: inline-block; padding-right: 3rem; color: #ff5555; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="p-5 border-b border-red-600/30 flex justify-between items-center bg-black/60">
+    <h1 class="text-xl font-bold text-red-500 flex items-center">🕵 Stanley’s Identity Console</h1>
+    <div class="text-sm text-gray-400">System Time: <span id="currentTime"></span></div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+
+    <!-- Left: Identity Health -->
+    <section class="glass rounded-xl p-6 flex flex-col justify-between">
+      <div>
+        <h2 class="text-lg font-bold mb-4">Identity Integrity</h2>
+        <div class="relative h-6 bg-gray-800 rounded-full mb-3">
+          <div id="integrityBar" class="progress-bar h-full bg-red-500 shadow-red-500/40" style="width: 64%"></div>
+        </div>
+        <p class="text-gray-400 text-sm">Status: <span id="statusText" class="font-bold text-red-400">COMPROMISED</span></p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 text-center mt-6">
+        <div>
+          <p class="text-xs text-gray-400">Fake IDs</p>
+          <p id="fakeCount" class="text-xl font-bold text-orange-400">5</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Accounts Breached</p>
+          <p id="compromised" class="text-xl font-bold text-red-400">2</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Leaked Emails</p>
+          <p class="text-xl font-bold text-yellow-400">12</p>
+        </div>
+      </div>
+
+      <div class="mt-6 space-y-3">
+        <button id="traceBtn" class="w-full py-3 rounded bg-red-700/80 hover:bg-red-600 font-semibold">🕵 Trace Digital Footprint</button>
+        <button id="lockBtn" class="w-full py-3 rounded bg-gray-700/80 hover:bg-gray-600 font-semibold">🔒 Initiate Lockdown</button>
+        <button id="eraseBtn" class="w-full py-3 rounded bg-orange-700/80 hover:bg-orange-600 font-semibold">🧯 Erase Shadow Copy</button>
+      </div>
+    </section>
+
+    <!-- Right: Forensics Console -->
+    <section class="glass rounded-xl p-6 flex flex-col">
+      <h2 class="text-lg font-bold mb-4">Forensics Feed</h2>
+      <div id="logFeed" class="flex-1 overflow-y-auto space-y-3 text-sm"></div>
+    </section>
+
+  </main>
+
+  <!-- Footer Alert Strip -->
+  <footer class="bg-black/80 border-t border-red-600/30 p-2 overflow-hidden">
+    <div id="alertFeed" class="animate-marquee"></div>
+  </footer>
+
+  <script>
+    let state = { integrity: 64, fakeCount: 5, compromised: 2 };
+
+    let suspiciousLogs = [
+      { ip: "23.98.11.77", action: "Login from Moscow", mood: "danger" },
+      { ip: "102.45.66.12", action: "Password changed", mood: "risk" },
+      { ip: "???.???.???.???", action: "Shadow identity detected", mood: "danger" }
+    ];
+
+    function updateIntegrity() {
+      document.getElementById("integrityBar").style.width = state.integrity + "%";
+      let statusText = document.getElementById("statusText");
+      if (state.integrity > 75) { statusText.textContent="SAFE"; statusText.className="font-bold text-green-400"; }
+      else if (state.integrity > 40) { statusText.textContent="AT RISK"; statusText.className="font-bold text-yellow-400"; }
+      else { statusText.textContent="COMPROMISED"; statusText.className="font-bold text-red-400"; }
+    }
+
+    function updateLogs() {
+      const feed = document.getElementById("logFeed");
+      feed.innerHTML = "";
+      suspiciousLogs.forEach(log => {
+        const div = document.createElement("div");
+        div.className = `p-3 rounded border ${log.mood==="danger"?"border-red-500/40 bg-red-900/20":"border-yellow-500/40 bg-yellow-900/20"}`;
+        div.innerHTML = `<p class="text-gray-300">${log.action}</p><p class="text-xs text-gray-500">IP: ${log.ip}</p>`;
+        feed.appendChild(div);
+      });
+    }
+
+    function updateTime() {
+      document.getElementById("currentTime").textContent = new Date().toLocaleTimeString("en-US",{hour12:false,hour:"2-digit",minute:"2-digit"});
+    }
+
+    function addAlert(msg) {
+      const feed = document.getElementById("alertFeed");
+      const span = document.createElement("span");
+      span.textContent = `[ALERT] ${msg}`;
+      feed.appendChild(span);
+    }
+
+    // Actions
+    document.getElementById("traceBtn").onclick = () => { state.fakeCount++; state.integrity-=5; addAlert("Tracing impostor activity..."); updateIntegrity(); updateLogs(); };
+    document.getElementById("lockBtn").onclick = () => { state.compromised = Math.max(0,state.compromised-1); state.integrity+=10; addAlert("Lockdown protocol engaged."); updateIntegrity(); };
+    document.getElementById("eraseBtn").onclick = () => { state.integrity+=5; addAlert("Shadow copy erased from system."); updateIntegrity(); };
+
+    // Init
+    updateIntegrity(); updateLogs(); updateTime();
+    setInterval(updateTime,1000);
+    setInterval(()=>{ if(Math.random()>0.7){ suspiciousLogs.unshift({ip:"???.???.???.???", action:"New anomaly detected", mood:"danger"}); suspiciousLogs=suspiciousLogs.slice(0,5); updateLogs(); addAlert("Anomaly detected"); } },6000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stanley’s Identity Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #0a0a0a;
+      color: #e5e5e5;
+      overflow-x: hidden;
+    }
+    .glitch {
+      animation: glitch 0.3s infinite;
+    }
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(2px, -2px); }
+      60% { transform: translate(-2px, -1px); }
+      80% { transform: translate(1px, 2px); }
+      100% { transform: translate(0); }
+    }
+    .fracture {
+      filter: contrast(1.5) brightness(0.8) saturate(1.2);
+      transition: filter 0.5s ease;
+    }
+    .fractured {
+      filter: contrast(2) brightness(0.5) saturate(2) blur(1px);
+    }
+    .slide-in {
+      animation: slideIn 0.5s ease-out;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(50px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen relative">
+
+  <!-- Header -->
+  <div class="p-6 border-b border-red-500/30 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-red-400 glitch">Stanley’s Identity Watch</h1>
+    <div class="text-sm text-gray-400">⚠️ Monitoring Active</div>
+  </div>
+
+  <!-- Layout -->
+  <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Left: Profile Clone Viewer -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <div class="bg-gray-900/80 border border-red-500/30 rounded-xl p-6 backdrop-blur-md">
+        <h2 class="text-xl font-bold text-red-300 mb-4">Profile Clone Viewer</h2>
+        <div class="grid grid-cols-2 gap-4">
+          
+          <!-- Real Profile -->
+          <div class="bg-gray-800 rounded-lg p-4 fracture" id="realProfile">
+            <h3 class="font-bold text-green-400">Real Profile</h3>
+            <img src="https://via.placeholder.com/100" class="rounded-full mt-2 mb-2 border-2 border-green-400" />
+            <p class="text-sm">Username: stan_the_real</p>
+            <p class="text-sm">Email: stanley@example.com</p>
+            <p class="text-xs text-gray-400">Account age: 5 years</p>
+          </div>
+
+          <!-- Impostor Profile -->
+          <div class="bg-gray-800 rounded-lg p-4 fracture fractured" id="fakeProfile">
+            <h3 class="font-bold text-red-400">Suspicious Clone</h3>
+            <img src="https://via.placeholder.com/100/ff0000/ffffff" class="rounded-full mt-2 mb-2 border-2 border-red-500 glitch" />
+            <p class="text-sm">Username: stan_the_real_01</p>
+            <p class="text-sm">Email: stanley-backup@fraudmail.com</p>
+            <p class="text-xs text-red-400">⚠️ Created: 2 days ago</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Identity Fracture Meter -->
+      <div class="bg-gray-900/80 border border-red-500/30 rounded-xl p-6 backdrop-blur-md">
+        <div class="flex justify-between mb-2">
+          <h2 class="text-xl font-bold text-red-300">Identity Integrity</h2>
+          <span id="integrityValue" class="font-bold text-gray-200">82%</span>
+        </div>
+        <div class="relative h-6 bg-gray-800 rounded-full overflow-hidden">
+          <div id="integrityBar" class="h-full bg-green-500 transition-all" style="width: 82%"></div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="grid grid-cols-3 gap-4">
+        <button onclick="verifyIdentity()" class="bg-blue-600/80 hover:bg-blue-500 text-white py-3 px-4 rounded-lg action-button">Verify Identity</button>
+        <button onclick="traceImpostor()" class="bg-yellow-600/80 hover:bg-yellow-500 text-white py-3 px-4 rounded-lg action-button">Trace Impostor</button>
+        <button onclick="lockIdentity()" class="bg-red-600/80 hover:bg-red-500 text-white py-3 px-4 rounded-lg action-button">Lock Identity</button>
+      </div>
+
+      <!-- Notifications -->
+      <div id="notificationsArea" class="space-y-3"></div>
+    </div>
+
+    <!-- Right: Suspicious Messages -->
+    <div class="space-y-6">
+      <div class="bg-gray-900/80 border border-red-500/30 rounded-xl p-5 backdrop-blur-md">
+        <h3 class="font-bold text-red-300 mb-4">Suspicious Messages</h3>
+        <div id="messagesFeed" class="space-y-3 max-h-96 overflow-y-auto"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let integrity = 82;
+
+    const fakeMessages = [
+      { user: "clone_stan", msg: "hey it’s me, lost my phone – can you send me $100?", mood: "fraud" },
+      { user: "random123", msg: "follow my new profile stan!", mood: "phish" },
+      { user: "friendclone", msg: "added you from my backup account", mood: "fake" },
+    ];
+
+    function updateIntegrity() {
+      const bar = document.getElementById('integrityBar');
+      const value = document.getElementById('integrityValue');
+      value.textContent = integrity + "%";
+      bar.style.width = integrity + "%";
+
+      if (integrity > 70) {
+        bar.className = "h-full bg-green-500 transition-all";
+      } else if (integrity > 40) {
+        bar.className = "h-full bg-yellow-500 transition-all";
+      } else {
+        bar.className = "h-full bg-red-500 transition-all";
+      }
+    }
+
+    function notify(message, color) {
+      const area = document.getElementById('notificationsArea');
+      const note = document.createElement('div');
+      note.className = `slide-in bg-gray-800/90 border-l-4 border-${color}-400 rounded-r-lg p-3 text-sm`;
+      note.innerHTML = message;
+      area.insertBefore(note, area.firstChild);
+      setTimeout(() => note.remove(), 4000);
+    }
+
+    function verifyIdentity() {
+      integrity -= 5;
+      updateIntegrity();
+      notify("Verification failed ⚠️ Possible impostor detected.", "yellow");
+    }
+
+    function traceImpostor() {
+      integrity -= 10;
+      updateIntegrity();
+      notify("Trace launched... impostor located offshore 🌍", "blue");
+    }
+
+    function lockIdentity() {
+      integrity += 5;
+      if (integrity > 100) integrity = 100;
+      updateIntegrity();
+      notify("Identity locked 🔒 No new clones can appear temporarily.", "red");
+    }
+
+    function addFakeMessage() {
+      const feed = document.getElementById("messagesFeed");
+      const randomMsg = fakeMessages[Math.floor(Math.random() * fakeMessages.length)];
+      const div = document.createElement("div");
+      div.className = "p-3 rounded-lg border border-red-500/20 bg-red-900/20";
+      div.innerHTML = `<div class="flex justify-between text-xs mb-1">
+          <span class="font-semibold text-red-400">@${randomMsg.user}</span>
+          <span class="text-gray-500">now</span>
+        </div>
+        <div class="text-sm text-gray-300">${randomMsg.msg}</div>`;
+      feed.prepend(div);
+    }
+
+    // Init
+    updateIntegrity();
+    setInterval(addFakeMessage, 8000);
+  </script>
+
+</body>
+</html>

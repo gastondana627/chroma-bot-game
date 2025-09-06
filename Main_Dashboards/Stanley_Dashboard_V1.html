@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stanley’s Watchtower</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    body { font-family: 'JetBrains Mono', monospace; background: #000; overflow-x: hidden; }
+
+    /* Dark glitch aesthetic */
+    #backgroundGradient {
+      background: radial-gradient(circle at 30% 30%, rgba(255,0,0,0.2), transparent 70%),
+                  radial-gradient(circle at 70% 70%, rgba(0,200,255,0.15), transparent 70%),
+                  #000;
+    }
+    .glass {
+      backdrop-filter: blur(10px);
+      background: rgba(20,20,20,0.8);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .progress-bar { transition: width 1s ease-in-out; }
+    .chat-message:hover { transform: translateX(4px); }
+    .action-button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,0,0,0.4); }
+
+    /* Glitch overlay */
+    #glitchOverlay {
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      mix-blend-mode: screen;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-black relative overflow-hidden">
+
+  <!-- Background + glitch overlay -->
+  <div id="backgroundGradient" class="absolute inset-0"></div>
+  <div id="glitchOverlay"></div>
+
+  <!-- Header -->
+  <div class="relative z-10 p-6 border-b border-red-500/30">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-white mb-1 flex items-center">
+          <span class="text-red-500 mr-2">⚠</span> Stanley’s Watchtower
+          <span class="text-xs ml-3 text-gray-400">who’s really behind the screen?</span>
+        </h1>
+        <div class="text-sm text-gray-400">🪪 Identity Integrity: <span id="integrityScore">68%</span></div>
+      </div>
+      <div class="text-right">
+        <div id="currentTime" class="text-sm text-gray-400">04:11 AM</div>
+        <div class="text-xs text-red-400">monitoring anomalies...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="relative z-10 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Main Panel -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Identity Status -->
+      <div class="glass rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-white">Identity Status</h2>
+            <p id="statusText" class="text-lg font-semibold text-red-400">COMPROMISED</p>
+          </div>
+          <div class="text-right text-sm text-gray-300">
+            <div>fake identities: <span id="fakeCount">5</span></div>
+            <div>accounts compromised: <span id="compromised">2</span></div>
+          </div>
+        </div>
+
+        <!-- Integrity Bar -->
+        <div class="mb-6">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-red-300">identity safety</span>
+            <span id="integrityPercent" class="text-white font-bold">68%</span>
+          </div>
+          <div class="relative h-6 bg-gray-800 rounded-full overflow-hidden">
+            <div id="integrityBar" class="h-full progress-bar bg-red-500 shadow-red-500/50 shadow-lg" style="width: 68%"></div>
+          </div>
+          <div class="flex justify-between text-xs mt-1 text-gray-500">
+            <span>🛡 safe</span>
+            <span>⚠ at risk</span>
+            <span>💀 stolen</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="grid grid-cols-2 gap-4">
+          <button id="traceBtn" class="action-button glass text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center">
+            🕵 trace impostor
+          </button>
+          <button id="lockBtn" class="action-button glass text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center">
+            🔒 lock accounts
+          </button>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div id="notificationsArea" class="space-y-3"></div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="space-y-6">
+
+      <!-- Suspicious Log -->
+      <div class="glass rounded-xl p-5">
+        <div class="flex items-center mb-4">
+          <h3 class="font-bold text-white flex items-center">📡 Suspicious Log</h3>
+          <span id="logCount" class="ml-auto text-xs text-red-400">3 anomalies</span>
+        </div>
+        <div id="logFeed" class="space-y-3 max-h-80 overflow-y-auto"></div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="glass rounded-xl p-5">
+        <h3 class="font-bold text-white mb-4">Compromise Stats</h3>
+        <div class="space-y-4">
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">leaked emails</span><span class="text-red-400 font-bold">12</span></div>
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">passwords exposed</span><span class="text-orange-400 font-bold">5</span></div>
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">devices hijacked</span><span class="text-yellow-400 font-bold">2</span></div>
+        </div>
+      </div>
+
+      <!-- Mood Playlist -->
+      <div class="glass rounded-xl p-5">
+        <h3 class="font-bold text-white mb-4">playlist while hiding</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center text-red-400"><span class="mr-2">🎵</span><span>identity crisis mixtape</span></div>
+          <div class="text-gray-400 text-xs">next: "who am i really?"</div>
+          <div class="mt-3 bg-gray-800 rounded-full h-1">
+            <div id="musicProgress" class="bg-red-400 h-1 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let state = { integrity: 68, fakeCount: 5, compromised: 2, musicProgress: 0 };
+
+    let suspiciousLogs = [
+      { ip: "192.168.0.13", action: "Login attempt from unknown device", mood: "danger" },
+      { ip: "89.101.44.77", action: "Password reset requested", mood: "risk" },
+      { ip: "177.23.55.90", action: "Account linked to new email", mood: "danger" }
+    ];
+
+    function updateIntegrity() {
+      document.getElementById("integrityPercent").textContent = state.integrity + "%";
+      document.getElementById("integrityBar").style.width = state.integrity + "%";
+      if (state.integrity > 75) {
+        document.getElementById("statusText").textContent = "SAFE";
+        document.getElementById("statusText").className = "text-lg font-semibold text-green-400";
+      } else if (state.integrity > 40) {
+        document.getElementById("statusText").textContent = "AT RISK";
+        document.getElementById("statusText").className = "text-lg font-semibold text-yellow-400";
+      } else {
+        document.getElementById("statusText").textContent = "COMPROMISED";
+        document.getElementById("statusText").className = "text-lg font-semibold text-red-400";
+      }
+    }
+
+    function updateLogs() {
+      const logFeed = document.getElementById("logFeed");
+      logFeed.innerHTML = "";
+      suspiciousLogs.forEach(log => {
+        const div = document.createElement("div");
+        div.className = `chat-message p-3 rounded-lg ${
+          log.mood==="danger" ? "bg-red-900/30 border border-red-500/20" :
+          "bg-yellow-900/30 border border-yellow-500/20"
+        }`;
+        div.innerHTML = `<div class="text-xs text-gray-500">IP: ${log.ip}</div><div class="text-sm text-gray-300">${log.action}</div>`;
+        logFeed.appendChild(div);
+      });
+      document.getElementById("logCount").textContent = suspiciousLogs.length + " anomalies";
+    }
+
+    function traceImpostor() {
+      state.fakeCount += 1;
+      state.integrity = Math.max(0, state.integrity - 5);
+      showNotification("Trace Launched", "Tracking impostor movements...", "🕵", "red");
+      glitchEffect();
+      updateIntegrity();
+    }
+
+    function lockAccounts() {
+      state.compromised = Math.max(0, state.compromised - 1);
+      state.integrity = Math.min(100, state.integrity + 15);
+      showNotification("Accounts Locked", "Compromised access revoked", "🔒", "red");
+      updateIntegrity();
+    }
+
+    function showNotification(title, subtitle, icon, color) {
+      const area = document.getElementById("notificationsArea");
+      const div = document.createElement("div");
+      div.className = `glass notification border-l-4 border-red-400 rounded-r-lg p-4 slide-in-right`;
+      div.innerHTML = `<div class="flex items-center"><span class="text-2xl mr-3">${icon}</span><div><div class="font-bold text-white">${title}</div><div class="text-sm text-gray-300">${subtitle}</div></div></div>`;
+      area.insertBefore(div, area.firstChild);
+      setTimeout(()=>{ div.style.opacity="0"; setTimeout(()=>div.remove(),500); },4000);
+    }
+
+    function glitchEffect() {
+      const overlay = document.getElementById("glitchOverlay");
+      overlay.style.opacity = "0.6";
+      overlay.style.background = "repeating-linear-gradient("+
+        Math.random()*360+"deg, transparent, rgba(255,0,0,0.3) 2px, transparent 4px)";
+      setTimeout(()=>overlay.style.opacity="0",150);
+    }
+
+    function ambientUpdate() {
+      state.musicProgress = (state.musicProgress + 0.6) % 100;
+      document.getElementById("musicProgress").style.width = state.musicProgress + "%";
+      if (Math.random() > 0.8) {
+        suspiciousLogs.unshift({ ip: "???.???.???.???", action: "New shadow account detected", mood: "danger" });
+        suspiciousLogs = suspiciousLogs.slice(0,6);
+        updateLogs();
+      }
+    }
+
+    function updateTime() {
+      document.getElementById("currentTime").textContent = new Date().toLocaleTimeString("en-US",{hour12:false,hour:"2-digit",minute:"2-digit"});
+    }
+
+    document.getElementById("traceBtn").addEventListener("click", traceImpostor);
+    document.getElementById("lockBtn").addEventListener("click", lockAccounts);
+
+    updateIntegrity(); updateLogs(); updateTime();
+    setInterval(ambientUpdate, 5000);
+    setInterval(updateTime, 1000);
+  </script>
+</body>
+</html>

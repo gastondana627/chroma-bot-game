@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maya’s Nexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    body { font-family: 'JetBrains Mono', monospace; background: #000; overflow-x: hidden; }
+
+    /* Glassmorphic neon gradient */
+    .glass {
+      backdrop-filter: blur(14px);
+      background: linear-gradient(135deg, rgba(255,0,128,0.15), rgba(0,255,255,0.1));
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Breathing neon background */
+    #backgroundGradient {
+      background: radial-gradient(circle at 20% 20%, rgba(255,0,128,0.25), transparent 60%),
+                  radial-gradient(circle at 80% 80%, rgba(0,255,255,0.25), transparent 60%),
+                  #000;
+      animation: pulse 6s infinite alternate;
+    }
+    @keyframes pulse { from { filter: brightness(0.8);} to { filter: brightness(1.2);} }
+
+    .progress-bar { transition: width 1s ease-in-out; }
+    .chat-message:hover { transform: translateX(5px); }
+    .action-button:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(255,0,200,0.3); }
+  </style>
+</head>
+<body class="min-h-screen bg-black relative overflow-hidden">
+
+  <!-- Background -->
+  <div id="backgroundGradient" class="absolute inset-0"></div>
+
+  <!-- Header -->
+  <div class="relative z-10 p-6 border-b border-pink-400/30">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-white mb-1 flex items-center">
+          <span class="text-pink-400 mr-2">♡</span> Maya’s Nexus
+          <span class="text-xs ml-3 text-gray-400">swipe carefully...</span>
+        </h1>
+        <div class="text-sm text-gray-400">🔐 Profile Security: <span id="profileSecurity">76%</span></div>
+      </div>
+      <div class="text-right">
+        <div id="currentTime" class="text-sm text-gray-400">02:14 AM</div>
+        <div class="text-xs text-pink-400">phishing attempts detected</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="relative z-10 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Main Panel -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Trust & Security -->
+      <div class="glass rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-white">Trust & Security</h2>
+            <p id="trustStatus" class="text-lg font-semibold text-pink-400">VULNERABLE</p>
+          </div>
+          <div class="text-right text-sm text-gray-300">
+            <div>trust score: <span id="trustScore">52</span>%</div>
+            <div>data leaks prevented: <span id="leaksPrevented">8</span></div>
+          </div>
+        </div>
+
+        <!-- Trust Bar -->
+        <div class="mb-6">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-pink-300">dating app safety</span>
+            <span id="trustPercent" class="text-white font-bold">52%</span>
+          </div>
+          <div class="relative h-6 bg-gray-800 rounded-full overflow-hidden">
+            <div id="trustBar" class="h-full progress-bar bg-pink-500 shadow-pink-500/50 shadow-lg" style="width: 52%"></div>
+          </div>
+          <div class="flex justify-between text-xs mt-1 text-gray-500">
+            <span>💖 safe</span>
+            <span>⚠️ suspicious</span>
+            <span>💔 catfished</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="grid grid-cols-2 gap-4">
+          <button id="backgroundCheckBtn" class="action-button glass text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center">
+            🔍 run background check
+          </button>
+          <button id="encryptBtn" class="action-button glass text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center">
+            🔒 encrypt messages
+          </button>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div id="notificationsArea" class="space-y-3"></div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="space-y-6">
+
+      <!-- Dating Feed -->
+      <div class="glass rounded-xl p-5">
+        <div class="flex items-center mb-4">
+          <h3 class="font-bold text-white flex items-center">💬 Incoming Chats</h3>
+          <span id="unreadCount" class="ml-auto text-xs text-red-400">3 red flags</span>
+        </div>
+        <div id="chatFeed" class="space-y-3 max-h-80 overflow-y-auto"></div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="glass rounded-xl p-5">
+        <h3 class="font-bold text-white mb-4">Security Stats</h3>
+        <div class="space-y-4">
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">suspicious profiles</span><span class="text-red-400 font-bold">4</span></div>
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">fake pics flagged</span><span class="text-yellow-400 font-bold">7</span></div>
+          <div class="flex justify-between"><span class="text-gray-400 text-sm">verified matches</span><span class="text-green-400 font-bold">2</span></div>
+        </div>
+      </div>
+
+      <!-- Mood Playlist -->
+      <div class="glass rounded-xl p-5">
+        <h3 class="font-bold text-white mb-4">playlist while swiping</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center text-pink-400"><span class="mr-2">🎵</span><span>red flag radar</span></div>
+          <div class="text-gray-400 text-xs">next: "ghosted again"</div>
+          <div class="mt-3 bg-gray-800 rounded-full h-1">
+            <div id="musicProgress" class="bg-pink-400 h-1 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let state = { trust: 52, leaksPrevented: 8, musicProgress: 0 };
+
+    let chatMessages = [
+      { user: "CuteGuy99", msg: "hey gorgeous wanna meet tonight? 😉", mood: "redflag" },
+      { user: "verified_friend", msg: "u should double check his pics", mood: "safe" },
+      { user: "SuspiciousAcc", msg: "click my link for surprise", mood: "scam" }
+    ];
+
+    const redFlags = [
+      { user: "UnknownUser", msg: "send me ur number fast", mood: "redflag" },
+      { user: "BotAccount", msg: "u look so beautiful want sugar daddy?", mood: "scam" },
+      { user: "GhostedDude", msg: "where did u go??", mood: "toxic" }
+    ];
+
+    function updateTrust() {
+      document.getElementById("trustPercent").textContent = state.trust + "%";
+      document.getElementById("trustBar").style.width = state.trust + "%";
+      if (state.trust > 70) {
+        document.getElementById("trustStatus").textContent = "SAFE";
+        document.getElementById("trustStatus").className = "text-lg font-semibold text-green-400";
+      } else if (state.trust > 40) {
+        document.getElementById("trustStatus").textContent = "VULNERABLE";
+        document.getElementById("trustStatus").className = "text-lg font-semibold text-yellow-400";
+      } else {
+        document.getElementById("trustStatus").textContent = "AT RISK";
+        document.getElementById("trustStatus").className = "text-lg font-semibold text-red-400";
+      }
+    }
+
+    function updateChatFeed() {
+      const chatFeed = document.getElementById("chatFeed");
+      chatFeed.innerHTML = "";
+      chatMessages.forEach(chat => {
+        const div = document.createElement("div");
+        div.className = `chat-message p-3 rounded-lg ${
+          chat.mood==="redflag" ? "bg-red-900/30 border border-red-500/20" :
+          chat.mood==="scam" ? "bg-pink-900/30 border border-pink-500/20" :
+          "bg-green-900/30 border border-green-500/20"
+        }`;
+        div.innerHTML = `<div class="text-xs text-gray-500">@${chat.user}</div><div class="text-sm text-gray-300">${chat.msg}</div>`;
+        chatFeed.appendChild(div);
+      });
+      document.getElementById("unreadCount").textContent = chatMessages.length + " red flags";
+    }
+
+    function runBackgroundCheck() {
+      state.trust = Math.min(100, state.trust + 10);
+      state.leaksPrevented += 1;
+      showNotification("Background Check", "1 fake profile flagged", "🔍", "pink");
+      updateTrust();
+    }
+
+    function encryptMessages() {
+      state.trust = Math.min(100, state.trust + 5);
+      showNotification("Encryption Active", "messages hidden from stalkers", "🔒", "pink");
+      updateTrust();
+    }
+
+    function showNotification(title, subtitle, icon, color) {
+      const area = document.getElementById("notificationsArea");
+      const div = document.createElement("div");
+      div.className = `glass notification border-l-4 border-pink-400 rounded-r-lg p-4 slide-in-right`;
+      div.innerHTML = `<div class="flex items-center"><span class="text-2xl mr-3">${icon}</span><div><div class="font-bold text-white">${title}</div><div class="text-sm text-gray-300">${subtitle}</div></div></div>`;
+      area.insertBefore(div, area.firstChild);
+      setTimeout(()=>{ div.style.opacity="0"; setTimeout(()=>div.remove(),500); },4000);
+    }
+
+    function ambientUpdate() {
+      state.musicProgress = (state.musicProgress + 0.8) % 100;
+      document.getElementById("musicProgress").style.width = state.musicProgress + "%";
+      if (Math.random() > 0.75) {
+        chatMessages.unshift(redFlags[Math.floor(Math.random()*redFlags.length)]);
+        chatMessages = chatMessages.slice(0,6);
+        updateChatFeed();
+      }
+    }
+
+    function updateTime() {
+      document.getElementById("currentTime").textContent = new Date().toLocaleTimeString("en-US", {hour12:false,hour:"2-digit",minute:"2-digit"});
+    }
+
+    document.getElementById("backgroundCheckBtn").addEventListener("click", runBackgroundCheck);
+    document.getElementById("encryptBtn").addEventListener("click", encryptMessages);
+
+    updateTrust(); updateChatFeed(); updateTime();
+    setInterval(ambientUpdate, 4000);
+    setInterval(updateTime, 1000);
+  </script>
+</body>
+</html>
