@@ -61,7 +61,7 @@ DATA_BLEED_VSC_GAME/
 
 
 	•	Run frontend server:
-  node server.js
+  node server.js or live server
 
 
 
