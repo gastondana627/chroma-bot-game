@@ -6,11 +6,13 @@ import fal_client
 import os
 from dotenv import load_dotenv
 import time
-import asyncio # ✅ NEW: Import asyncio for parallel processing
+import asyncio
+from enum import Enum
+from typing import List, Optional
 
 # --- 1. SETUP ---
 load_dotenv('.env_constructor')
-app = FastAPI(title="Character Constructor API")
+app = FastAPI(title="Character Constructor API - Production Studio")
 fal_client.api_key = os.getenv("FAL_KEY")
 if not fal_client.api_key:
     raise ValueError("FAL_KEY not found in .env_constructor")
@@ -23,111 +25,143 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- 2. DATA MODELS ---
+# --- 2. QUALITY TIERS & DATA MODELS ---
+class QualityTier(str, Enum):
+    FAST = "FAST"
+    GOOD = "GOOD"
+    ULTRA = "ULTRA"
+
 class ReconstructRequest(BaseModel):
     image_url: str
+    quality: QualityTier = QualityTier.GOOD
 
-# --- 3. THE "PRODUCTION STUDIO" 3D PIPELINE (FINAL VERSION) ---
+# --- 3. THE "PRODUCTION STUDIO" 3D PIPELINE ---
 @app.post("/reconstruct-character")
 async def reconstruct_character(request: ReconstructRequest):
     pipeline_start_time = time.time()
     
-    # --- Stage 1: AI Background Removal ---
-    print("🪐 Character Constructor: Starting PRODUCTION STUDIO Pipeline…")
-    print("   Stage 1/4: Removing background for clean input...")
-    base_image_url = request.image_url
-    cleaned_image_url = base_image_url
     try:
-        rembg_result = fal_client.run("fal-ai/imageutils/rembg", arguments={
-            "image_url": base_image_url,
-            "model": "u2net_human_seg"
-        })
-        cleaned_image_url = rembg_result["image_url"]
-        print("   ✅ Stage 1/4 complete.")
-    except Exception as e:
-        print(f"   ⚠️ Stage 1/4 failed: {e}. Using original image.")
+        quality_settings = {
+            "FAST": {"views": 8, "elevations": [25], "angles_per_level": 8, "concurrent": 8},
+            "GOOD": {"views": 16, "elevations": [15, 30], "angles_per_level": 8, "concurrent": 4},  
+            "ULTRA": {"views": 32, "elevations": [10, 25, 40], "angles_per_level": 12, "concurrent": 4}
+        }[request.quality]
 
-    # --- Stage 2: AI Art Direction ---
-    print("   Stage 2/4: Analyzing character art...")
-    try:
-        desc_result = fal_client.run("fal-ai/llava-next", arguments={
-            "image_url": cleaned_image_url,
-            "prompt": "You are a character concept artist. In 20 words, describe this character's key visual features, clothing, and style."
-        })
-        character_description = desc_result["output"]
+        print(f"🪐 Character Constructor: Starting PRODUCTION STUDIO Pipeline (Quality: {request.quality})...")
+        base_image_url = request.image_url
+        
+        # --- Stage 1: AI Art Direction ---
+        print("   Stage 1/4: AI Art Director analyzing character...")
+        character_description = await get_character_description(base_image_url)
         print(f"   - Art Direction: '{character_description}'")
-    except Exception as e:
-        character_description = "a photorealistic, highly detailed character"
-        print(f"   ⚠️ Stage 2/4 failed: {e}. Using generic prompt.")
 
-    # --- Stage 3: PARALLEL AI Photoshoot ---
-    print("   Stage 3/4: Generating 16 camera angles in parallel...")
-    image_urls = [cleaned_image_url]
-    angles = [22, 45, 67, 90, 112, 135, 157, 180, 202, 225, 247, 270, 292, 315, 337]
-    
-    # This function defines the task for generating one view
-    async def generate_view(angle: int):
-        try:
-            prompt = f"{character_description}, full body shot, standing, neutral expression, centered, photorealistic, studio lighting, view from a {angle} degree rotation."
-            return fal_client.run("fal-ai/stable-diffusion-v3-medium", arguments={"prompt": prompt})
-        except Exception as e:
-            print(f"     - View generation failed for angle {angle}: {e}")
-            return None # Return None on failure
+        # --- Stage 2: Intelligent Multi-View Generation ---
+        print(f"   Stage 2/4: Generating {quality_settings['views']} views in parallel...")
+        image_urls = await generate_intelligent_views(
+            base_image_url, 
+            character_description, 
+            quality_settings
+        )
+        print(f"   ✅ Stage 2/4 complete. Total views: {len(image_urls)}")
 
-    # asyncio.gather runs all the tasks concurrently
-    tasks = [generate_view(angle) for angle in angles]
-    results = await asyncio.gather(*tasks)
-    
-    # Filter out any failed results and add the successful ones
-    successful_views = [res["images"][0]["url"] for res in results if res and "images" in res]
-    image_urls.extend(successful_views)
-    print(f"   ✅ Stage 3/4 complete. Total views for reconstruction: {len(image_urls)}")
+        # --- Stage 3: High-Fidelity 3D Reconstruction ---
+        print("   Stage 3/4: 3D reconstruction with fallback chain...")
+        final_result, model_used = await reconstruct_with_fallbacks(image_urls)
+        
+        # --- Stage 4: Results Processing ---
+        print("   Stage 4/4: Parsing final model and logging metrics...")
+        mesh_url = extract_mesh_url(final_result)
+        if not mesh_url:
+            raise HTTPException(status_code=500, detail="No valid 3D model generated")
 
-    # --- Stage 4: The "Waterfall" 3D Reconstruction ---
-    print("   Stage 4/4: Reconstructing 3D model with waterfall approach...")
-    final_result, model_used = None, ""
-    
-    # Attempt 1: Trellis (Highest Quality, but prefers single view)
+        total_time = round(time.time() - pipeline_start_time, 2)
+        file_size_kb = final_result.get("model_mesh", {}).get("file_size", 0) // 1024
+        
+        print(f"✅ PRODUCTION STUDIO Character generated in {total_time}s")
+        print(f"   📊 Model: {model_used} | Views: {len(image_urls)} | Size: {file_size_kb}KB")
+        
+        return { 
+            "model_url": mesh_url, 
+            "model_info": { 
+                "model_used": model_used,
+                "quality_tier": request.quality,
+                "total_pipeline_time_s": total_time,
+                "views_processed": len(image_urls),
+                "file_size_kb": file_size_kb
+            } 
+        }
+
+    except Exception as exc:
+        print(f"❌ Pipeline failure: {exc}")
+        raise HTTPException(status_code=500, detail=f"The Production Studio pipeline failed: {str(exc)}")
+
+# --- HELPER FUNCTIONS (FROM FEEDBACK) ---
+
+async def get_character_description(image_url: str) -> str:
+    """Enhanced character analysis with fallback"""
     try:
-        print("      - Attempting: fal-ai/trellis (ULTRA-HQ)")
-        result = fal_client.run("fal-ai/trellis", arguments={
-            "image_url": cleaned_image_url, # Use the best single image
-            "texture_resolution": 2048,
-            "target_polycount": 150000
-        })
-        final_result, model_used = result, "fal-ai/trellis (ULTRA-HQ)"
+        result = await asyncio.to_thread(
+            fal_client.run, "fal-ai/llava-next",
+            arguments={ "image_url": image_url, "prompt": "You are a professional 3D character artist. Describe this character's key visual features, clothing, pose, and style in exactly 25 words for accurate 3D reconstruction." }
+        )
+        return result["output"]
     except Exception as e:
-        print(f"      - Trellis failed: {e}. Trying next model.")
+        print(f"   ⚠️ Art direction failed: {e}")
+        return "photorealistic human character, detailed clothing, neutral pose"
 
-    # Attempt 2: TripoSR (Reliable Fallback)
-    if not final_result:
+async def generate_intelligent_views(base_url: str, description: str, settings: dict) -> List[str]:
+    """Generate views with concurrency control"""
+    semaphore = asyncio.Semaphore(settings["concurrent"])
+    image_urls = [base_url]
+    
+    async def generate_single_view(angle: int, elevation: int):
+        async with semaphore:
+            try:
+                prompt = f"{description}, full body, A-pose, studio lighting, {angle}° rotation, {elevation}° elevation, clean background"
+                result = await asyncio.to_thread(fal_client.run, "fal-ai/stable-diffusion-v3-medium", arguments={"prompt": prompt})
+                return result["images"][0]["url"] if result.get("images") else None
+            except Exception as e:
+                print(f"     - View failed: {angle}°/{elevation}° - {e}")
+                return None
+
+    tasks = []
+    total_views_to_gen = settings["angles_per_level"] * len(settings["elevations"])
+    for elevation in settings["elevations"]:
+        for i in range(settings["angles_per_level"]):
+            angle = int((i / settings["angles_per_level"]) * 360)
+            tasks.append(generate_single_view(angle, elevation))
+    
+    results = []
+    for i, f in enumerate(asyncio.as_completed(tasks)):
+        result = await f
+        if result: results.append(result)
+        if (i + 1) % 4 == 0: print(f"     - Progress: {i+1}/{total_views_to_gen} views attempted")
+    
+    image_urls.extend(results)
+    return image_urls
+
+async def reconstruct_with_fallbacks(image_urls: List[str]):
+    """Try multiple 3D reconstruction models in order of quality"""
+    models = [
+        ("fal-ai/trellis", {"texture_resolution": 4096, "target_polycount": 200000}),
+        ("fal-ai/triposr", {"chunk_size": 8192, "mc_resolution": 256}),
+    ]
+    
+    for model_name, params in models:
         try:
-            print("      - Attempting: fal-ai/triposr (HQ Fallback)")
-            result = fal_client.run("fal-ai/triposr", arguments={"image_url": cleaned_image_url})
-            final_result, model_used = result, "fal-ai/triposr (HQ)"
-        except Exception as e2:
-            print(f"      - TripoSR failed: {e2}.")
-
-    if not final_result:
-        raise HTTPException(status_code=500, detail="All 3D reconstruction models failed.")
-
-    # --- 5. Parse and Return ---
-    model_mesh = final_result.get("model_mesh", {})
-    mesh_url = model_mesh.get("url") or final_result.get("model_url")
-    if not mesh_url:
-        raise HTTPException(status_code=500, detail="Pipeline succeeded but returned no model URL.")
-
-    total_time = round(time.time() - pipeline_start_time, 2)
-    file_size_kb = model_mesh.get("file_size", 0) // 1024
+            print(f"      - Attempting: {model_name}")
+            # Use multi-view for trellis if available, otherwise single
+            args = {"image_urls" if "trellis" in model_name else "image_url": image_urls if "trellis" in model_name else image_urls[0], **params}
+            result = await asyncio.to_thread(fal_client.run, model_name, arguments=args)
+            return result, model_name
+        except Exception as e:
+            print(f"      - {model_name} failed: {e}")
+            continue
     
-    print(f"✅ Final PRODUCTION STUDIO Quality 3D Character generated in {total_time}s.")
-    
-    return { 
-        "model_url": mesh_url, 
-        "model_info": { 
-            "model_used": model_used,
-            "total_pipeline_time_s": total_time,
-            "views_generated": len(image_urls),
-            "file_size_kb": file_size_kb
-        } 
-    }
+    raise Exception("All 3D reconstruction models failed")
+
+def extract_mesh_url(result) -> Optional[str]:
+    """Extract mesh URL from various response formats"""
+    if isinstance(result, list) and result: return result[0].get("url")
+    if isinstance(result, dict): return result.get("model_mesh", {}).get("url") or result.get("model_url") or result.get("url")
+    return None
