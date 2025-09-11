@@ -42,3 +42,15 @@ npm-debug.log
 # Build output
 /dist
 /build
+
+
+
+
+
+
+###### tools /Users/gastondana/Downloads/Data_Bleed_VSC_Game/tools/character_constructor/backend
+# Ignore all virtual environments, including nested ones
+**/venv_constructor/
+```3.  Save the file.
+
+
