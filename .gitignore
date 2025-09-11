@@ -53,4 +53,5 @@ npm-debug.log
 **/venv_constructor/
 ```3.  Save the file.
 
-
+# Ignore Python cache files
+**/__pycache__/
