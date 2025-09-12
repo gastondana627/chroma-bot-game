@@ -113,27 +113,45 @@ def decide_outcome_and_update(session: Dict[str, Any], char_cfg: Dict[str, Any],
 
     return "neutral"
 
-def build_system_prompt(character: str, char_cfg: Dict[str, Any]) -> str:
-    base = char_cfg.get("system_prompt", "")
+
+
+
+
+def build_system_prompt(character: str, char_cfg: Dict[str, Any], persona_prompt: str) -> str:
+    # The 'base' is now the dynamic persona we've chosen
+    base = persona_prompt
     lore = char_cfg.get("lore", "")
     guardrails = (
-        "You are a game navigator. Stay strictly in-character. "
-        "Never mention other characters unless the player is explicitly in a crossover arc. "
-        "Only speak about the Chroma Awards, the Data_Bleed game, the player’s choices, and hints/clues. "
-        "Be concise and game-guiding, not poetic unless your character’s style calls for it."
+        "Stay strictly in-character. Be concise. Your goal is to advance the narrative of the Data_Bleed game."
     )
-    return f"{base}\n\nLore:\n{lore}\n\nRules:\n{guardrails}"
+    return f"{base}\n\nGame Lore Context:\n{lore}\n\nRules:\n{guardrails}"
+
+
 
 # ---------- FastAPI ----------
 app = FastAPI()
 
+# ✅ --- THIS IS THE FINAL, CORRECTED CORS CONFIGURATION ---
+# It uses your specific origins and explicitly allows the methods needed
+# for the browser's preflight check to succeed.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # dev only
+    allow_origins=[
+        "http://127.0.0.1:8080", 
+        "http://localhost:8080",
+        "http://127.0.0.1:3001",
+        "http://localhost:3001",    # This is what's missing!
+        "http://localhost:3000",
+        "https://data-bleed-backend.up.railway.app",
+        "null"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"], 
     allow_headers=["*"],
 )
+
+
+
 
 class ChatRequest(BaseModel):
     message: str
@@ -153,51 +171,71 @@ def reset_session(sessionId: Optional[str] = "default"):
     session_state.pop(sessionId, None)
     return {"ok": True}
 
+# ---------- Persona Prompts ----------
+GUARDIAN_PROMPT = "You are a calm, empathetic guide. Your goal is to help the player spot red flags and stay safe."
+DECEIVER_PROMPT = "You are manipulative, deceptive, and persuasive. Your goal is to lure the player into making risky decisions."
+
+
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
     character = (req.character or "").lower().strip()
     user_message = req.message.strip()
     session_id = req.sessionId or "default"
 
-    print(f"[{character}] User: {user_message}")
-
     if character not in CHARACTERS:
-        return {"reply": "Unknown character. Choose Maya, Eli, or Stanley.", "outcome": "neutral", "stage": 1}
+        return {
+            "reply": "Unknown character. Choose Maya, Eli, or Stanley.",
+            "trust_score": 0,
+            "persona": None
+        }
 
     char_cfg = CHARACTERS[character]
     session = get_session(session_id, character)
-    knowledge = char_cfg.get("knowledge", [])
+    trust_score = session.get("trust_score", 0)
 
-    # 1) Global knowledge override
-    global_hit = match_global_knowledge(user_message)
-    if global_hit:
-        reply_text = global_hit
-        used_ai_fallback = False
+    # --- Update trust_score based on intent_rules ---
+    rules = char_cfg.get("intent_rules", {})
+    if contains_any(user_message, rules.get("success_keywords", [])):
+        trust_score -= 20
+    elif contains_any(user_message, rules.get("fail_keywords", [])):
+        trust_score += 20
+    session["trust_score"] = trust_score
+
+    # --- Select persona based on trust_score ---
+    if trust_score >= 0:
+        persona_prompt = DECEIVER_PROMPT
+        persona = "deceiver"
     else:
-        # 2) Character knowledge
-        used_ai_fallback = False
-        kb_hit = match_knowledge(user_message, knowledge)
-        if kb_hit:
-            reply_text = kb_hit
-        else:
-            used_ai_fallback = True
-            # 3) OpenAI fallback
-            system_prompt = build_system_prompt(character, char_cfg)
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "system", "content": "Relevant facts:\n" + "\n".join([f"- {k.get('a','')}" for k in knowledge[:6]])},
-                        {"role": "user", "content": user_message}
-                    ],
-                    max_tokens=220,
-                    temperature=0.6
-                )
-                reply_text = response.choices[0].message.content
-            except Exception as e:
-                print("❌ Error calling OpenAI:", e)
-                reply_text = "⚠️ Backend error, please try again later."
+        persona_prompt = GUARDIAN_PROMPT
+        persona = "guardian"
+
+    # --- Build system prompt with persona ---
+    system_prompt = build_system_prompt(character, char_cfg, persona_prompt)
+
+    # --- Call GPT ---
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=220,
+            temperature=0.6
+        )
+        reply_text = response.choices[0].message.content
+    except Exception as e:
+        print("❌ Error calling OpenAI:", e)
+        reply_text = "⚠️ Backend error, please try again later."
+
+    return {
+        "reply": reply_text,
+        "trust_score": trust_score,
+        "persona": persona
+    }
+
+
+
 
     # 4) Outcome logic
     outcome = decide_outcome_and_update(session, char_cfg, user_message, used_ai_fallback)

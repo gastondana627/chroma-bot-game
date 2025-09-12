@@ -1,24 +1,32 @@
-// chroma-bot/openai.js
-// Calls backend API route (server.js -> /api/chat)
+// /Users/gastondana/Downloads/Data_Bleed_VSC_Game/chroma-bot/openai.js
 
-export async function getAIResponse(userMessage, character = "eli") {
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage, character })
-      });
-  
-      const data = await response.json();
-  
-      if (data.error) {
-        console.error("OpenAI error:", data.error);
-        return "⚠️ AI error. Try again later.";
-      }
-  
-      return data.reply || "⚠️ No response from AI.";
-    } catch (error) {
-      console.error("Request failed:", error);
-      return "⚠️ Error reaching AI.";
+/**
+ * This file has been updated to communicate with the main FastAPI backend.
+ */
+async function getAIResponse(userMessage, character = "maya", sessionId = "chroma_bot_session") {
+  try {
+    // We use the full URL to ensure it always hits the FastAPI server on port 3001
+    const response = await fetch("http://127.0.0.1:3001/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      // The request body now matches what the FastAPI server expects
+      body: JSON.stringify({ 
+        message: userMessage, 
+        character: character,
+        sessionId: sessionId 
+      })
+    });
+
+    if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
     }
+
+    const data = await response.json();
+    return data.reply || "⚠️ No response from AI.";
+
+  } catch (error) {
+    console.error("Request failed:", error);
+    // This is the error message you were seeing
+    return "⚠️ Connection error, try again later.";
   }
+}

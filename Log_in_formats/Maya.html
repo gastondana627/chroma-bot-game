@@ -693,13 +693,15 @@
                     loginContainer.classList.remove('loading');
                     
                     // User feedback
-                    alert('🛡️ FriendBleed Access Granted\n\nWelcome to the Digital Safety Platform\nStay vigilant against cyber threats.');
-                    
-                    // ✅ Send message back to parent after success
-                    window.parent.postMessage({
-                        action: "maya-connected",
-                        gamertag: document.getElementById('username').value
-                    }, "*");
+
+
+
+                    // ✅ Redirect to Maya dashboard with sessionId after success
+                    const username = document.getElementById('username').value || "guest";
+                    window.location.href = "../Main_Dashboards/Maya_Dashboard_V2.html?sessionId=" + encodeURIComponent(username + "_maya");
+
+
+
 
                 }, 2000);
             }, 4500);
