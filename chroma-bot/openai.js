@@ -5,8 +5,12 @@
  */
 async function getAIResponse(userMessage, character = "maya", sessionId = "chroma_bot_session") {
   try {
-    // We use the full URL to ensure it always hits the FastAPI server on port 3001
-    const response = await fetch("http://127.0.0.1:3001/api/chat", {
+    // Use the same API base logic as index.html
+    const API_BASE = window.location.hostname === "localhost"
+      ? "http://127.0.0.1:3001"
+      : "https://data-bleed-backend.up.railway.app";
+    
+    const response = await fetch(`${API_BASE}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       // The request body now matches what the FastAPI server expects

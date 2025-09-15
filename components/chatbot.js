@@ -5,10 +5,15 @@ export default function Chatbot({ mode }) {
   const [input, setInput] = useState("");
 
   async function sendMessage() {
-    const res = await fetch("/api/chatbot", {
+    // Use the same API base logic as index.html
+    const API_BASE = window.location.hostname === "localhost"
+      ? "http://127.0.0.1:3001"
+      : "https://data-bleed-backend.up.railway.app";
+    
+    const res = await fetch(`${API_BASE}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: input, mode }),
+      body: JSON.stringify({ message: input, character: mode || "maya", sessionId: "default" }),
     });
     const data = await res.json();
     setMessages([...messages, { from: "user", text: input }, { from: "bot", text: data.reply }]);

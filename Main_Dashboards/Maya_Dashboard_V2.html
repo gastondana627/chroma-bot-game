@@ -51,6 +51,13 @@
     </div>
   </div>
 
+  <!-- Resume Game Button -->
+  <div class="relative z-10 px-6 py-3">
+    <button id="maya-resume-game-btn" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center gap-2 shadow-lg">
+      <span>▶</span> Resume Game
+    </button>
+  </div>
+
   <!-- Layout (Unchanged) -->
   <div class="relative z-10 p-6 grid grid-cols-1 lg-grid-cols-3 gap-6">
 
@@ -196,8 +203,11 @@
       document.getElementById("currentTime").textContent = new Date().toLocaleTimeString("en-US", {hour12:false, hour:"2-digit", minute:"2-digit"});
     }
     function updateMusicProgress() {
-      let progress = parseFloat(document.getElementById("musicProgress").style.width) || 0;
-      document.getElementById("musicProgress").style.width = ((progress + 0.5) % 100) + "%";
+      const musicProgress = document.getElementById("musicProgress");
+      if (musicProgress) {
+        let progress = parseFloat(musicProgress.style.width) || 0;
+        musicProgress.style.width = ((progress + 0.5) % 100) + "%";
+      }
     }
 
     // --- Start everything when the page loads ---
@@ -207,6 +217,19 @@
       updateTime();
       setInterval(updateTime, 1000);
       setInterval(updateMusicProgress, 2000);
+
+      // --- Resume Game Button Functionality ---
+      const resumeGameBtn = document.getElementById('maya-resume-game-btn');
+      if (resumeGameBtn) {
+        console.log('✅ Maya Resume Game button found and event listener added');
+        resumeGameBtn.addEventListener('click', () => {
+          console.log('🎮 Maya Resume Game button clicked - sending message to parent');
+          // Send message to parent window to trigger game view
+          window.parent.postMessage({ action: 'resume-game', character: 'maya' }, '*');
+        });
+      } else {
+        console.error('❌ Maya Resume Game button not found!');
+      }
     });
   </script>
 

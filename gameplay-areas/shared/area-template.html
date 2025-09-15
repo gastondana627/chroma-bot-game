@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA_BLEED - {{AREA_TITLE}}</title>
+    <style>
+        body {
+            margin: 0;
+            background: {{AREA_BACKGROUND}};
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            color: white;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Area Container */
+        .area-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: {{AREA_SPECIFIC_BACKGROUND}};
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* Overlay for artwork integration */
+        .artwork-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+
+        /* Content Layer */
+        .content-layer {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        /* Area Title */
+        .area-title {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            color: {{CHARACTER_COLOR}};
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); }
+            to { text-shadow: 0 0 20px {{CHARACTER_COLOR}}, 2px 2px 4px rgba(0, 0, 0, 0.8); }
+        }
+
+        /* Area Description */
+        .area-description {
+            font-size: 1.3em;
+            max-width: 800px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid {{CHARACTER_COLOR}};
+        }
+
+        /* Interactive Elements Container */
+        .interactive-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .interactive-element {
+            position: absolute;
+            pointer-events: all;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .interactive-element:hover {
+            transform: scale(1.1);
+            filter: brightness(1.2);
+        }
+
+        /* Navigation Controls */
+        .area-navigation {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 25px;
+            border: 2px solid {{CHARACTER_COLOR}};
+        }
+
+        .nav-button {
+            background: rgba(0, 0, 0, 0.7);
+            color: {{CHARACTER_COLOR}};
+            border: 2px solid {{CHARACTER_COLOR}};
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .nav-button:hover {
+            background: {{CHARACTER_COLOR}};
+            color: #000;
+            box-shadow: 0 0 15px {{CHARACTER_COLOR}};
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Pause Button - Consistent positioning */
+        .pause-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 10px 20px;
+            background: #00FFFF;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .pause-button:hover {
+            background: #00CCCC;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 255, 255, 0.3);
+        }
+
+        /* Chroma Orb - Consistent positioning */
+        .chroma-orb {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+            background: radial-gradient(circle, #00ffff, #0066cc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .chroma-orb:hover {
+            transform: scale(1.15);
+        }
+
+        /* Chat Box - Consistent positioning */
+        .chat-box {
+            position: fixed;
+            bottom: 120px;
+            right: 20px;
+            width: 280px;
+            height: 380px;
+            background: rgba(20, 20, 20, 0.92);
+            border: 2px solid #00FFFF;
+            border-radius: 12px;
+            display: none;
+            flex-direction: column;
+            padding: 10px;
+            z-index: 2001;
+        }
+
+        .chat-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            position: relative;
+            color: #00FFFF;
+        }
+
+        .close-chat {
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 14px;
+            color: white;
+        }
+
+        .chat-form {
+            display: flex;
+            margin-top: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #7928CA;
+            background: #333;
+            color: white;
+            border-radius: 6px;
+        }
+
+        .chat-submit {
+            margin-left: 6px;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            background: #FF0080;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Area-specific styling placeholders */
+        .maya-theme {
+            --primary-color: #ff1493;
+            --secondary-color: #00bfff;
+        }
+
+        .eli-theme {
+            --primary-color: #00ffff;
+            --secondary-color: #0066ff;
+        }
+
+        .stanley-theme {
+            --primary-color: #9ca3af;
+            --secondary-color: #6b7280;
+        }
+
+        /* Fade transitions */
+        .fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .area-title {
+                font-size: 2em;
+            }
+            
+            .area-description {
+                font-size: 1.1em;
+                padding: 15px;
+            }
+            
+            .area-navigation {
+                bottom: 60px;
+                padding: 10px;
+            }
+            
+            .nav-button {
+                padding: 8px 15px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body class="{{CHARACTER_THEME}}">
+    <!-- Pause Button -->
+    <button class="pause-button" onclick="pauseGame()">⏸ Pause Game</button>
+
+    <!-- Area Container -->
+    <div class="area-container fade-in">
+        <!-- Artwork Overlay (for future image integration) -->
+        <div class="artwork-overlay"></div>
+        
+        <!-- Content Layer -->
+        <div class="content-layer">
+            <h1 class="area-title">{{AREA_TITLE}}</h1>
+            <div class="area-description">
+                {{AREA_DESCRIPTION}}
+            </div>
+            
+            <!-- Placeholder for area-specific content -->
+            <div class="area-content">
+                {{AREA_CONTENT}}
+            </div>
+        </div>
+        
+        <!-- Interactive Elements (for future artwork integration) -->
+        <div class="interactive-elements" id="interactive-elements">
+            <!-- Interactive elements will be added here -->
+        </div>
+    </div>
+
+    <!-- Area Navigation -->
+    <div class="area-navigation">
+        <button class="nav-button" onclick="navigateArea('previous')" id="prev-btn">← Previous</button>
+        <button class="nav-button" onclick="showAreaMap()" id="map-btn">Area <span id="current-area-num">{{AREA_NUMBER}}</span>/6</button>
+        <button class="nav-button" onclick="navigateArea('next')" id="next-btn">Next →</button>
+    </div>
+
+    <!-- Chroma Orb -->
+    <div class="chroma-orb" onclick="toggleChat()">🤖</div>
+
+    <!-- Chat Box -->
+    <div class="chat-box" id="chat-box">
+        <div class="chat-header">
+            💬 Chroma Bot
+            <button class="close-chat" onclick="toggleChat()">✖</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <p><b>Bot:</b> Hi! I'm here to help you navigate this area. What would you like to know?</p>
+        </div>
+        <form class="chat-form" onsubmit="sendMessage(event)">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." required>
+            <button type="submit" class="chat-submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        // Area Configuration
+        const areaConfig = {
+            character: '{{CHARACTER}}',
+            areaNumber: {{AREA_NUMBER}},
+            totalAreas: 6,
+            characterColor: '{{CHARACTER_COLOR}}'
+        };
+
+        // Navigation Functions
+        function navigateArea(direction) {
+            let targetArea;
+            
+            if (direction === 'previous') {
+                targetArea = areaConfig.areaNumber - 1;
+            } else if (direction === 'next') {
+                targetArea = areaConfig.areaNumber + 1;
+            }
+            
+            if (targetArea >= 1 && targetArea <= areaConfig.totalAreas) {
+                // Fade out current area
+                document.body.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    // Navigate to new area
+                    const areaPath = `./area-${targetArea}-*.html`;
+                    window.location.href = getAreaPath(targetArea);
+                }, 600);
+            }
+        }
+
+        function getAreaPath(areaNumber) {
+            const areaFiles = {
+                1: 'area-1-home-base.html',
+                2: 'area-2-dating-app.html', // Maya example
+                3: 'area-3-investigation-hub.html',
+                4: 'area-4-cyber-cafe.html',
+                5: 'area-5-corporate-office.html',
+                6: 'area-6-final-confrontation.html'
+            };
+            
+            // This would be dynamically generated based on character
+            return areaFiles[areaNumber] || 'area-1-home-base.html';
+        }
+
+        function showAreaMap() {
+            alert(`🗺️ Area Map\\n\\nCharacter: ${areaConfig.character.toUpperCase()}\\nCurrent: Area ${areaConfig.areaNumber}/6\\n\\nClick Previous/Next to navigate between areas.\\nAll areas preserve your progress and UI elements.`);
+        }
+
+        function pauseGame() {
+            // Return to dashboard view
+            if (window.parent && window.parent !== window) {
+                // If in iframe, communicate with parent
+                window.parent.postMessage({
+                    action: 'pause-game',
+                    character: areaConfig.character,
+                    currentArea: areaConfig.areaNumber
+                }, '*');
+            } else {
+                // If standalone, redirect to main app
+                window.location.href = '../../index.html';
+            }
+        }
+
+        // Chat Functions
+        function toggleChat() {
+            const chatBox = document.getElementById('chat-box');
+            const isVisible = chatBox.style.display === 'flex';
+            
+            if (isVisible) {
+                chatBox.style.display = 'none';
+            } else {
+                chatBox.style.display = 'flex';
+            }
+        }
+
+        function sendMessage(event) {
+            event.preventDefault();
+            
+            const input = document.getElementById('chat-input');
+            const messages = document.getElementById('chat-messages');
+            const message = input.value.trim();
+            
+            if (message) {
+                // Add user message
+                const userMsg = document.createElement('p');
+                userMsg.innerHTML = `<b>You:</b> ${message}`;
+                messages.appendChild(userMsg);
+                
+                // Add bot response
+                setTimeout(() => {
+                    const botMsg = document.createElement('p');
+                    botMsg.innerHTML = `<b>Bot:</b> ${getBotResponse(message)}`;
+                    messages.appendChild(botMsg);
+                    messages.scrollTop = messages.scrollHeight;
+                }, 1000);
+                
+                input.value = '';
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+
+        function getBotResponse(message) {
+            const responses = [
+                `In this area, you can explore ${areaConfig.character}'s story and learn about digital safety.`,
+                `This is area ${areaConfig.areaNumber} of 6. Each area teaches different security concepts.`,
+                `Use the navigation buttons to move between areas and discover the full story.`,
+                `The pause button will take you back to the dashboard where you can see your progress.`,
+                `Interactive elements in this area will help you learn through hands-on experience.`
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // Interactive Elements (for future artwork integration)
+        function addInteractiveElement(x, y, width, height, onClick) {
+            const element = document.createElement('div');
+            element.className = 'interactive-element';
+            element.style.left = x + 'px';
+            element.style.top = y + 'px';
+            element.style.width = width + 'px';
+            element.style.height = height + 'px';
+            element.style.background = 'rgba(255, 255, 255, 0.1)';
+            element.style.border = '2px solid ' + areaConfig.characterColor;
+            element.onclick = onClick;
+            
+            document.getElementById('interactive-elements').appendChild(element);
+        }
+
+        // Initialize area
+        function initializeArea() {
+            // Update navigation button states
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            if (areaConfig.areaNumber <= 1) {
+                prevBtn.disabled = true;
+            }
+            
+            if (areaConfig.areaNumber >= areaConfig.totalAreas) {
+                nextBtn.disabled = true;
+            }
+            
+            // Area-specific initialization would go here
+            console.log(`Initialized ${areaConfig.character} Area ${areaConfig.areaNumber}`);
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initializeArea);
+    </script>
+</body>
+</html>

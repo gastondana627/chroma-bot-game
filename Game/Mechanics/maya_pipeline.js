@@ -6,7 +6,11 @@ function getSessionId() {
 }
 
 const sessionId = getSessionId();
-const apiUrl = "http://127.0.0.1:3001/api/chat";
+// Use the same API base logic as index.html
+const API_BASE = window.location.hostname === "localhost"
+    ? "http://127.0.0.1:3001"
+    : "https://data-bleed-backend.up.railway.app";
+const apiUrl = `${API_BASE}/api/chat`;
 
 async function sendChoice(message) {
     console.log("📡 Sending to API:", { message, sessionId });

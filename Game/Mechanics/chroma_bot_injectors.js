@@ -90,8 +90,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function getChromaBotResponse(message) {
+        // Use the same API base logic as index.html
+        const API_BASE = window.location.hostname === "localhost"
+            ? "http://127.0.0.1:3001"
+            : "https://data-bleed-backend.up.railway.app";
+        
         try {
-            const res = await fetch("http://127.0.0.1:3001/api/chat", {
+            const res = await fetch(`${API_BASE}/api/chat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message, character, sessionId })

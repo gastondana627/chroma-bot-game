@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test All Gameplay Areas</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff00;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #00ffff;
+        }
+        
+        .character-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .maya-section { border-left: 5px solid #ff1493; }
+        .eli-section { border-left: 5px solid #00ffff; }
+        .stanley-section { border-left: 5px solid #9ca3af; }
+        
+        .character-section h2 {
+            color: #ffff00;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .areas-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .area-link {
+            display: block;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: #00ff00;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .area-link:hover {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .area-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .area-title {
+            font-size: 0.9em;
+        }
+        
+        .test-all-btn {
+            background: linear-gradient(135deg, #ff1493 0%, #00ffff 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 20, 147, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>🧪 Test All Gameplay Areas</h1>
+            <p>Click any area to test navigation and functionality</p>
+            <button class="test-all-btn" onclick="testAllAreas()">🚀 Test All Areas Sequentially</button>
+            <button class="test-all-btn" onclick="window.open('./index.html', '_blank')">🎮 Open Main App</button>
+        </div>
+
+        <!-- Maya's Areas -->
+        <div class="character-section maya-section">
+            <h2>👩‍💻 Maya - Cyber Security Journey</h2>
+            <div class="areas-grid">
+                <a href="./gameplay-areas/maya/area-1-home-base.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 1</div>
+                    <div class="area-title">🏠 Home Base</div>
+                </a>
+                <a href="./gameplay-areas/maya/area-2-dating-app.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 2</div>
+                    <div class="area-title">💕 Dating App Interface</div>
+                </a>
+                <a href="./gameplay-areas/maya/area-3-investigation-hub.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 3</div>
+                    <div class="area-title">🕵️ Investigation Hub</div>
+                </a>
+                <a href="./gameplay-areas/maya/area-4-cyber-cafe.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 4</div>
+                    <div class="area-title">🌐 Cyber Cafe</div>
+                </a>
+                <a href="./gameplay-areas/maya/area-5-corporate-office.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 5</div>
+                    <div class="area-title">🏢 Corporate Office</div>
+                </a>
+                <a href="./gameplay-areas/maya/area-6-final-confrontation.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 6</div>
+                    <div class="area-title">🎯 Final Confrontation</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Eli's Areas -->
+        <div class="character-section eli-section">
+            <h2>🎮 Eli - Gaming Security Adventure</h2>
+            <div class="areas-grid">
+                <a href="./gameplay-areas/eli/area-1-gaming-setup.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 1</div>
+                    <div class="area-title">🏠 Gaming Setup</div>
+                </a>
+                <a href="./gameplay-areas/eli/area-2-tournament-arena.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 2</div>
+                    <div class="area-title">🎯 Tournament Arena</div>
+                </a>
+                <a href="./gameplay-areas/eli/area-3-gambling-platform.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 3</div>
+                    <div class="area-title">💰 Gambling Platform</div>
+                </a>
+                <a href="./gameplay-areas/eli/area-4-gaming-community.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 4</div>
+                    <div class="area-title">👥 Gaming Community</div>
+                </a>
+                <a href="./gameplay-areas/eli/area-5-school-campus.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 5</div>
+                    <div class="area-title">🏫 School/Campus</div>
+                </a>
+                <a href="./gameplay-areas/eli/area-6-championship-victory.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 6</div>
+                    <div class="area-title">🏆 Championship Victory</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Stanley's Areas -->
+        <div class="character-section stanley-section">
+            <h2>🕵️ Stanley - Identity Protection Mission</h2>
+            <div class="areas-grid">
+                <a href="./gameplay-areas/stanley/area-1-suburban-home.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 1</div>
+                    <div class="area-title">🏠 Suburban Home</div>
+                </a>
+                <a href="./gameplay-areas/stanley/area-2-social-media-maze.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 2</div>
+                    <div class="area-title">📱 Social Media Maze</div>
+                </a>
+                <a href="./gameplay-areas/stanley/area-3-financial-district.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 3</div>
+                    <div class="area-title">🏦 Financial District</div>
+                </a>
+                <a href="./gameplay-areas/stanley/area-4-digital-marketplace.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 4</div>
+                    <div class="area-title">🌐 Digital Marketplace</div>
+                </a>
+                <a href="./gameplay-areas/stanley/area-5-law-enforcement.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 5</div>
+                    <div class="area-title">👮 Law Enforcement</div>
+                </a>
+                <a href="./gameplay-areas/stanley/area-6-protection-network.html" class="area-link" target="_blank">
+                    <div class="area-number">Area 6</div>
+                    <div class="area-title">🛡️ Protection Network</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testAllAreas() {
+            const areas = [
+                // Maya's areas
+                './gameplay-areas/maya/area-1-home-base.html',
+                './gameplay-areas/maya/area-2-dating-app.html',
+                './gameplay-areas/maya/area-3-investigation-hub.html',
+                './gameplay-areas/maya/area-4-cyber-cafe.html',
+                './gameplay-areas/maya/area-5-corporate-office.html',
+                './gameplay-areas/maya/area-6-final-confrontation.html',
+                // Eli's areas
+                './gameplay-areas/eli/area-1-gaming-setup.html',
+                './gameplay-areas/eli/area-2-tournament-arena.html',
+                './gameplay-areas/eli/area-3-gambling-platform.html',
+                './gameplay-areas/eli/area-4-gaming-community.html',
+                './gameplay-areas/eli/area-5-school-campus.html',
+                './gameplay-areas/eli/area-6-championship-victory.html',
+                // Stanley's areas
+                './gameplay-areas/stanley/area-1-suburban-home.html',
+                './gameplay-areas/stanley/area-2-social-media-maze.html',
+                './gameplay-areas/stanley/area-3-financial-district.html',
+                './gameplay-areas/stanley/area-4-digital-marketplace.html',
+                './gameplay-areas/stanley/area-5-law-enforcement.html',
+                './gameplay-areas/stanley/area-6-protection-network.html'
+            ];
+            
+            let currentIndex = 0;
+            
+            function openNextArea() {
+                if (currentIndex < areas.length) {
+                    window.open(areas[currentIndex], '_blank');
+                    currentIndex++;
+                    setTimeout(openNextArea, 1000); // Open next area after 1 second
+                } else {
+                    alert('🎉 All 18 areas tested! Check the opened tabs to verify functionality.');
+                }
+            }
+            
+            if (confirm('This will open all 18 areas in new tabs. Continue?')) {
+                openNextArea();
+            }
+        }
+    </script>
+</body>
+</html>

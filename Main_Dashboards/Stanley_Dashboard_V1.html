@@ -58,6 +58,13 @@
     </div>
   </div>
 
+  <!-- Resume Game Button -->
+  <div class="relative z-10 px-6 py-3">
+    <button id="stanley-resume-game-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center gap-2 shadow-lg">
+      <span>▶</span> Resume Game
+    </button>
+  </div>
+
   <!-- Layout -->
   <div class="relative z-10 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -231,6 +238,19 @@
 
     document.getElementById("traceBtn").addEventListener("click", traceImpostor);
     document.getElementById("lockBtn").addEventListener("click", lockAccounts);
+
+    // --- Resume Game Button Functionality ---
+    const resumeGameBtn = document.getElementById('stanley-resume-game-btn');
+    if (resumeGameBtn) {
+      console.log('✅ Stanley Resume Game button found and event listener added');
+      resumeGameBtn.addEventListener('click', () => {
+        console.log('🎮 Stanley Resume Game button clicked - sending message to parent');
+        // Send message to parent window to trigger game view
+        window.parent.postMessage({ action: 'resume-game', character: 'stanley' }, '*');
+      });
+    } else {
+      console.error('❌ Stanley Resume Game button not found!');
+    }
 
     updateIntegrity(); updateLogs(); updateTime();
     setInterval(ambientUpdate, 5000);

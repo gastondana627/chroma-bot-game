@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Pause Functionality</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff00;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #00ffff;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 12px 25px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .test-button:hover {
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .maya-btn { border-color: #ff1493; color: #ff1493; }
+        .maya-btn:hover { background: linear-gradient(135deg, #ff1493 0%, #cc1177 100%); }
+        
+        .eli-btn { border-color: #00ffff; color: #00ffff; }
+        .eli-btn:hover { background: linear-gradient(135deg, #00ffff 0%, #00cccc 100%); }
+        
+        .stanley-btn { border-color: #9ca3af; color: #9ca3af; }
+        .stanley-btn:hover { background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%); }
+        
+        .status-log {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>🧪 Test Pause Functionality</h1>
+            <p>Test that pause buttons properly return to character dashboards</p>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Test Instructions</h3>
+            <ol>
+                <li><strong>Click "Open Main App"</strong> to open the main application</li>
+                <li><strong>Login as any character</strong> (Maya, Eli, or Stanley)</li>
+                <li><strong>Click "Enter [Character]'s Areas"</strong> button on the dashboard</li>
+                <li><strong>Navigate through areas</strong> using the Continue button</li>
+                <li><strong>Click the Pause button</strong> (top-left) from any area</li>
+                <li><strong>Verify</strong> you return to the character's dashboard</li>
+                <li><strong>Refresh the page</strong> and verify the game resets to login</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>🎮 Quick Test Links</h3>
+            <p>Test pause functionality directly from specific areas:</p>
+            
+            <div style="margin: 20px 0;">
+                <h4>Maya's Areas:</h4>
+                <button class="test-button maya-btn" onclick="testArea('maya', 1)">Maya Area 1</button>
+                <button class="test-button maya-btn" onclick="testArea('maya', 3)">Maya Area 3</button>
+                <button class="test-button maya-btn" onclick="testArea('maya', 6)">Maya Area 6</button>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <h4>Eli's Areas:</h4>
+                <button class="test-button eli-btn" onclick="testArea('eli', 1)">Eli Area 1</button>
+                <button class="test-button eli-btn" onclick="testArea('eli', 3)">Eli Area 3</button>
+                <button class="test-button eli-btn" onclick="testArea('eli', 6)">Eli Area 6</button>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <h4>Stanley's Areas:</h4>
+                <button class="test-button stanley-btn" onclick="testArea('stanley', 1)">Stanley Area 1</button>
+                <button class="test-button stanley-btn" onclick="testArea('stanley', 3)">Stanley Area 3</button>
+                <button class="test-button stanley-btn" onclick="testArea('stanley', 6)">Stanley Area 6</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Test Controls</h3>
+            <button class="test-button" onclick="openMainApp()">🎮 Open Main App</button>
+            <button class="test-button" onclick="clearSession()">🗑️ Clear Session Data</button>
+            <button class="test-button" onclick="checkSession()">📊 Check Session Status</button>
+            <button class="test-button" onclick="testRefreshReset()">🔄 Test Refresh Reset</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Test Log</h3>
+            <div class="status-log" id="test-log">Test log will appear here...\n</div>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logElement = document.getElementById('test-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function testArea(character, areaNumber) {
+            const areaNames = {
+                maya: ['home-base', 'dating-app', 'investigation-hub', 'cyber-cafe', 'corporate-office', 'final-confrontation'],
+                eli: ['gaming-setup', 'tournament-arena', 'gambling-platform', 'gaming-community', 'school-campus', 'championship-victory'],
+                stanley: ['suburban-home', 'social-media-maze', 'financial-district', 'digital-marketplace', 'law-enforcement', 'protection-network']
+            };
+            
+            const areaName = areaNames[character][areaNumber - 1];
+            const areaPath = `./gameplay-areas/${character}/area-${areaNumber}-${areaName}.html`;
+            
+            log(`🎯 Opening ${character.toUpperCase()} Area ${areaNumber} for pause testing`);
+            log(`📂 Path: ${areaPath}`);
+            log(`⚠️ Click the PAUSE button (top-left) to test dashboard return`);
+            
+            window.open(areaPath, '_blank');
+        }
+
+        function openMainApp() {
+            log('🎮 Opening main application');
+            window.open('./index.html', '_blank');
+        }
+
+        function clearSession() {
+            sessionStorage.clear();
+            log('🗑️ Session storage cleared');
+            log('✅ All gameplay session data removed');
+        }
+
+        function checkSession() {
+            const character = sessionStorage.getItem('gameplayCharacter');
+            const area = sessionStorage.getItem('gameplayArea');
+            const mode = sessionStorage.getItem('gameplayMode');
+            const currentState = sessionStorage.getItem('currentState');
+            
+            log('📊 Current Session Status:');
+            log(`   Character: ${character || 'None'}`);
+            log(`   Area: ${area || 'None'}`);
+            log(`   Gameplay Mode: ${mode || 'None'}`);
+            log(`   Current State: ${currentState || 'None'}`);
+            
+            if (!character && !area && !mode) {
+                log('✅ Session is clean - ready for fresh start');
+            } else {
+                log('⚠️ Session has active data - may affect testing');
+            }
+        }
+
+        function testRefreshReset() {
+            log('🔄 Testing refresh reset functionality...');
+            log('📝 Instructions:');
+            log('   1. Open main app');
+            log('   2. Login and enter gameplay areas');
+            log('   3. Navigate to any area');
+            log('   4. Refresh the page (Cmd+R / Ctrl+R)');
+            log('   5. Verify game resets to login screen');
+            log('✅ If game resets to login, refresh reset is working');
+        }
+
+        // Initialize log
+        log('🧪 Pause Functionality Test Suite Initialized');
+        log('📋 Follow the test instructions above to verify functionality');
+        checkSession();
+    </script>
+</body>
+</html>

@@ -692,13 +692,14 @@
                     threatStatus.textContent = 'MONITORING ACTIVE';
                     loginContainer.classList.remove('loading');
                     
-                    // User feedback
-
-
-
-                    // ✅ Redirect to Maya dashboard with sessionId after success
+                    // ✅ Send message back to parent after success
                     const username = document.getElementById('username').value || "guest";
-                    window.location.href = "../Main_Dashboards/Maya_Dashboard_V2.html?sessionId=" + encodeURIComponent(username + "_maya");
+                    
+                    // 👉 This line makes Maya talk to the parent window
+                    window.parent.postMessage({
+                        action: "maya-connected",
+                        gamertag: username
+                    }, "*");
 
 
 

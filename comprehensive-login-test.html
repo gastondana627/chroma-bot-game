@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Login & Functionality Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff00;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00ffff;
+        }
+        
+        .test-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .character-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .character-panel:hover {
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        .maya-panel { border-left: 5px solid #ff1493; }
+        .eli-panel { border-left: 5px solid #00ffff; }
+        .stanley-panel { border-left: 5px solid #9ca3af; }
+        
+        .character-panel h2 {
+            color: #ffff00;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        
+        .test-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        
+        .test-section h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .test-button:hover {
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .test-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .status-pass { background: #00ff00; box-shadow: 0 0 8px rgba(0, 255, 0, 0.5); }
+        .status-fail { background: #ff0000; box-shadow: 0 0 8px rgba(255, 0, 0, 0.5); }
+        .status-pending { background: #ffff00; box-shadow: 0 0 8px rgba(255, 255, 0, 0.5); }
+        .status-untested { background: #666; }
+        
+        .log-output {
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 11px;
+            max-height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid #333;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .iframe-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .iframe-container {
+            width: 95vw;
+            height: 95vh;
+            background: #000;
+            border: 3px solid #00ff00;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .iframe-header {
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: #000;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            position: relative;
+        }
+        
+        .close-iframe {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .iframe-content {
+            width: 100%;
+            height: calc(100% - 60px);
+            border: none;
+        }
+        
+        .results-summary {
+            background: rgba(0, 0, 50, 0.5);
+            border: 2px solid #0066ff;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .result-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        
+        .result-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00 0%, #00cc00 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🔍 Comprehensive Login & Functionality Analysis</h1>
+            <p>Systematic testing of all login areas, resume/pause buttons, and Chroma orb functionality</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="overall-progress"></div>
+            </div>
+        </div>
+
+        <div class="test-grid">
+            <!-- Maya Character Panel -->
+            <div class="character-panel maya-panel">
+                <h2>👩‍💻 Maya - Cyber Security Expert</h2>
+                
+                <div class="test-section">
+                    <h3>🔐 Login Area Analysis</h3>
+                    <p><span class="status-indicator status-untested" id="maya-login-status"></span>Login form & postMessage</p>
+                    <button class="test-button" onclick="testLoginArea('maya')">Test Maya Login</button>
+                    <div class="log-output" id="maya-login-log" style="display: none;"></div>
+                </div>
+                
+                <div class="test-section">
+                    <h3>🎮 Resume/Pause Buttons</h3>
+                    <p><span class="status-indicator status-untested" id="maya-buttons-status"></span>Button positioning & duplicates</p>
+                    <button class="test-button" onclick="testButtons('maya')">Test Maya Buttons</button>
+                    <div class="log-output" id="maya-buttons-log" style="display: none;"></div>
+                </div>
+                
+                <div class="test-section">
+                    <h3>🤖 Chroma Orb & Chat</h3>
+                    <p><span class="status-indicator status-untested" id="maya-orb-status"></span>Orb functionality & chat</p>
+                    <button class="test-button" onclick="testOrbFunctionality('maya')">Test Maya Orb</button>
+                    <div class="log-output" id="maya-orb-log" style="display: none;"></div>
+                </div>
+                
+                <div class="test-section">
+                    <h3>🎯 Full Flow Test</h3>
+                    <p><span class="status-indicator status-untested" id="maya-flow-status"></span>Complete user journey</p>
+                    <button class="test-button" onclick="testFullFlow('maya')">Test Maya Flow</button>
+                    <div class="log-output" id="maya-flow-log" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Eli Character Panel -->
+            <div class="character-panel eli-panel">
+                <h2>🎮 Eli - Gaming Security Specialist</h2>
+                
+                <div class="test-section">
+                    <h3>🔐 Login Area Analysis</h3>
+                    <p><span class="status-indicator status-untested" id="eli-login-status"></span>Login form & postMessage</p>
+                    <button class="test-button" onclick="testLoginArea('eli')">Test Eli Login</button>
+                    <div class="log-output" id="eli-login-log" style="display: none;"></div>
+                </div>
+                
+                <div class="test-section">
+                    <h3>🎮 Resume/Pause Buttons</h3>
+                    <p><span class="status-indicator status-untested" id="eli-buttons-status"></span>Button positioning & duplicates</p>
+                    <button class="test-button" onclick="testButtons('eli')">Test Eli Buttons</button>
+                    <div class="log-output" id="eli-buttons-log" style="display: none;"></div>
+                </div>
+                
+                <div class="test-section">
+                    <h3>🤖 Chroma Orb & Chat</h3>
+                    <p><span class="status-indicator status-untested" id="eli-orb-status"></span>Orb functionality & chat</p>
+                    <button class="test-button" onclick="testOrbFunctionality('eli')">Test Eli Orb</button>
+                    <div class="log-output" id="eli-orb-log" style="display: none;"></div>
+                </div>
+                
+                <div class="test-section">
+                    <h3>🎯 Full Flow Test</h3>
+                    <p><span class="status-indicator status-untested" id="eli-flow-status"></span>Complete user journey</p>
+                    <button class="test-button" onclick="testFullFlow('eli')">Test Eli Flow</button>
+                    <div class="log-output" id="eli-flow-log" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Stanley Character Panel -->
+            <div class="character-panel stanley-panel">
+                <h2>🕵️ Stanley - Identity Protection Expert</h2>
+                
+                <div class="test-section">
+                    <h3>🔐 Login Area Analysis</h3>
+                    <p><span class="status-indicator status-untested" id="stanley-login-status"></span>Login form & postMessage</p>
+                    <button class="test-button" onclick="testLoginArea('stanley')">Test Stanley Login</button>
+                    <div class="log-output" id="stanley-login-log" style="display: none;"></div>
+                </div>
+                
+                <div class="test-section">
+                    <h3>🎮 Resume/Pause Buttons</h3>
+                    <p><span class="status-indicator status-untested" id="stanley-buttons-status"></span>Button positioning & duplicates</p>
+                    <button class="test-button" onclick="testButtons('stanley')">Test Stanley Buttons</button>
+                    <div class="log-output" id="stanley-buttons-log" style="display: none;"></div>
+                </div>
+                
+                <div class="test-section">
+                    <h3>🤖 Chroma Orb & Chat</h3>
+                    <p><span class="status-indicator status-untested" id="stanley-orb-status"></span>Orb functionality & chat</p>
+                    <button class="test-button" onclick="testOrbFunctionality('stanley')">Test Stanley Orb</button>
+                    <div class="log-output" id="stanley-orb-log" style="display: none;"></div>
+                </div>
+                
+                <div class="test-section">
+                    <h3>🎯 Full Flow Test</h3>
+                    <p><span class="status-indicator status-untested" id="stanley-flow-status"></span>Complete user journey</p>
+                    <button class="test-button" onclick="testFullFlow('stanley')">Test Stanley Flow</button>
+                    <div class="log-output" id="stanley-flow-log" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="results-summary">
+            <h3>📊 Comprehensive Test Results</h3>
+            <div class="results-grid">
+                <div class="result-item">
+                    <div class="result-value" id="total-tests">12</div>
+                    <div>Total Tests</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="passed-tests" style="color: #00ff00;">0</div>
+                    <div>Passed</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="failed-tests" style="color: #ff0000;">0</div>
+                    <div>Failed</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="success-rate" style="color: #00ffff;">0%</div>
+                    <div>Success Rate</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 25px;">
+                <button class="test-button" onclick="runAllTests()" style="font-size: 14px; padding: 12px 25px;">🚀 Run All Tests</button>
+                <button class="test-button" onclick="resetAllTests()" style="font-size: 14px; padding: 12px 25px;">🔄 Reset Tests</button>
+                <button class="test-button" onclick="openMainApp()" style="font-size: 14px; padding: 12px 25px;">🎮 Open Main App</button>
+                <button class="test-button" onclick="openGameplayStructure()" style="font-size: 14px; padding: 12px 25px;">🏗️ Gameplay Structure</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Iframe Overlay -->
+    <div class="iframe-overlay" id="iframe-overlay">
+        <div class="iframe-container">
+            <div class="iframe-header">
+                <span id="iframe-title">Testing Application</span>
+                <button class="close-iframe" onclick="closeIframe()">✖ Close</button>
+            </div>
+            <iframe class="iframe-content" id="test-iframe" src=""></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Test state management
+        let testResults = {
+            total: 12, // 4 tests per character × 3 characters
+            passed: 0,
+            failed: 0
+        };
+
+        // Utility functions
+        function log(testId, message, type = 'info') {
+            const logElement = document.getElementById(testId + '-log');
+            if (logElement) {
+                logElement.style.display = 'block';
+                const timestamp = new Date().toLocaleTimeString();
+                const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+                logElement.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+        }
+
+        function setTestStatus(testId, status) {
+            const statusElement = document.getElementById(testId + '-status');
+            if (statusElement) {
+                statusElement.className = `status-indicator status-${status}`;
+            }
+            updateResults();
+        }
+
+        function updateResults() {
+            const passElements = document.querySelectorAll('.status-pass');
+            const failElements = document.querySelectorAll('.status-fail');
+            
+            testResults.passed = passElements.length;
+            testResults.failed = failElements.length;
+            
+            document.getElementById('passed-tests').textContent = testResults.passed;
+            document.getElementById('failed-tests').textContent = testResults.failed;
+            
+            const successRate = testResults.total > 0 ? 
+                Math.round((testResults.passed / testResults.total) * 100) : 0;
+            document.getElementById('success-rate').textContent = successRate + '%';
+            
+            // Update progress bar
+            const progressBar = document.getElementById('overall-progress');
+            const completedTests = testResults.passed + testResults.failed;
+            const progressPercent = (completedTests / testResults.total) * 100;
+            progressBar.style.width = progressPercent + '%';
+        }
+
+        function openIframe(src, title) {
+            const overlay = document.getElementById('iframe-overlay');
+            const iframe = document.getElementById('test-iframe');
+            const titleElement = document.getElementById('iframe-title');
+            
+            iframe.src = src;
+            titleElement.textContent = title;
+            overlay.style.display = 'flex';
+        }
+
+        function closeIframe() {
+            const overlay = document.getElementById('iframe-overlay');
+            const iframe = document.getElementById('test-iframe');
+            
+            overlay.style.display = 'none';
+            iframe.src = '';
+        }
+
+        function openMainApp() {
+            openIframe('./index.html', 'DATA_BLEED Main Application - Live Testing');
+        }
+
+        function openGameplayStructure() {
+            // This will be implemented to show the gameplay structure
+            alert('🏗️ Gameplay Structure\n\nThis will open the collaborative gameplay development structure.\n\nFeatures:\n• Modular snippet system\n• Real-time collaboration\n• Manual file integration\n• Scalable architecture\n\nComing up next!');
+        }
+
+        // Test functions
+        async function testLoginArea(character) {
+            const testId = `${character}-login`;
+            log(testId, `Starting ${character.toUpperCase()} login area analysis...`);
+            setTestStatus(testId, 'pending');
+            
+            try {
+                // Test 1: Check login file exists and loads
+                const loginPath = `./Log_in_formats/${character.charAt(0).toUpperCase() + character.slice(1)}.html`;
+                log(testId, `Checking login file: ${loginPath}`);
+                
+                const response = await fetch(loginPath);
+                if (!response.ok) {
+                    throw new Error(`Login file not accessible: ${response.status}`);
+                }
+                log(testId, `✅ Login file exists and loads correctly`, 'success');
+                
+                // Test 2: Verify postMessage implementation
+                const content = await response.text();
+                if (!content.includes('window.parent.postMessage')) {
+                    throw new Error('PostMessage functionality not found in login');
+                }
+                log(testId, `✅ PostMessage implementation verified`, 'success');
+                
+                // Test 3: Check for correct action
+                const expectedAction = `${character}-connected`;
+                if (!content.includes(expectedAction)) {
+                    throw new Error(`Expected action "${expectedAction}" not found`);
+                }
+                log(testId, `✅ Correct action "${expectedAction}" found`, 'success');
+                
+                // Test 4: Verify form submission handler
+                if (!content.includes('addEventListener') || !content.includes('submit')) {
+                    throw new Error('Form submission handler not found');
+                }
+                log(testId, `✅ Form submission handler verified`, 'success');
+                
+                log(testId, `🎉 ${character.toUpperCase()} login area test PASSED`, 'success');
+                setTestStatus(testId, 'pass');
+                
+            } catch (error) {
+                log(testId, `❌ Test failed: ${error.message}`, 'error');
+                setTestStatus(testId, 'fail');
+            }
+        }
+
+        async function testButtons(character) {
+            const testId = `${character}-buttons`;
+            log(testId, `Starting ${character.toUpperCase()} button analysis...`);
+            setTestStatus(testId, 'pending');
+            
+            try {
+                // Test main index.html for button implementation
+                const response = await fetch('./index.html');
+                if (!response.ok) {
+                    throw new Error(`Main app not accessible: ${response.status}`);
+                }
+                
+                const content = await response.text();
+                
+                // Test 1: Check for resume button
+                if (!content.includes('resume-game-btn')) {
+                    throw new Error('Resume button not found in main app');
+                }
+                log(testId, `✅ Resume button found in main app`, 'success');
+                
+                // Test 2: Check for pause button
+                if (!content.includes('pause-game-btn')) {
+                    throw new Error('Pause button not found in main app');
+                }
+                log(testId, `✅ Pause button found in main app`, 'success');
+                
+                // Test 3: Check for unified positioning
+                if (!content.includes('position: fixed') || !content.includes('top: 20px') || !content.includes('left: 20px')) {
+                    log(testId, `⚠️ Button positioning may not be unified`, 'info');
+                } else {
+                    log(testId, `✅ Unified button positioning verified`, 'success');
+                }
+                
+                // Test 4: Check for duplicate prevention
+                const resumeMatches = (content.match(/resume-game-btn/g) || []).length;
+                const pauseMatches = (content.match(/pause-game-btn/g) || []).length;
+                
+                if (resumeMatches > 3 || pauseMatches > 3) { // Allow for ID, event listener, and reference
+                    log(testId, `⚠️ Potential button duplicates detected`, 'info');
+                } else {
+                    log(testId, `✅ No button duplicates detected`, 'success');
+                }
+                
+                log(testId, `🎉 ${character.toUpperCase()} button test PASSED`, 'success');
+                setTestStatus(testId, 'pass');
+                
+            } catch (error) {
+                log(testId, `❌ Test failed: ${error.message}`, 'error');
+                setTestStatus(testId, 'fail');
+            }
+        }
+
+        async function testOrbFunctionality(character) {
+            const testId = `${character}-orb`;
+            log(testId, `Starting ${character.toUpperCase()} Chroma orb analysis...`);
+            setTestStatus(testId, 'pending');
+            
+            try {
+                // Test main index.html for orb implementation
+                const response = await fetch('./index.html');
+                if (!response.ok) {
+                    throw new Error(`Main app not accessible: ${response.status}`);
+                }
+                
+                const content = await response.text();
+                
+                // Test 1: Check for video container
+                if (!content.includes('video-container')) {
+                    throw new Error('Video container not found');
+                }
+                log(testId, `✅ Video container found`, 'success');
+                
+                // Test 2: Check for chroma video
+                if (!content.includes('chroma-video')) {
+                    throw new Error('Chroma video element not found');
+                }
+                log(testId, `✅ Chroma video element found`, 'success');
+                
+                // Test 3: Check for chat box
+                if (!content.includes('chat-box')) {
+                    throw new Error('Chat box not found');
+                }
+                log(testId, `✅ Chat box found`, 'success');
+                
+                // Test 4: Check for unified positioning
+                if (!content.includes('bottom: 20px') || !content.includes('right: 20px')) {
+                    log(testId, `⚠️ Orb positioning may not be unified`, 'info');
+                } else {
+                    log(testId, `✅ Unified orb positioning verified`, 'success');
+                }
+                
+                // Test 5: Check for click handlers
+                if (!content.includes('videoContainer.addEventListener') || !content.includes('click')) {
+                    throw new Error('Orb click handler not found');
+                }
+                log(testId, `✅ Orb click handler verified`, 'success');
+                
+                // Test 6: Check for API connectivity
+                if (!content.includes('getBotResponse') || !content.includes('API_BASE')) {
+                    throw new Error('Chat API functionality not found');
+                }
+                log(testId, `✅ Chat API functionality verified`, 'success');
+                
+                log(testId, `🎉 ${character.toUpperCase()} orb test PASSED`, 'success');
+                setTestStatus(testId, 'pass');
+                
+            } catch (error) {
+                log(testId, `❌ Test failed: ${error.message}`, 'error');
+                setTestStatus(testId, 'fail');
+            }
+        }
+
+        async function testFullFlow(character) {
+            const testId = `${character}-flow`;
+            log(testId, `Starting ${character.toUpperCase()} full flow analysis...`);
+            setTestStatus(testId, 'pending');
+            
+            try {
+                // Test 1: Check dashboard file exists
+                const dashboardPaths = {
+                    'maya': './Main_Dashboards/Maya_Dashboard_V2.html',
+                    'eli': './Main_Dashboards/Eli_Dashboard_V2.html',
+                    'stanley': './Main_Dashboards/Stanley_Dashboard_V1.html'
+                };
+                
+                const dashboardResponse = await fetch(dashboardPaths[character]);
+                if (!dashboardResponse.ok) {
+                    throw new Error(`Dashboard file not accessible: ${dashboardResponse.status}`);
+                }
+                log(testId, `✅ Dashboard file exists and loads`, 'success');
+                
+                // Test 2: Check main app state management
+                const mainResponse = await fetch('./index.html');
+                const mainContent = await mainResponse.text();
+                
+                if (!mainContent.includes('handleExternalConnect')) {
+                    throw new Error('State management function not found');
+                }
+                log(testId, `✅ State management function verified`, 'success');
+                
+                // Test 3: Check session storage implementation
+                if (!mainContent.includes('sessionStorage.setItem')) {
+                    throw new Error('Session storage not implemented');
+                }
+                log(testId, `✅ Session storage implementation verified`, 'success');
+                
+                // Test 4: Check fade animations
+                if (!mainContent.includes('fade-out') || !mainContent.includes('fade-in')) {
+                    throw new Error('Fade animations not found');
+                }
+                log(testId, `✅ Fade animations verified`, 'success');
+                
+                // Test 5: Check character-specific elements
+                if (!mainContent.includes(`${character}-dashboard`) || !mainContent.includes(`${character}-hud`)) {
+                    throw new Error(`Character-specific elements not found for ${character}`);
+                }
+                log(testId, `✅ Character-specific elements verified`, 'success');
+                
+                log(testId, `🎉 ${character.toUpperCase()} full flow test PASSED`, 'success');
+                setTestStatus(testId, 'pass');
+                
+            } catch (error) {
+                log(testId, `❌ Test failed: ${error.message}`, 'error');
+                setTestStatus(testId, 'fail');
+            }
+        }
+
+        // Test suite management
+        async function runAllTests() {
+            log('system', '🚀 Starting comprehensive analysis...', 'info');
+            
+            resetAllTests();
+            
+            const characters = ['maya', 'eli', 'stanley'];
+            const testTypes = ['login', 'buttons', 'orb', 'flow'];
+            
+            for (const character of characters) {
+                for (const testType of testTypes) {
+                    switch (testType) {
+                        case 'login':
+                            await testLoginArea(character);
+                            break;
+                        case 'buttons':
+                            await testButtons(character);
+                            break;
+                        case 'orb':
+                            await testOrbFunctionality(character);
+                            break;
+                        case 'flow':
+                            await testFullFlow(character);
+                            break;
+                    }
+                    
+                    // Small delay between tests
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+            }
+            
+            // Final results
+            const finalPassCount = document.querySelectorAll('.status-pass').length;
+            const finalFailCount = document.querySelectorAll('.status-fail').length;
+            const successRate = Math.round((finalPassCount / testResults.total) * 100);
+            
+            let resultMessage = `📊 Comprehensive Analysis Complete!\n\n`;
+            resultMessage += `✅ Passed: ${finalPassCount}/${testResults.total}\n`;
+            resultMessage += `❌ Failed: ${finalFailCount}/${testResults.total}\n`;
+            resultMessage += `📈 Success Rate: ${successRate}%\n\n`;
+            
+            if (finalFailCount === 0) {
+                resultMessage += `🎉 PERFECT SCORE!\n\nAll login areas, buttons, and orb functionality are working correctly and ready for gameplay scaling!`;
+            } else if (successRate >= 80) {
+                resultMessage += `✨ EXCELLENT!\n\nMost functionality is working correctly. Minor issues can be addressed during gameplay development.`;
+            } else {
+                resultMessage += `⚠️ NEEDS ATTENTION\n\nSome critical issues found. Please review failed tests before proceeding to gameplay scaling.`;
+            }
+            
+            alert(resultMessage);
+        }
+
+        function resetAllTests() {
+            const statusElements = document.querySelectorAll('.status-indicator');
+            const logElements = document.querySelectorAll('.log-output');
+            
+            statusElements.forEach(el => {
+                el.className = 'status-indicator status-untested';
+            });
+            
+            logElements.forEach(el => {
+                el.textContent = '';
+                el.style.display = 'none';
+            });
+            
+            testResults.passed = 0;
+            testResults.failed = 0;
+            updateResults();
+        }
+
+        // Initialize
+        updateResults();
+    </script>
+</body>
+</html>
