@@ -129,7 +129,11 @@ def build_system_prompt(character: str, char_cfg: Dict[str, Any], persona_prompt
 
 
 # ---------- FastAPI ----------
-app = FastAPI()
+app = FastAPI(title="Data_Bleed API", version="1.0.0")
+
+@app.get("/")
+def root():
+    return {"message": "Data_Bleed API is running", "version": "1.0.0"}
 
 # ✅ --- THIS IS THE FINAL, CORRECTED CORS CONFIGURATION ---
 # It uses your specific origins and explicitly allows the methods needed
@@ -160,7 +164,12 @@ class ChatRequest(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "characters_loaded": list(CHARACTERS.keys())}
+    return {
+        "ok": True, 
+        "characters_loaded": list(CHARACTERS.keys()),
+        "openai_configured": bool(api_key),
+        "status": "healthy"
+    }
 
 @app.get("/api/characters")
 def list_characters():
@@ -233,14 +242,3 @@ async def chat(req: ChatRequest):
         "trust_score": trust_score,
         "persona": persona
     }
-
-
-
-
-    # 4) Outcome logic
-    outcome = decide_outcome_and_update(session, char_cfg, user_message, used_ai_fallback)
-    stage = int(session.get("logo_stage", 1))
-
-    print(f"[{character}] outcome={outcome} stage={stage}")
-    print(f"[{character}] Bot: {reply_text}")
-    return {"reply": reply_text, "outcome": outcome, "stage": stage}

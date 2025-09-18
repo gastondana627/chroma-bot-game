@@ -1,0 +1,70 @@
+# Ignore local development files
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Ignore local development configs
+.env.local
+.env.development
+.env.test
+
+# Ignore OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Ignore editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore test files
+test-*.html
+test-*.js
+*test*.html
+*test*.js
+comprehensive-*.html
+validate-*.js
+verify-*.js
+
+# Ignore analysis and documentation files
+ANALYSIS_SUMMARY.md
+COMPLETE_AREAS_SUMMARY.md
+GAMEPLAY_AREAS_SUMMARY.md
+UNIFIED_EXPERIENCE_SUMMARY.md
+DATA_BLEED_CODEBASE_GLOSSARY.md
+.kiro/
+
+# Ignore gameplay development files (not needed for production)
+gameplay-areas/
+gameplay-structure.html
+gameplay-areas-framework.html
+integrate-gameplay-areas.js
+generate-all-areas.js
+
+# Keep only essential files for production
