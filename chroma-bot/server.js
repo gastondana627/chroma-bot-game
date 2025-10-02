@@ -5,6 +5,7 @@ const path = require('path');
 const cors = require('cors');
 const OpenAI = require('openai');
 const fs = require('fs');
+const Response3DFormatter = require('./3d-response-formatter');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -22,6 +23,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// --- 3D Response Formatter ---
+const formatter3D = new Response3DFormatter();
+
 // --- Dynamic Character Loader ---
 function loadCharacterConfig(character) {
   const filePath = path.join(__dirname, 'characters', `${character}.json`);
@@ -34,9 +38,11 @@ function loadCharacterConfig(character) {
   }
 }
 
+
+
 // --- API Endpoint ---
 app.post("/api/chat", async (req, res) => {
-  const { message, character } = req.body;
+  const { message, character, sessionId, mode, storyTrigger } = req.body;
   
   if (!message || !character) {
     return res.status(400).json({ error: "Message and character are required." });
@@ -49,6 +55,11 @@ app.post("/api/chat", async (req, res) => {
     systemPrompt = `${characterConfig.name} is a ${characterConfig.role}. Style: ${characterConfig.style}. Lore: ${characterConfig.lore.join(" ")}. If the user makes unsafe decisions, trigger failure mode: ${characterConfig.failure}`;
   }
 
+  // Enhanced system prompt for 3D cinematic mode
+  if (mode === "3d_cinematic" && storyTrigger) {
+    systemPrompt += ` You are now in a cinematic 3D moment during "${storyTrigger}". Deliver impactful, memorable dialogue that matches this key story beat. Keep responses concise but emotionally resonant.`;
+  }
+
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -59,15 +70,70 @@ app.post("/api/chat", async (req, res) => {
     });
     
     const reply = completion.choices[0].message.content;
-    res.json({ reply });
+    
+    // Use 3D formatter to create enhanced response
+    const response = formatter3D.formatResponse(reply, character, storyTrigger, mode);
+    response.sessionId = sessionId || "default";
+
+    res.json(response);
 
   } catch (err) {
     console.error("OpenAI API Error:", err);
-    res.status(500).json({ reply: "⚠️ System glitch. My connection to the AI brain is down." });
+    
+    // Use formatter for error responses too
+    const errorResponse = formatter3D.formatResponse(
+      "⚠️ System glitch. My connection to the AI brain is down.",
+      character,
+      storyTrigger,
+      mode
+    );
+    errorResponse.sessionId = sessionId || "default";
+    
+    res.status(500).json(errorResponse);
   }
+});
+
+// --- 3D Integration Validation Endpoint ---
+app.get("/api/3d/validate/:character/:trigger", (req, res) => {
+  const { character, trigger } = req.params;
+  
+  const isValid = formatter3D.isValidCinematicTrigger(character, trigger);
+  const availableTriggers = formatter3D.getAvailableTriggers(character);
+  
+  res.json({
+    character,
+    trigger,
+    isValid,
+    availableTriggers,
+    animationData: isValid ? formatter3D.getAnimationData(character, trigger) : null
+  });
+});
+
+// --- 3D Capabilities Info Endpoint ---
+app.get("/api/3d/capabilities", (req, res) => {
+  const capabilities = {
+    supportedCharacters: ["eli", "maya", "stanley"],
+    supportedModes: ["standard", "3d_cinematic"],
+    cinematicTriggers: {
+      eli: formatter3D.getAvailableTriggers("eli"),
+      maya: formatter3D.getAvailableTriggers("maya"),
+      stanley: formatter3D.getAvailableTriggers("stanley")
+    },
+    apiVersion: "1.0.0",
+    features: [
+      "3d_character_emergence",
+      "cinematic_animations",
+      "dynamic_lighting",
+      "gesture_expressions",
+      "story_trigger_detection"
+    ]
+  };
+  
+  res.json(capabilities);
 });
 
 app.listen(port, () => {
   console.log(`✅ Server running at http://localhost:${port}`);
   console.log(`Serving static files from the root project directory.`);
+  console.log(`3D Chat API enhanced with cinematic capabilities`);
 });

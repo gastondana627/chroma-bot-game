@@ -3,7 +3,29 @@
 /**
  * A self-contained component that injects the pop-up Chroma Bot UI
  * onto any page and connects it to the main FastAPI backend.
+ * Enhanced with 3D trigger detection system for cinematic moments.
  */
+
+// Load required dependencies for 3D trigger system
+function loadTriggerSystemDependencies() {
+    const dependencies = [
+        'Game/Mechanics/story-progression-tracker.js',
+        'Game/Mechanics/cinematic-moments-config.js'
+    ];
+    
+    dependencies.forEach(src => {
+        if (!document.querySelector(`script[src*="${src}"]`)) {
+            const script = document.createElement('script');
+            script.src = `../../${src}`;
+            script.async = false; // Ensure proper loading order
+            document.head.appendChild(script);
+        }
+    });
+}
+
+// Load dependencies first
+loadTriggerSystemDependencies();
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. Get Character and Session Info from the Host Page ---
     const character = document.body.dataset.character || 'unknown';
@@ -51,7 +73,33 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.body.appendChild(botContainer);
   
-    // --- 3. Wire Up the Bot's Interactive Logic ---
+    // --- 3. Initialize 3D Trigger System Integration ---
+    let triggerSystemReady = false;
+    let pendingTriggers = [];
+    
+    // Initialize trigger system when dependencies are loaded
+    function initializeTriggerSystem() {
+        if (window.storyTracker && window.cinematicManager) {
+            triggerSystemReady = true;
+            
+            // Set up trigger listeners for 3D cinematic moments
+            window.addEventListener('storyTriggerFired', handleStoryTrigger);
+            
+            // Process any pending triggers
+            pendingTriggers.forEach(trigger => handleStoryTrigger(trigger));
+            pendingTriggers = [];
+            
+            console.log('🎬 3D Trigger System integrated with Chroma Bot');
+        } else {
+            // Retry after a short delay
+            setTimeout(initializeTriggerSystem, 100);
+        }
+    }
+    
+    // Start initialization
+    setTimeout(initializeTriggerSystem, 50);
+
+    // --- 4. Wire Up the Bot's Interactive Logic ---
     const icon = document.getElementById('chroma-icon-container');
     const chatBox = document.getElementById('chroma-chat-box');
     const closeBtn = document.getElementById('chroma-close-btn');
@@ -60,8 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const messages = document.getElementById('chroma-messages');
   
     icon.addEventListener('click', () => {
-      icon.style.display = 'none';
-      chatBox.style.display = 'flex';
+      // Check for 3D trigger conditions before opening chat
+      if (triggerSystemReady && should3DTriggerActivate()) {
+        activate3DCinematicMode();
+      } else {
+        // Normal chat mode
+        icon.style.display = 'none';
+        chatBox.style.display = 'flex';
+      }
     });
   
     closeBtn.addEventListener('click', () => {
@@ -69,17 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
       icon.style.display = 'block';
     });
   
-    chatForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = userInput.value.trim();
-      if (!text) return;
-  
-      addMessage('You', text);
-      userInput.value = '';
-      
-      const aiResponse = await getChromaBotResponse(text);
-      addMessage('Bot', aiResponse);
-    });
+    // Chat form handler will be added later with enhanced functionality
   
     function addMessage(sender, text) {
       const p = document.createElement('p');
@@ -108,4 +152,233 @@ document.addEventListener('DOMContentLoaded', () => {
             return "⚠️ Connection error.";
         }
     }
+
+    // --- 5. 3D Trigger System Functions ---
+    
+    /**
+     * Check if 3D cinematic mode should activate
+     * @returns {boolean} Whether to activate 3D mode
+     */
+    function should3DTriggerActivate() {
+        if (!triggerSystemReady || !window.storyTracker || !window.cinematicManager) {
+            return false;
+        }
+        
+        // Get current context
+        const context = window.storyTracker.detectCurrentContext();
+        if (!context.character || !context.area) {
+            return false;
+        }
+        
+        // Check if there are any available cinematic moments for this area
+        const availableMoments = window.cinematicManager.getMomentsForArea(context.character, context.area);
+        const progress = window.storyTracker.getProgress(context.character);
+        
+        if (!progress || availableMoments.length === 0) {
+            return false;
+        }
+        
+        // Check if any cinematic moment conditions are met
+        return availableMoments.some(moment => {
+            // Skip if already completed
+            if (progress.completedTriggers.includes(moment.id)) {
+                return false;
+            }
+            
+            // Evaluate trigger conditions
+            return window.storyTracker.evaluateTriggerCondition(
+                moment.triggerConditions, 
+                progress, 
+                'manual_trigger', 
+                { source: 'chroma_bot_click' }
+            );
+        });
+    }
+    
+    /**
+     * Activate 3D cinematic mode
+     */
+    function activate3DCinematicMode() {
+        console.log('🎬 Activating 3D Cinematic Mode');
+        
+        const context = window.storyTracker.detectCurrentContext();
+        const availableMoments = window.cinematicManager.getMomentsForArea(context.character, context.area);
+        const progress = window.storyTracker.getProgress(context.character);
+        
+        // Find the first available moment that meets conditions
+        const activeMoment = availableMoments.find(moment => {
+            return !progress.completedTriggers.includes(moment.id) &&
+                   window.storyTracker.evaluateTriggerCondition(
+                       moment.triggerConditions, 
+                       progress, 
+                       'manual_trigger', 
+                       { source: 'chroma_bot_click' }
+                   );
+        });
+        
+        if (activeMoment) {
+            // Trigger the cinematic moment
+            window.storyTracker.fireTrigger(activeMoment, context.character, context.area, {
+                source: 'chroma_bot_click',
+                timestamp: Date.now()
+            });
+        } else {
+            // Fallback to normal chat if no moment available
+            icon.style.display = 'none';
+            chatBox.style.display = 'flex';
+        }
+    }
+    
+    /**
+     * Handle story trigger events
+     * @param {CustomEvent} event - Story trigger event
+     */
+    function handleStoryTrigger(event) {
+        if (!triggerSystemReady) {
+            pendingTriggers.push(event);
+            return;
+        }
+        
+        const { triggerId, character, areaNumber, trigger } = event.detail;
+        
+        console.log(`🎬 Handling story trigger: ${triggerId}`);
+        
+        // Get the cinematic moment configuration
+        const moment = window.cinematicManager.getMoment(triggerId);
+        if (!moment) {
+            console.warn(`No cinematic moment found for trigger: ${triggerId}`);
+            return;
+        }
+        
+        // For now, show enhanced chat with cinematic context
+        // This will be replaced with actual 3D rendering in later tasks
+        showCinematicChat(moment, character, areaNumber);
+    }
+    
+    /**
+     * Show enhanced chat with cinematic context
+     * @param {Object} moment - Cinematic moment configuration
+     * @param {string} character - Character name
+     * @param {number} areaNumber - Area number
+     */
+    function showCinematicChat(moment, character, areaNumber) {
+        // Hide icon and show chat box
+        icon.style.display = 'none';
+        chatBox.style.display = 'flex';
+        
+        // Add cinematic styling to chat box
+        chatBox.style.border = '3px solid #FFD700';
+        chatBox.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.5)';
+        
+        // Update chat header to indicate cinematic mode
+        const header = chatBox.querySelector('header');
+        if (header) {
+            header.innerHTML = `
+                🎬 Cinematic Mode - ${moment.title}
+                <button id="chroma-close-btn">&times;</button>
+            `;
+            header.style.color = '#FFD700';
+        }
+        
+        // Add cinematic dialogue to messages
+        const cinematicMessage = document.createElement('p');
+        cinematicMessage.style.color = '#FFD700';
+        cinematicMessage.style.fontWeight = 'bold';
+        cinematicMessage.style.background = 'rgba(255, 215, 0, 0.1)';
+        cinematicMessage.style.padding = '10px';
+        cinematicMessage.style.borderRadius = '8px';
+        cinematicMessage.style.margin = '10px 0';
+        cinematicMessage.innerHTML = `
+            <b>🎭 ${character.toUpperCase()}:</b><br>
+            ${moment.cinematicConfig.dialogue.text}
+        `;
+        
+        messages.appendChild(cinematicMessage);
+        messages.scrollTop = messages.scrollHeight;
+        
+        // Re-wire close button
+        const newCloseBtn = document.getElementById('chroma-close-btn');
+        if (newCloseBtn) {
+            newCloseBtn.addEventListener('click', () => {
+                // Reset chat box styling
+                chatBox.style.border = '2px solid #00FFFF';
+                chatBox.style.boxShadow = 'none';
+                
+                // Reset header
+                if (header) {
+                    header.innerHTML = `
+                        💬 Chroma Bot
+                        <button id="chroma-close-btn">&times;</button>
+                    `;
+                    header.style.color = '#00FFFF';
+                }
+                
+                // Close chat
+                chatBox.style.display = 'none';
+                icon.style.display = 'block';
+            });
+        }
+        
+        console.log(`🎬 Cinematic chat activated for: ${moment.title}`);
+    }
+    
+    // --- 6. Enhanced Chat API Integration ---
+    
+    /**
+     * Enhanced chat response function with 3D mode support
+     */
+    async function getEnhancedChromaBotResponse(message) {
+        const API_BASE = window.location.hostname === "localhost"
+            ? "http://127.0.0.1:3001"
+            : "https://data-bleed-backend.up.railway.app";
+        
+        // Detect current context for enhanced responses
+        const context = triggerSystemReady ? window.storyTracker.detectCurrentContext() : {};
+        const progress = triggerSystemReady && context.character ? 
+                        window.storyTracker.getProgress(context.character) : null;
+        
+        try {
+            const requestBody = {
+                message,
+                character,
+                sessionId,
+                // Enhanced context for 3D-aware responses
+                context: {
+                    area: context.area,
+                    progress: progress ? {
+                        currentArea: progress.currentArea,
+                        visitedAreas: progress.visitedAreas,
+                        storyState: progress.storyState
+                    } : null,
+                    triggerSystemActive: triggerSystemReady
+                }
+            };
+            
+            const res = await fetch(`${API_BASE}/api/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!res.ok) throw new Error("Server error");
+            const data = await res.json();
+            return data.reply;
+        } catch (err) {
+            return "⚠️ Connection error.";
+        }
+    }
+    
+    // Replace the original function call in the chat form handler
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      addMessage('You', text);
+      userInput.value = '';
+      
+      // Use enhanced response function
+      const aiResponse = await getEnhancedChromaBotResponse(text);
+      addMessage('Bot', aiResponse);
+    });
   });

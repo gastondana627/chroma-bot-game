@@ -902,6 +902,18 @@
     function animate() { requestAnimationFrame(animate); ctx.fillStyle = "rgba(0,0,0,0.15)"; ctx.fillRect(0, 0, canvas.width, canvas.height); fireworks = fireworks.filter((f) => { if (f.alpha <= 0) return false; f.update(); return true; }); }
     animate();
   </script>
+
+  <!-- Three.js Library -->
+  <script src="./node_modules/three/build/three.min.js"></script>
+  
+  <!-- WebGL Fallback System -->
+  <script src="./js/webgl-fallback.js"></script>
+  
+  <!-- 3D Scene Manager -->
+  <script src="./js/three-scene-manager.js"></script>
+  
+  <!-- 3D Integration Module -->
+  <script src="./js/3d-integration.js"></script>
 </body>
 
 </html>
