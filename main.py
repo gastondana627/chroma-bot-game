@@ -132,7 +132,10 @@ def build_system_prompt(character: str, char_cfg: Dict[str, Any], persona_prompt
 # ---------- FastAPI ----------
 app = FastAPI(title="Data_Bleed API", version="1.0.0")
 
-# Root endpoint removed - will be handled by static files
+@app.get("/")
+def root():
+    # This will be overridden by static files, but needed for health check routing
+    return {"message": "Data_Bleed API is running", "version": "1.0.0"}
 
 # ✅ --- THIS IS THE FINAL, CORRECTED CORS CONFIGURATION ---
 # It uses your specific origins and explicitly allows the methods needed
@@ -243,13 +246,16 @@ async def chat(req: ChatRequest):
     }
 # ---------- Static File Serving ----------
 # Serve the game files (HTML, CSS, JS, assets)
-# This allows the same server to handle both API calls and serve the game
+# Mount static files at /static to avoid conflicts with API routes
+app.mount("/static", StaticFiles(directory=".", html=True), name="static")
 
-# Mount static files AFTER API routes to avoid conflicts
-# The "/" mount must come last so API routes work
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
+# Also serve index.html at root for convenience
+@app.get("/game")
+def serve_game():
+    from fastapi.responses import FileResponse
+    return FileResponse("index.html")
 
-print("🎮 Game files will be served from the root directory")
-print("🌐 Access the game at the Railway URL")
-print("🧪 Performance tests at: /test-3d-performance-benchmarks.html")
-print("💬 Character chat at: /eli_login.html")
+print("🎮 Game files will be served at /static/")
+print("🌐 Main game at: /static/index.html")
+print("🧪 Performance tests at: /static/test-3d-performance-benchmarks.html")
+print("💬 Character chat at: /static/eli_login.html")
