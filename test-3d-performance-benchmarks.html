@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Performance Benchmarks - Data Bleed</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 20px;
+        }
+        
+        .benchmark-section {
+            background: #111;
+            border: 1px solid #333;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+        .benchmark-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: inherit;
+        }
+        
+        button:hover {
+            background: #004400;
+        }
+        
+        button:disabled {
+            background: #222;
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        .results {
+            background: #000;
+            border: 1px solid #444;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .metrics-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric-card {
+            background: #001100;
+            border: 1px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff00;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-good { background: #00ff00; }
+        .status-warning { background: #ffff00; }
+        .status-error { background: #ff0000; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00aa00);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        #renderCanvas {
+            border: 1px solid #333;
+            background: #000;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .device-info {
+            background: #001a00;
+            border: 1px solid #004400;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>3D Performance Benchmarks</h1>
+            <p>Comprehensive performance testing for the 3D Immersive Chatbot system</p>
+        </div>
+
+        <!-- Device Information -->
+        <div class="benchmark-section">
+            <h2>Device Information</h2>
+            <div class="device-info" id="deviceInfo">
+                Loading device information...
+            </div>
+        </div>
+
+        <!-- Real-time Metrics -->
+        <div class="benchmark-section">
+            <h2>Real-time Performance Metrics</h2>
+            <div class="benchmark-controls">
+                <button onclick="startMonitoring()">Start Monitoring</button>
+                <button onclick="stopMonitoring()">Stop Monitoring</button>
+                <button onclick="clearMetrics()">Clear Metrics</button>
+            </div>
+            
+            <div class="metrics-display">
+                <div class="metric-card">
+                    <div class="metric-value" id="fpsValue">--</div>
+                    <div class="metric-label">FPS</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="frameTimeValue">--</div>
+                    <div class="metric-label">Frame Time (ms)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="memoryValue">--</div>
+                    <div class="metric-label">Memory Usage (%)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="drawCallsValue">--</div>
+                    <div class="metric-label">Draw Calls</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Rendering Canvas -->
+        <div class="benchmark-section">
+            <h2>3D Rendering Test</h2>
+            <canvas id="renderCanvas" width="800" height="600"></canvas>
+            <div class="benchmark-controls">
+                <button onclick="testBasicRendering()">Test Basic Rendering</button>
+                <button onclick="testCharacterEmergence()">Test Character Emergence</button>
+                <button onclick="testMultipleCharacters()">Test Multiple Characters</button>
+            </div>
+        </div>
+
+        <!-- Performance Tests -->
+        <div class="benchmark-section">
+            <h2>Performance Benchmarks</h2>
+            <div class="benchmark-controls">
+                <button onclick="runRenderingBenchmark()">Rendering Performance</button>
+                <button onclick="runMemoryBenchmark()">Memory Usage Test</button>
+                <button onclick="runAssetLoadingBenchmark()">Asset Loading Test</button>
+                <button onclick="runConcurrentUserTest()">Concurrent Users Test</button>
+                <button onclick="runFullBenchmarkSuite()">Run All Tests</button>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="benchmarkProgress"></div>
+            </div>
+            
+            <div class="results" id="benchmarkResults">
+Ready to run performance benchmarks...
+            </div>
+        </div>
+
+        <!-- Optimization Tests -->
+        <div class="benchmark-section">
+            <h2>Optimization Validation</h2>
+            <div class="benchmark-controls">
+                <button onclick="testLODOptimization()">LOD Optimization</button>
+                <button onclick="testTextureCompression()">Texture Compression</button>
+                <button onclick="testProgressiveLoading()">Progressive Loading</button>
+                <button onclick="testMemoryCleanup()">Memory Cleanup</button>
+            </div>
+            <div class="results" id="optimizationResults">
+Ready to run optimization tests...
+            </div>
+        </div>
+
+        <!-- Cross-browser Tests -->
+        <div class="benchmark-section">
+            <h2>Browser Compatibility</h2>
+            <div class="benchmark-controls">
+                <button onclick="testWebGLSupport()">WebGL Support</button>
+                <button onclick="testBrowserPerformance()">Browser Performance</button>
+                <button onclick="testMobileSupport()">Mobile Support</button>
+            </div>
+            <div class="results" id="compatibilityResults">
+Ready to run compatibility tests...
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Three.js for 3D rendering tests -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Include our performance benchmarking system -->
+    <script src="js/performance-benchmarking-system.js"></script>
+    
+    <script>
+        // Global variables
+        let performanceBenchmark;
+        let scene, camera, renderer;
+        let monitoringInterval;
+        let testCharacters = [];
+        
+        // Initialize the benchmarking system
+        function initializeBenchmarking() {
+            performanceBenchmark = new PerformanceBenchmarkingSystem();
+            displayDeviceInfo();
+            setupThreeJS();
+        }
+        
+        // Display device information
+        function displayDeviceInfo() {
+            const deviceInfo = performanceBenchmark.deviceCapabilities;
+            const memory = performanceBenchmark.getAvailableMemory();
+            
+            document.getElementById('deviceInfo').innerHTML = `
+<strong>Device Capabilities:</strong>
+• CPU Cores: ${deviceInfo.cores}
+• Memory Usage: ${memory.percentage.toFixed(1)}% (${(memory.used / 1024 / 1024).toFixed(1)}MB / ${(memory.limit / 1024 / 1024).toFixed(1)}MB)
+• WebGL Version: ${deviceInfo.webglVersion?.version || 'Not supported'}
+• Mobile Device: ${deviceInfo.isMobile ? 'Yes' : 'No'}
+• Connection: ${deviceInfo.connectionSpeed.effectiveType || 'Unknown'}
+• Optimization Level: ${performanceBenchmark.optimizationLevel}
+            `;
+        }
+        
+        // Setup Three.js for rendering tests
+        function setupThreeJS() {
+            const canvas = document.getElementById('renderCanvas');
+            
+            // Scene setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(canvas.width, canvas.height);
+            renderer.setClearColor(0x000000);
+            
+            // Add basic lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+            
+            camera.position.z = 5;
+        }
+        
+        // Start real-time monitoring
+        function startMonitoring() {
+            performanceBenchmark.startMonitoring();
+            
+            monitoringInterval = setInterval(() => {
+                // Simulate frame rendering for metrics
+                performanceBenchmark.recordFrame({
+                    drawCalls: renderer.info.render.calls,
+                    triangles: renderer.info.render.triangles
+                });
+                
+                updateMetricsDisplay();
+            }, 100);
+            
+            logResult('benchmarkResults', 'Real-time monitoring started');
+        }
+        
+        // Stop real-time monitoring
+        function stopMonitoring() {
+            performanceBenchmark.stopMonitoring();
+            
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+            }
+            
+            logResult('benchmarkResults', 'Real-time monitoring stopped');
+        }
+        
+        // Update metrics display
+        function updateMetricsDisplay() {
+            const metrics = performanceBenchmark.getCurrentMetrics();
+            
+            document.getElementById('fpsValue').textContent = metrics.fps.toFixed(1);
+            document.getElementById('frameTimeValue').textContent = metrics.frameTime.toFixed(1);
+            document.getElementById('memoryValue').textContent = metrics.memoryUsage.toFixed(1);
+            document.getElementById('drawCallsValue').textContent = metrics.drawCalls || 0;
+        }
+        
+        // Clear metrics
+        function clearMetrics() {
+            performanceBenchmark.metrics = {
+                fps: [],
+                frameTime: [],
+                memoryUsage: [],
+                drawCalls: [],
+                triangles: [],
+                loadTimes: []
+            };
+            
+            updateMetricsDisplay();
+            logResult('benchmarkResults', 'Metrics cleared');
+        }
+        
+        // Test basic 3D rendering
+        function testBasicRendering() {
+            logResult('benchmarkResults', 'Testing basic 3D rendering...');
+            
+            performanceBenchmark.startBenchmark('basic_rendering');
+            
+            // Create a simple cube
+            const geometry = new THREE.BoxGeometry();
+            const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+            
+            // Render frames
+            let frameCount = 0;
+            const maxFrames = 60;
+            
+            function renderFrame() {
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+                
+                renderer.render(scene, camera);
+                frameCount++;
+                
+                if (frameCount < maxFrames) {
+                    requestAnimationFrame(renderFrame);
+                } else {
+                    const result = performanceBenchmark.endBenchmark('basic_rendering');
+                    scene.remove(cube);
+                    
+                    logResult('benchmarkResults', `Basic rendering test completed:
+• Duration: ${result.duration.toFixed(2)}ms
+• Average FPS: ${result.fps.toFixed(1)}
+• Memory Delta: ${(result.memoryDelta / 1024 / 1024).toFixed(2)}MB`);
+                }
+            }
+            
+            renderFrame();
+        }
+        
+        // Test character emergence animation
+        function testCharacterEmergence() {
+            logResult('benchmarkResults', 'Testing character emergence animation...');
+            
+            performanceBenchmark.startBenchmark('character_emergence');
+            
+            // Create character placeholder
+            const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const material = new THREE.MeshPhongMaterial({ color: 0x0088ff });
+            const character = new THREE.Mesh(geometry, material);
+            scene.add(character);
+            
+            // Animate emergence
+            let scale = 0;
+            let frameCount = 0;
+            const maxFrames = 120; // 2 seconds at 60fps
+            
+            function animateEmergence() {
+                scale += 1 / 60; // Scale up over 1 second
+                character.scale.setScalar(Math.min(scale, 1));
+                character.rotation.y += 0.02;
+                
+                renderer.render(scene, camera);
+                frameCount++;
+                
+                if (frameCount < maxFrames) {
+                    requestAnimationFrame(animateEmergence);
+                } else {
+                    const result = performanceBenchmark.endBenchmark('character_emergence');
+                    scene.remove(character);
+                    
+                    logResult('benchmarkResults', `Character emergence test completed:
+• Duration: ${result.duration.toFixed(2)}ms
+• Average FPS: ${result.fps.toFixed(1)}
+• Memory Delta: ${(result.memoryDelta / 1024 / 1024).toFixed(2)}MB`);
+                }
+            }
+            
+            animateEmergence();
+        }
+        
+        // Test multiple characters
+        function testMultipleCharacters() {
+            logResult('benchmarkResults', 'Testing multiple character rendering...');
+            
+            performanceBenchmark.startBenchmark('multiple_characters');
+            
+            // Create multiple characters
+            const characters = [];
+            const colors = [0xff0000, 0x00ff00, 0x0000ff]; // Eli, Maya, Stanley colors
+            
+            for (let i = 0; i < 3; i++) {
+                const geometry = new THREE.SphereGeometry(0.3, 16, 16);
+                const material = new THREE.MeshPhongMaterial({ color: colors[i] });
+                const character = new THREE.Mesh(geometry, material);
+                character.position.x = (i - 1) * 2;
+                scene.add(character);
+                characters.push(character);
+            }
+            
+            // Animate all characters
+            let frameCount = 0;
+            const maxFrames = 180; // 3 seconds at 60fps
+            
+            function animateCharacters() {
+                characters.forEach((character, index) => {
+                    character.rotation.y += 0.01 * (index + 1);
+                    character.position.y = Math.sin(Date.now() * 0.001 + index) * 0.5;
+                });
+                
+                renderer.render(scene, camera);
+                frameCount++;
+                
+                if (frameCount < maxFrames) {
+                    requestAnimationFrame(animateCharacters);
+                } else {
+                    const result = performanceBenchmark.endBenchmark('multiple_characters');
+                    characters.forEach(char => scene.remove(char));
+                    
+                    logResult('benchmarkResults', `Multiple characters test completed:
+• Duration: ${result.duration.toFixed(2)}ms
+• Average FPS: ${result.fps.toFixed(1)}
+• Memory Delta: ${(result.memoryDelta / 1024 / 1024).toFixed(2)}MB`);
+                }
+            }
+            
+            animateCharacters();
+        }
+        
+        // Run rendering performance benchmark
+        async function runRenderingBenchmark() {
+            logResult('benchmarkResults', 'Running rendering performance benchmark...');
+            updateProgress(10);
+            
+            const tests = [
+                { name: 'Basic Rendering', fn: testBasicRendering },
+                { name: 'Character Emergence', fn: testCharacterEmergence },
+                { name: 'Multiple Characters', fn: testMultipleCharacters }
+            ];
+            
+            for (let i = 0; i < tests.length; i++) {
+                await new Promise(resolve => {
+                    const originalLog = logResult;
+                    logResult = (id, message) => {
+                        originalLog(id, message);
+                        if (message.includes('completed')) {
+                            resolve();
+                        }
+                    };
+                    tests[i].fn();
+                });
+                updateProgress(30 + (i * 20));
+            }
+            
+            updateProgress(100);
+            logResult('benchmarkResults', 'Rendering performance benchmark completed!');
+        }
+        
+        // Run memory usage benchmark
+        async function runMemoryBenchmark() {
+            logResult('benchmarkResults', 'Running memory usage benchmark...');
+            
+            const initialMemory = performanceBenchmark.getAvailableMemory();
+            logResult('benchmarkResults', `Initial memory usage: ${initialMemory.percentage.toFixed(1)}%`);
+            
+            // Create memory-intensive objects
+            const objects = [];
+            for (let i = 0; i < 100; i++) {
+                const geometry = new THREE.SphereGeometry(1, 32, 32);
+                const material = new THREE.MeshPhongMaterial({ color: Math.random() * 0xffffff });
+                const mesh = new THREE.Mesh(geometry, material);
+                objects.push(mesh);
+                scene.add(mesh);
+            }
+            
+            const peakMemory = performanceBenchmark.getAvailableMemory();
+            logResult('benchmarkResults', `Peak memory usage: ${peakMemory.percentage.toFixed(1)}%`);
+            
+            // Cleanup
+            objects.forEach(obj => {
+                scene.remove(obj);
+                obj.geometry.dispose();
+                obj.material.dispose();
+            });
+            
+            // Force garbage collection simulation
+            setTimeout(() => {
+                const finalMemory = performanceBenchmark.getAvailableMemory();
+                logResult('benchmarkResults', `Memory after cleanup: ${finalMemory.percentage.toFixed(1)}%`);
+                
+                const memoryDelta = peakMemory.used - initialMemory.used;
+                const cleanupEfficiency = ((peakMemory.used - finalMemory.used) / memoryDelta) * 100;
+                
+                logResult('benchmarkResults', `Memory benchmark completed:
+• Memory increase: ${(memoryDelta / 1024 / 1024).toFixed(2)}MB
+• Cleanup efficiency: ${cleanupEfficiency.toFixed(1)}%
+• Threshold check: ${peakMemory.percentage > 80 ? 'FAILED' : 'PASSED'}`);
+            }, 1000);
+        }
+        
+        // Run asset loading benchmark
+        async function runAssetLoadingBenchmark() {
+            logResult('benchmarkResults', 'Running asset loading benchmark...');
+            
+            const assets = [
+                { name: 'eli_model', size: 2048 },
+                { name: 'maya_model', size: 1856 },
+                { name: 'stanley_model', size: 2240 },
+                { name: 'environment_texture', size: 4096 }
+            ];
+            
+            const loadTimes = [];
+            
+            for (const asset of assets) {
+                const startTime = performance.now();
+                
+                // Simulate asset loading
+                await new Promise(resolve => {
+                    setTimeout(() => {
+                        const loadTime = performance.now() - startTime;
+                        performanceBenchmark.recordAssetLoad(asset.name, loadTime, asset.size);
+                        loadTimes.push(loadTime);
+                        
+                        logResult('benchmarkResults', `Loaded ${asset.name}: ${loadTime.toFixed(2)}ms`);
+                        resolve();
+                    }, Math.random() * 1000 + 500); // Random load time 500-1500ms
+                });
+            }
+            
+            const totalLoadTime = loadTimes.reduce((a, b) => a + b, 0);
+            const averageLoadTime = totalLoadTime / loadTimes.length;
+            
+            logResult('benchmarkResults', `Asset loading benchmark completed:
+• Total load time: ${totalLoadTime.toFixed(2)}ms
+• Average load time: ${averageLoadTime.toFixed(2)}ms
+• Threshold check: ${totalLoadTime > 5000 ? 'FAILED' : 'PASSED'}`);
+        }
+        
+        // Run concurrent users test
+        async function runConcurrentUserTest() {
+            logResult('benchmarkResults', 'Running concurrent users test...');
+            
+            const result = await performanceBenchmark.testConcurrentUsers(50);
+            
+            logResult('benchmarkResults', `Concurrent users test completed:
+• Users tested: ${result.totalUsers}
+• Total time: ${result.totalTime.toFixed(2)}ms
+• Average FPS: ${result.averageFPS.toFixed(1)}
+• Test result: ${result.passedTest ? 'PASSED' : 'FAILED'}`);
+        }
+        
+        // Run full benchmark suite
+        async function runFullBenchmarkSuite() {
+            logResult('benchmarkResults', 'Running full benchmark suite...');
+            updateProgress(0);
+            
+            await runRenderingBenchmark();
+            updateProgress(25);
+            
+            await runMemoryBenchmark();
+            updateProgress(50);
+            
+            await runAssetLoadingBenchmark();
+            updateProgress(75);
+            
+            await runConcurrentUserTest();
+            updateProgress(100);
+            
+            // Generate final report
+            const report = performanceBenchmark.generateReport();
+            logResult('benchmarkResults', `
+FULL BENCHMARK SUITE COMPLETED
+==============================
+${JSON.stringify(report, null, 2)}`);
+        }
+        
+        // Test LOD optimization
+        function testLODOptimization() {
+            logResult('optimizationResults', 'Testing Level of Detail (LOD) optimization...');
+            
+            const distances = [10, 50, 100, 200];
+            const expectedLODs = ['high', 'medium', 'low', 'minimal'];
+            
+            distances.forEach((distance, index) => {
+                const lod = distance < 25 ? 'high' :
+                           distance < 75 ? 'medium' :
+                           distance < 150 ? 'low' : 'minimal';
+                
+                const result = lod === expectedLODs[index] ? 'PASS' : 'FAIL';
+                logResult('optimizationResults', `Distance ${distance}: Expected ${expectedLODs[index]}, Got ${lod} - ${result}`);
+            });
+            
+            logResult('optimizationResults', 'LOD optimization test completed');
+        }
+        
+        // Test texture compression
+        function testTextureCompression() {
+            logResult('optimizationResults', 'Testing texture compression support...');
+            
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            
+            if (!gl) {
+                logResult('optimizationResults', 'WebGL not supported - texture compression test skipped');
+                return;
+            }
+            
+            const compressionFormats = [
+                'WEBGL_compressed_texture_s3tc',
+                'WEBGL_compressed_texture_etc1',
+                'WEBGL_compressed_texture_pvrtc'
+            ];
+            
+            compressionFormats.forEach(format => {
+                const extension = gl.getExtension(format);
+                const supported = extension !== null;
+                logResult('optimizationResults', `${format}: ${supported ? 'SUPPORTED' : 'NOT SUPPORTED'}`);
+            });
+            
+            logResult('optimizationResults', 'Texture compression test completed');
+        }
+        
+        // Test progressive loading
+        function testProgressiveLoading() {
+            logResult('optimizationResults', 'Testing progressive loading strategies...');
+            
+            const connectionTypes = [
+                { type: 'slow-2g', speed: 50, expected: 'preview' },
+                { type: '3g', speed: 500, expected: 'compressed' },
+                { type: '4g', speed: 5000, expected: 'full' }
+            ];
+            
+            connectionTypes.forEach(conn => {
+                const strategy = conn.speed > 2000 ? 'full' :
+                               conn.speed > 200 ? 'compressed' : 'preview';
+                
+                const result = strategy === conn.expected ? 'PASS' : 'FAIL';
+                logResult('optimizationResults', `${conn.type} (${conn.speed}kbps): Expected ${conn.expected}, Got ${strategy} - ${result}`);
+            });
+            
+            logResult('optimizationResults', 'Progressive loading test completed');
+        }
+        
+        // Test memory cleanup
+        function testMemoryCleanup() {
+            logResult('optimizationResults', 'Testing memory cleanup mechanisms...');
+            
+            // Simulate high memory usage
+            const initialMemory = performanceBenchmark.getAvailableMemory();
+            
+            // Trigger cleanup threshold
+            if (initialMemory.percentage > 80) {
+                logResult('optimizationResults', 'Memory cleanup triggered automatically');
+            } else {
+                logResult('optimizationResults', 'Memory usage below threshold - cleanup not needed');
+            }
+            
+            // Test manual cleanup
+            performanceBenchmark.triggerMemoryCleanup();
+            logResult('optimizationResults', 'Manual memory cleanup triggered');
+            
+            logResult('optimizationResults', 'Memory cleanup test completed');
+        }
+        
+        // Test WebGL support
+        function testWebGLSupport() {
+            logResult('compatibilityResults', 'Testing WebGL support...');
+            
+            const canvas = document.createElement('canvas');
+            const contexts = ['webgl2', 'webgl', 'experimental-webgl'];
+            
+            contexts.forEach(contextType => {
+                const context = canvas.getContext(contextType);
+                const supported = context !== null;
+                
+                if (supported && contextType === 'webgl2') {
+                    const maxTextureSize = context.getParameter(context.MAX_TEXTURE_SIZE);
+                    const maxVertexAttribs = context.getParameter(context.MAX_VERTEX_ATTRIBS);
+                    
+                    logResult('compatibilityResults', `${contextType}: SUPPORTED
+  • Max Texture Size: ${maxTextureSize}
+  • Max Vertex Attributes: ${maxVertexAttribs}`);
+                } else {
+                    logResult('compatibilityResults', `${contextType}: ${supported ? 'SUPPORTED' : 'NOT SUPPORTED'}`);
+                }
+            });
+        }
+        
+        // Test browser performance
+        function testBrowserPerformance() {
+            logResult('compatibilityResults', 'Testing browser performance characteristics...');
+            
+            const userAgent = navigator.userAgent;
+            const browserInfo = {
+                isChrome: /Chrome/.test(userAgent),
+                isFirefox: /Firefox/.test(userAgent),
+                isSafari: /Safari/.test(userAgent) && !/Chrome/.test(userAgent),
+                isEdge: /Edge/.test(userAgent)
+            };
+            
+            Object.entries(browserInfo).forEach(([browser, detected]) => {
+                if (detected) {
+                    logResult('compatibilityResults', `Detected browser: ${browser.replace('is', '')}`);
+                }
+            });
+            
+            // Test performance API availability
+            const hasPerformanceAPI = typeof performance !== 'undefined';
+            const hasMemoryAPI = performance && performance.memory;
+            const hasNavigationTiming = performance && performance.navigation;
+            
+            logResult('compatibilityResults', `Performance APIs:
+• Performance API: ${hasPerformanceAPI ? 'AVAILABLE' : 'NOT AVAILABLE'}
+• Memory API: ${hasMemoryAPI ? 'AVAILABLE' : 'NOT AVAILABLE'}
+• Navigation Timing: ${hasNavigationTiming ? 'AVAILABLE' : 'NOT AVAILABLE'}`);
+        }
+        
+        // Test mobile support
+        function testMobileSupport() {
+            logResult('compatibilityResults', 'Testing mobile device support...');
+            
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const hasTouch = 'ontouchstart' in window;
+            const hasOrientation = 'orientation' in window;
+            
+            logResult('compatibilityResults', `Mobile Support:
+• Mobile Device: ${isMobile ? 'YES' : 'NO'}
+• Touch Support: ${hasTouch ? 'YES' : 'NO'}
+• Orientation API: ${hasOrientation ? 'YES' : 'NO'}
+• Screen Size: ${window.screen.width}x${window.screen.height}
+• Device Pixel Ratio: ${window.devicePixelRatio || 1}`);
+            
+            if (isMobile) {
+                logResult('compatibilityResults', 'Mobile optimizations should be enabled');
+            }
+        }
+        
+        // Utility functions
+        function logResult(elementId, message) {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            element.textContent += `[${timestamp}] ${message}\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+        
+        function updateProgress(percentage) {
+            document.getElementById('benchmarkProgress').style.width = percentage + '%';
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', initializeBenchmarking);
+        
+        // Listen for performance events
+        window.addEventListener('3d-memory-cleanup', (event) => {
+            logResult('benchmarkResults', `Memory cleanup triggered: ${event.detail.memoryUsage.toFixed(1)}% usage`);
+        });
+        
+        window.addEventListener('3d-performance-optimize', (event) => {
+            logResult('benchmarkResults', `Performance optimization triggered: Level ${event.detail.level}, FPS: ${event.detail.currentFPS.toFixed(1)}`);
+        });
+        
+        window.addEventListener('3d-optimize-drawcalls', (event) => {
+            logResult('benchmarkResults', `Draw call optimization triggered: ${event.detail.drawCalls} calls`);
+        });
+    </script>
+</body>
+</html>

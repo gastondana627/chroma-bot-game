@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Foundation Test</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        
+        .test-pass {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: #00ff00;
+        }
+        
+        .test-fail {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: #ff0000;
+        }
+        
+        .test-warn {
+            background: rgba(255, 165, 0, 0.1);
+            border-color: #ffa500;
+        }
+        
+        button {
+            background: #00FFFF;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #00CCCC;
+        }
+        
+        #performance-info {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎮 3D Foundation Test Suite</h1>
+        <p>Testing Three.js foundation and 3D rendering infrastructure for Data Bleed chatbot.</p>
+        
+        <div id="test-results"></div>
+        
+        <div>
+            <button onclick="runAllTests()">🧪 Run All Tests</button>
+            <button onclick="testWebGLSupport()">🔍 Test WebGL</button>
+            <button onclick="testSceneManager()">🎬 Test Scene Manager</button>
+            <button onclick="testIntegration()">🔗 Test Integration</button>
+            <button onclick="showPerformanceInfo()">📊 Performance Info</button>
+        </div>
+        
+        <div id="performance-info" style="display: none;"></div>
+    </div>
+
+    <!-- Three.js Library -->
+    <script src="./node_modules/three/build/three.min.js"></script>
+    
+    <!-- WebGL Fallback System -->
+    <script src="./js/webgl-fallback.js"></script>
+    
+    <!-- 3D Scene Manager -->
+    <script src="./js/three-scene-manager.js"></script>
+    
+    <!-- 3D Integration Module -->
+    <script src="./js/3d-integration.js"></script>
+
+    <script>
+        const resultsContainer = document.getElementById('test-results');
+        const performanceContainer = document.getElementById('performance-info');
+        
+        function addTestResult(testName, passed, message, isWarning = false) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${passed ? 'test-pass' : (isWarning ? 'test-warn' : 'test-fail')}`;
+            
+            const icon = passed ? '✅' : (isWarning ? '⚠️' : '❌');
+            resultDiv.innerHTML = `<strong>${icon} ${testName}</strong><br>${message}`;
+            
+            resultsContainer.appendChild(resultDiv);
+        }
+        
+        function clearResults() {
+            resultsContainer.innerHTML = '';
+        }
+        
+        function testWebGLSupport() {
+            clearResults();
+            
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                
+                if (gl) {
+                    const vendor = gl.getParameter(gl.VENDOR);
+                    const renderer = gl.getParameter(gl.RENDERER);
+                    addTestResult(
+                        'WebGL Support', 
+                        true, 
+                        `WebGL is supported. Vendor: ${vendor}, Renderer: ${renderer}`
+                    );
+                    
+                    // Test WebGL extensions
+                    const extensions = gl.getSupportedExtensions();
+                    addTestResult(
+                        'WebGL Extensions', 
+                        extensions.length > 0, 
+                        `${extensions.length} extensions available: ${extensions.slice(0, 5).join(', ')}${extensions.length > 5 ? '...' : ''}`
+                    );
+                } else {
+                    addTestResult('WebGL Support', false, 'WebGL is not supported on this device');
+                }
+            } catch (error) {
+                addTestResult('WebGL Support', false, `WebGL test failed: ${error.message}`);
+            }
+        }
+        
+        function testSceneManager() {
+            clearResults();
+            
+            try {
+                // Test ThreeSceneManager class exists
+                if (typeof ThreeSceneManager === 'undefined') {
+                    addTestResult('Scene Manager Class', false, 'ThreeSceneManager class not found');
+                    return;
+                }
+                
+                addTestResult('Scene Manager Class', true, 'ThreeSceneManager class loaded successfully');
+                
+                // Test scene manager initialization
+                const sceneManager = new ThreeSceneManager();
+                addTestResult('Scene Manager Creation', true, 'Scene manager instance created');
+                
+                // Test WebGL detection
+                const webglSupported = sceneManager.checkWebGLSupport();
+                addTestResult('WebGL Detection', webglSupported, 
+                    webglSupported ? 'WebGL support detected by scene manager' : 'WebGL not supported');
+                
+                if (webglSupported) {
+                    // Test initialization
+                    const initialized = sceneManager.initialize();
+                    addTestResult('Scene Initialization', initialized, 
+                        initialized ? 'Scene initialized successfully' : 'Scene initialization failed');
+                    
+                    if (initialized) {
+                        // Test scene components
+                        const scene = sceneManager.getScene();
+                        const camera = sceneManager.getCamera();
+                        const renderer = sceneManager.getRenderer();
+                        
+                        addTestResult('Scene Components', 
+                            !!(scene && camera && renderer), 
+                            `Scene: ${!!scene}, Camera: ${!!camera}, Renderer: ${!!renderer}`);
+                        
+                        // Test show/hide functionality
+                        sceneManager.show();
+                        const canvas = document.getElementById('three-overlay-canvas');
+                        const canvasVisible = canvas && canvas.style.display === 'block';
+                        addTestResult('Canvas Visibility', canvasVisible, 
+                            canvasVisible ? 'Canvas shows correctly' : 'Canvas visibility issue');
+                        
+                        sceneManager.hide();
+                        const canvasHidden = canvas && canvas.style.display === 'none';
+                        addTestResult('Canvas Hide', canvasHidden, 
+                            canvasHidden ? 'Canvas hides correctly' : 'Canvas hide issue');
+                        
+                        // Clean up
+                        sceneManager.cleanup();
+                        addTestResult('Cleanup', true, 'Scene manager cleaned up successfully');
+                    }
+                }
+                
+            } catch (error) {
+                addTestResult('Scene Manager Test', false, `Scene manager test failed: ${error.message}`);
+            }
+        }
+        
+        function testIntegration() {
+            clearResults();
+            
+            try {
+                // Test WebGL Fallback System
+                if (typeof WebGLFallback !== 'undefined' && window.webGLFallback) {
+                    addTestResult('WebGL Fallback System', true, 'WebGL fallback system loaded');
+                    
+                    const deviceInfo = window.webGLFallback.getDeviceInfo();
+                    addTestResult('Device Capabilities', deviceInfo.webglSupported, 
+                        `WebGL: ${deviceInfo.webglSupported}, Vendor: ${deviceInfo.vendor}, Max Texture: ${deviceInfo.maxTextureSize}`);
+                    
+                    const fallbackActive = window.webGLFallback.isFallbackActive();
+                    addTestResult('Fallback Status', !fallbackActive, 
+                        fallbackActive ? 'Fallback active (limited 3D support)' : 'Full 3D support available', fallbackActive);
+                } else {
+                    addTestResult('WebGL Fallback System', false, 'WebGL fallback system not found');
+                }
+                
+                // Test ThreeDIntegration class exists
+                if (typeof ThreeDIntegration === 'undefined') {
+                    addTestResult('Integration Class', false, 'ThreeDIntegration class not found');
+                    return;
+                }
+                
+                addTestResult('Integration Class', true, 'ThreeDIntegration class loaded successfully');
+                
+                // Test global integration instance
+                if (typeof window.threeDIntegration !== 'undefined') {
+                    addTestResult('Global Integration', true, 'Global 3D integration instance found');
+                    
+                    const isAvailable = window.threeDIntegration.isAvailable();
+                    addTestResult('Integration Availability', isAvailable, 
+                        isAvailable ? '3D integration is available' : '3D integration not available (WebGL issue?)');
+                    
+                    if (isAvailable) {
+                        const sceneManager = window.threeDIntegration.getSceneManager();
+                        addTestResult('Scene Manager Access', !!sceneManager, 
+                            sceneManager ? 'Scene manager accessible through integration' : 'Scene manager not accessible');
+                    }
+                } else {
+                    addTestResult('Global Integration', false, 'Global 3D integration instance not found');
+                }
+                
+                // Test DOM integration points
+                const videoContainer = document.getElementById('video-container');
+                addTestResult('Video Container', !!videoContainer, 
+                    videoContainer ? 'Video container found for integration' : 'Video container not found', !videoContainer);
+                
+            } catch (error) {
+                addTestResult('Integration Test', false, `Integration test failed: ${error.message}`);
+            }
+        }
+        
+        function showPerformanceInfo() {
+            if (window.threeDIntegration && window.threeDIntegration.isAvailable()) {
+                const sceneManager = window.threeDIntegration.getSceneManager();
+                const perfInfo = sceneManager.getPerformanceInfo();
+                
+                if (perfInfo) {
+                    performanceContainer.style.display = 'block';
+                    performanceContainer.innerHTML = `
+                        <h3>📊 3D Performance Information</h3>
+                        <p><strong>Draw Calls:</strong> ${perfInfo.drawCalls}</p>
+                        <p><strong>Triangles:</strong> ${perfInfo.triangles}</p>
+                        <p><strong>Points:</strong> ${perfInfo.points}</p>
+                        <p><strong>Lines:</strong> ${perfInfo.lines}</p>
+                        <p><strong>Frame:</strong> ${perfInfo.frame}</p>
+                        <p><strong>Geometries:</strong> ${perfInfo.geometries}</p>
+                        <p><strong>Textures:</strong> ${perfInfo.textures}</p>
+                    `;
+                } else {
+                    performanceContainer.style.display = 'block';
+                    performanceContainer.innerHTML = '<h3>📊 Performance Information</h3><p>No performance data available (3D not active)</p>';
+                }
+            } else {
+                performanceContainer.style.display = 'block';
+                performanceContainer.innerHTML = '<h3>📊 Performance Information</h3><p>3D integration not available</p>';
+            }
+        }
+        
+        function runAllTests() {
+            clearResults();
+            performanceContainer.style.display = 'none';
+            
+            addTestResult('Test Suite', true, 'Running comprehensive 3D foundation tests...');
+            
+            setTimeout(() => {
+                testWebGLSupport();
+                setTimeout(() => {
+                    testSceneManager();
+                    setTimeout(() => {
+                        testIntegration();
+                        addTestResult('Test Suite Complete', true, 'All tests completed. Check results above.');
+                    }, 500);
+                }, 500);
+            }, 500);
+        }
+        
+        // Auto-run basic tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                addTestResult('Page Load', true, 'Test page loaded successfully');
+                
+                // Check if Three.js is loaded
+                if (typeof THREE !== 'undefined') {
+                    addTestResult('Three.js Library', true, `Three.js version ${THREE.REVISION} loaded`);
+                } else {
+                    addTestResult('Three.js Library', false, 'Three.js library not loaded');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

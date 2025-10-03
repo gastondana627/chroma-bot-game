@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test 3D Trigger System Integration</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #0a1a2a 0%, #000810 100%);
+            font-family: 'Inter', sans-serif;
+            color: white;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .test-button {
+            padding: 10px 20px;
+            background: #00ffff;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        
+        .test-button:hover {
+            background: #00cccc;
+        }
+        
+        .test-results {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .info { color: #ffff00; }
+    </style>
+</head>
+<body data-character="eli">
+    <div class="test-container">
+        <h1>🎬 3D Trigger System Integration Test</h1>
+        <p>This page tests the integration between the story progression tracker, cinematic moments config, and chroma bot injector.</p>
+        
+        <div class="test-section">
+            <h3>System Status</h3>
+            <button class="test-button" onclick="checkSystemStatus()">Check System Status</button>
+            <div id="status-results" class="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Story Progression Tests</h3>
+            <button class="test-button" onclick="testStoryTracking()">Test Story Tracking</button>
+            <button class="test-button" onclick="simulateAreaVisit()">Simulate Area Visit</button>
+            <button class="test-button" onclick="simulateStateUpdate()">Simulate State Update</button>
+            <div id="story-results" class="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Cinematic Moments Tests</h3>
+            <button class="test-button" onclick="testCinematicConfig()">Test Cinematic Config</button>
+            <button class="test-button" onclick="testTriggerConditions()">Test Trigger Conditions</button>
+            <div id="cinematic-results" class="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Trigger Integration Tests</h3>
+            <button class="test-button" onclick="testTriggerFiring()">Test Trigger Firing</button>
+            <button class="test-button" onclick="simulateTournamentWin()">Simulate Tournament Win</button>
+            <div id="trigger-results" class="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Progress Data</h3>
+            <button class="test-button" onclick="showProgressData()">Show Current Progress</button>
+            <button class="test-button" onclick="resetProgressData()">Reset Progress</button>
+            <div id="progress-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- Load the trigger system components -->
+    <script src="Game/Mechanics/story-progression-tracker.js"></script>
+    <script src="Game/Mechanics/cinematic-moments-config.js"></script>
+    <script src="Game/Mechanics/chroma_bot_injectors.js"></script>
+
+    <script>
+        let testResults = {
+            status: document.getElementById('status-results'),
+            story: document.getElementById('story-results'),
+            cinematic: document.getElementById('cinematic-results'),
+            trigger: document.getElementById('trigger-results'),
+            progress: document.getElementById('progress-results')
+        };
+
+        function log(section, message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            testResults[section].innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        function checkSystemStatus() {
+            testResults.status.innerHTML = '';
+            
+            log('status', 'Checking system components...', 'info');
+            
+            // Check if story tracker is loaded
+            if (window.StoryProgressionTracker) {
+                log('status', '✓ StoryProgressionTracker class loaded', 'success');
+            } else {
+                log('status', '✗ StoryProgressionTracker class not found', 'error');
+            }
+            
+            // Check if story tracker instance exists
+            if (window.storyTracker) {
+                log('status', '✓ storyTracker instance created', 'success');
+            } else {
+                log('status', '✗ storyTracker instance not found', 'error');
+            }
+            
+            // Check if cinematic manager is loaded
+            if (window.CinematicMomentsManager) {
+                log('status', '✓ CinematicMomentsManager class loaded', 'success');
+            } else {
+                log('status', '✗ CinematicMomentsManager class not found', 'error');
+            }
+            
+            // Check if cinematic manager instance exists
+            if (window.cinematicManager) {
+                log('status', '✓ cinematicManager instance created', 'success');
+            } else {
+                log('status', '✗ cinematicManager instance not found', 'error');
+            }
+            
+            // Check if chroma bot is loaded
+            if (document.getElementById('chroma-bot-component')) {
+                log('status', '✓ Chroma bot injected successfully', 'success');
+            } else {
+                log('status', '✗ Chroma bot not found', 'error');
+            }
+        }
+
+        function testStoryTracking() {
+            testResults.story.innerHTML = '';
+            
+            if (!window.storyTracker) {
+                log('story', '✗ Story tracker not available', 'error');
+                return;
+            }
+            
+            log('story', 'Testing story tracking functionality...', 'info');
+            
+            // Test progress loading
+            const progress = window.storyTracker.getProgress('eli');
+            if (progress) {
+                log('story', `✓ Eli progress loaded: Area ${progress.currentArea}`, 'success');
+            } else {
+                log('story', '✗ Failed to load Eli progress', 'error');
+            }
+            
+            // Test context detection
+            const context = window.storyTracker.detectCurrentContext();
+            log('story', `✓ Context detected: Character=${context.character}, Area=${context.area}`, 'success');
+        }
+
+        function simulateAreaVisit() {
+            if (!window.storyTracker) {
+                log('story', '✗ Story tracker not available', 'error');
+                return;
+            }
+            
+            log('story', 'Simulating area visit...', 'info');
+            window.storyTracker.trackAreaVisit('eli', 2, { 
+                timestamp: Date.now(),
+                source: 'test_simulation'
+            });
+            log('story', '✓ Area visit tracked for Eli Area 2', 'success');
+        }
+
+        function simulateStateUpdate() {
+            if (!window.storyTracker) {
+                log('story', '✗ Story tracker not available', 'error');
+                return;
+            }
+            
+            log('story', 'Simulating state update...', 'info');
+            window.storyTracker.updateStoryState('eli', 'tournament_wins', 1, true);
+            log('story', '✓ Tournament wins incremented for Eli', 'success');
+        }
+
+        function testCinematicConfig() {
+            testResults.cinematic.innerHTML = '';
+            
+            if (!window.cinematicManager) {
+                log('cinematic', '✗ Cinematic manager not available', 'error');
+                return;
+            }
+            
+            log('cinematic', 'Testing cinematic configuration...', 'info');
+            
+            // Test getting character moments
+            const eliMoments = window.cinematicManager.getCharacterMoments('eli');
+            log('cinematic', `✓ Eli has ${Object.keys(eliMoments).length} cinematic moments`, 'success');
+            
+            // Test getting moments for area
+            const area2Moments = window.cinematicManager.getMomentsForArea('eli', 2);
+            log('cinematic', `✓ Area 2 has ${area2Moments.length} cinematic moments for Eli`, 'success');
+            
+            // Test specific moment retrieval
+            const tournamentMoment = window.cinematicManager.getMoment('eli_tournament_victory');
+            if (tournamentMoment) {
+                log('cinematic', `✓ Tournament victory moment found: ${tournamentMoment.title}`, 'success');
+            } else {
+                log('cinematic', '✗ Tournament victory moment not found', 'error');
+            }
+        }
+
+        function testTriggerConditions() {
+            if (!window.cinematicManager || !window.storyTracker) {
+                log('cinematic', '✗ Required systems not available', 'error');
+                return;
+            }
+            
+            log('cinematic', 'Testing trigger conditions...', 'info');
+            
+            const triggers = window.cinematicManager.getTriggerConditions('eli', 2);
+            log('cinematic', `✓ Found ${triggers.length} trigger conditions for Eli Area 2`, 'success');
+            
+            triggers.forEach(trigger => {
+                log('cinematic', `  - Trigger: ${trigger.id}`, 'info');
+            });
+        }
+
+        function testTriggerFiring() {
+            testResults.trigger.innerHTML = '';
+            
+            if (!window.storyTracker) {
+                log('trigger', '✗ Story tracker not available', 'error');
+                return;
+            }
+            
+            log('trigger', 'Testing trigger firing mechanism...', 'info');
+            
+            // Listen for trigger events
+            window.addEventListener('storyTriggerFired', (event) => {
+                log('trigger', `🎬 Trigger fired: ${event.detail.triggerId}`, 'success');
+            });
+            
+            // Manually check trigger conditions
+            window.storyTracker.checkTriggerConditions('eli', 2, 'manual_test', {
+                source: 'test_function'
+            });
+            
+            log('trigger', '✓ Trigger check completed', 'success');
+        }
+
+        function simulateTournamentWin() {
+            if (!window.storyTracker) {
+                log('trigger', '✗ Story tracker not available', 'error');
+                return;
+            }
+            
+            log('trigger', 'Simulating tournament win scenario...', 'info');
+            
+            // Set up conditions for tournament victory trigger
+            window.storyTracker.trackAreaVisit('eli', 2);
+            window.storyTracker.updateStoryState('eli', 'tournament_wins', 1);
+            
+            // Check if trigger fires
+            window.storyTracker.checkTriggerConditions('eli', 2, 'tournament_completed', {
+                result: 'victory',
+                source: 'simulation'
+            });
+            
+            log('trigger', '✓ Tournament win simulation completed', 'success');
+        }
+
+        function showProgressData() {
+            testResults.progress.innerHTML = '';
+            
+            if (!window.storyTracker) {
+                log('progress', '✗ Story tracker not available', 'error');
+                return;
+            }
+            
+            const allProgress = window.storyTracker.getAllProgress();
+            log('progress', 'Current progress data:', 'info');
+            log('progress', JSON.stringify(allProgress, null, 2), 'info');
+        }
+
+        function resetProgressData() {
+            if (!window.storyTracker) {
+                log('progress', '✗ Story tracker not available', 'error');
+                return;
+            }
+            
+            window.storyTracker.resetProgress('eli');
+            log('progress', '✓ Eli progress reset', 'success');
+        }
+
+        // Auto-run system status check when page loads
+        setTimeout(() => {
+            checkSystemStatus();
+        }, 1000);
+    </script>
+</body>
+</html>

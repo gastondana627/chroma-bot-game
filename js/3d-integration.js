@@ -7,6 +7,8 @@ class ThreeDIntegration {
   constructor() {
     this.sceneManager = null;
     this.character3DSystem = null;
+    this.performanceMonitor = null;
+    this.mobile3DSupport = null;
     this.isEnabled = false;
     this.currentCharacter = null;
     
@@ -32,8 +34,17 @@ class ThreeDIntegration {
       const initialized = this.sceneManager.initialize();
       
       if (initialized) {
+        // Initialize mobile 3D support
+        this.mobile3DSupport = new Mobile3DSupport(this.sceneManager, null);
+        
         // Initialize character 3D system
         this.character3DSystem = new Character3DSystem(this.sceneManager);
+        
+        // Update mobile 3D support with character system reference
+        this.mobile3DSupport.character3DSystem = this.character3DSystem;
+        
+        // Initialize performance monitoring
+        this.performanceMonitor = new PerformanceMonitor(this.sceneManager, this.mobile3DSupport);
         
         this.isEnabled = true;
         this.setupChromaBotIntegration();
@@ -143,10 +154,20 @@ class ThreeDIntegration {
 
     console.log('🎯 3D transition prepared from orb position:', orbPosition);
     
+    // Start performance monitoring for 3D session
+    if (this.performanceMonitor && !this.performanceMonitor.isMonitoring) {
+      this.performanceMonitor.startMonitoring();
+    }
+    
     // Check if character is already active
     if (this.character3DSystem.isCharacterActive()) {
       // Return character to orb
       await this.character3DSystem.returnCharacter(orbPosition);
+      
+      // Stop performance monitoring when returning to 2D
+      if (this.performanceMonitor) {
+        this.performanceMonitor.stopMonitoring();
+      }
     } else if (this.currentCharacter) {
       // Emerge character from orb
       await this.character3DSystem.emergeCharacter(orbPosition);
@@ -157,28 +178,12 @@ class ThreeDIntegration {
    * Set up performance monitoring for 3D features
    */
   setupPerformanceMonitoring() {
-    if (!this.sceneManager) return;
+    if (!this.performanceMonitor) return;
 
-    // Monitor performance every 5 seconds when 3D is active
-    setInterval(() => {
-      if (this.sceneManager.canvas && this.sceneManager.canvas.style.display !== 'none') {
-        const perfInfo = this.sceneManager.getPerformanceInfo();
-        if (perfInfo) {
-          // Log performance info for debugging
-          console.log('📊 3D Performance:', {
-            drawCalls: perfInfo.drawCalls,
-            triangles: perfInfo.triangles,
-            geometries: perfInfo.geometries,
-            textures: perfInfo.textures
-          });
-          
-          // Check for performance issues
-          if (perfInfo.drawCalls > 100) {
-            console.warn('⚠️ High draw call count detected:', perfInfo.drawCalls);
-          }
-        }
-      }
-    }, 5000);
+    // Start performance monitoring when 3D is active
+    this.performanceMonitor.startMonitoring();
+    
+    console.log('📊 Performance monitoring activated');
   }
 
   /**
@@ -203,9 +208,48 @@ class ThreeDIntegration {
   }
 
   /**
+   * Get the performance monitor instance
+   */
+  getPerformanceMonitor() {
+    return this.performanceMonitor;
+  }
+
+  /**
+   * Get the mobile 3D support instance
+   */
+  getMobile3DSupport() {
+    return this.mobile3DSupport;
+  }
+
+  /**
+   * Get current performance status
+   */
+  getPerformanceStatus() {
+    return this.performanceMonitor ? this.performanceMonitor.getPerformanceStatus() : null;
+  }
+
+  /**
+   * Get system status for debugging
+   */
+  getSystemStatus() {
+    return {
+      isEnabled: this.isEnabled,
+      currentCharacter: this.currentCharacter,
+      sceneManager: this.sceneManager ? this.sceneManager.isAvailable() : false,
+      performanceMonitor: this.performanceMonitor ? this.performanceMonitor.getSystemStatus() : null,
+      mobile3DSupport: this.mobile3DSupport ? this.mobile3DSupport.getSystemStatus() : null
+    };
+  }
+
+  /**
    * Clean up 3D integration
    */
   async cleanup() {
+    if (this.performanceMonitor) {
+      this.performanceMonitor.cleanup();
+      this.performanceMonitor = null;
+    }
+    
     if (this.character3DSystem) {
       await this.character3DSystem.cleanup();
       this.character3DSystem = null;
@@ -216,6 +260,7 @@ class ThreeDIntegration {
       this.sceneManager = null;
     }
     
+    this.mobile3DSupport = null;
     this.isEnabled = false;
     this.currentCharacter = null;
     

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinematic Orchestration System Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00FFFF;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        
+        .test-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .character-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid;
+        }
+        
+        .eli-section {
+            border-left-color: #00FFFF;
+        }
+        
+        .maya-section {
+            border-left-color: #FF1493;
+        }
+        
+        .stanley-section {
+            border-left-color: #10B981;
+        }
+        
+        .character-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .moment-button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(255, 0, 128, 0.2));
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 5px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .moment-button:hover {
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.4), rgba(255, 0, 128, 0.4));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .moment-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .status-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .status-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            color: #00FF00;
+        }
+        
+        .status-inactive {
+            color: #FF6B6B;
+        }
+        
+        .log-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        
+        .log-timestamp {
+            color: #888;
+            margin-right: 10px;
+        }
+        
+        .log-info {
+            color: #00FFFF;
+        }
+        
+        .log-warn {
+            color: #FFA500;
+        }
+        
+        .log-error {
+            color: #FF6B6B;
+        }
+        
+        .emergency-stop {
+            background: linear-gradient(45deg, #FF4444, #CC0000);
+            border: 2px solid #FF0000;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .emergency-stop:hover {
+            background: linear-gradient(45deg, #FF6666, #FF0000);
+            transform: scale(1.05);
+        }
+        
+        .canvas-container {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        
+        #renderCanvas {
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 5px;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Cinematic Orchestration System Test</h1>
+            <p>Test the complete cinematic moment orchestration with dialogue synchronization, dynamic lighting, and camera control</p>
+        </div>
+        
+        <!-- 3D Canvas -->
+        <div class="canvas-container">
+            <canvas id="renderCanvas" width="800" height="450"></canvas>
+            <p>3D Cinematic Rendering Canvas</p>
+        </div>
+        
+        <!-- Status Panel -->
+        <div class="test-section">
+            <h2>🎯 System Status</h2>
+            <div class="status-panel">
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-label">Orchestration</div>
+                        <div class="status-value" id="orchestrationStatus">Inactive</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Current Phase</div>
+                        <div class="status-value" id="currentPhase">-</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Dialogue System</div>
+                        <div class="status-value" id="dialogueStatus">Ready</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Lighting System</div>
+                        <div class="status-value" id="lightingStatus">Ready</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Camera System</div>
+                        <div class="status-value" id="cameraStatus">Ready</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Frame Rate</div>
+                        <div class="status-value" id="frameRate">60 FPS</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="test-section">
+            <h2>🎮 Cinematic Moment Tests</h2>
+            <div class="test-controls">
+                <!-- Eli's Moments -->
+                <div class="character-section eli-section">
+                    <h3>🎮 Eli - Gaming Champion</h3>
+                    <button class="moment-button" onclick="testCinematicMoment('eli_tournament_victory')">
+                        🏆 Tournament Victory
+                    </button>
+                    <button class="moment-button" onclick="testCinematicMoment('eli_peer_pressure_peak')">
+                        💪 Peer Pressure Resistance
+                    </button>
+                    <button class="moment-button" onclick="testCinematicMoment('eli_championship_finale')">
+                        👑 Championship Victory
+                    </button>
+                </div>
+                
+                <!-- Maya's Moments -->
+                <div class="character-section maya-section">
+                    <h3>🔍 Maya - Digital Detective</h3>
+                    <button class="moment-button" onclick="testCinematicMoment('maya_suspicious_match')">
+                        🚨 Suspicious Match Detection
+                    </button>
+                    <button class="moment-button" onclick="testCinematicMoment('maya_archive_breakthrough')">
+                        💡 Archive Breakthrough
+                    </button>
+                    <button class="moment-button" onclick="testCinematicMoment('maya_confrontation_resolution')">
+                        ⚖️ Final Confrontation
+                    </button>
+                </div>
+                
+                <!-- Stanley's Moments -->
+                <div class="character-section stanley-section">
+                    <h3>🛡️ Stanley - Community Protector</h3>
+                    <button class="moment-button" onclick="testCinematicMoment('stanley_identity_threat')">
+                        ⚠️ Identity Threat Discovery
+                    </button>
+                    <button class="moment-button" onclick="testCinematicMoment('stanley_scam_prevention')">
+                        🛡️ Scam Prevention Success
+                    </button>
+                    <button class="moment-button" onclick="testCinematicMoment('stanley_community_leadership')">
+                        👥 Community Leadership
+                    </button>
+                </div>
+            </div>
+            
+            <button class="emergency-stop" onclick="emergencyStop()">
+                🚨 EMERGENCY STOP
+            </button>
+        </div>
+        
+        <!-- Event Log -->
+        <div class="test-section">
+            <h2>📋 Event Log</h2>
+            <div class="log-panel" id="eventLog">
+                <div class="log-entry">
+                    <span class="log-timestamp">[00:00:00]</span>
+                    <span class="log-info">Cinematic Orchestration System initialized</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Cinematic Systems -->
+    <script src="js/dialogue-synchronization-system.js"></script>
+    <script src="js/dynamic-lighting-system.js"></script>
+    <script src="js/cinematic-camera-system.js"></script>
+    <script src="js/cinematic-orchestration-system.js"></script>
+    
+    <!-- Existing Systems -->
+    <script src="Game/Mechanics/cinematic-moments-config.js"></script>
+    
+    <script>
+        // Global variables
+        let scene, camera, renderer, controls;
+        let orchestrationSystem;
+        let isSystemInitialized = false;
+        
+        // Initialize the test environment
+        async function initializeTest() {
+            try {
+                logEvent('Initializing 3D environment...', 'info');
+                
+                // Set up Three.js scene
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x1a1a2e);
+                
+                // Set up camera
+                camera = new THREE.PerspectiveCamera(75, 800/450, 0.1, 1000);
+                camera.position.set(0, 2, 5);
+                
+                // Set up renderer
+                const canvas = document.getElementById('renderCanvas');
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+                renderer.setSize(800, 450);
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                
+                // Add basic lighting
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+                scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(5, 10, 5);
+                directionalLight.castShadow = true;
+                scene.add(directionalLight);
+                
+                // Add a simple character placeholder
+                const geometry = new THREE.BoxGeometry(1, 2, 0.5);
+                const material = new THREE.MeshLambertMaterial({ color: 0x00ffff });
+                const characterMesh = new THREE.Mesh(geometry, material);
+                characterMesh.position.y = 1;
+                characterMesh.castShadow = true;
+                scene.add(characterMesh);
+                
+                // Add ground plane
+                const groundGeometry = new THREE.PlaneGeometry(20, 20);
+                const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
+                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+                ground.rotation.x = -Math.PI / 2;
+                ground.receiveShadow = true;
+                scene.add(ground);
+                
+                logEvent('3D environment initialized', 'info');
+                
+                // Initialize orchestration system
+                orchestrationSystem = new CinematicOrchestrationSystem(scene, camera, renderer, null);
+                
+                // Mock systems for testing
+                const mockSystems = {
+                    dialogueSystem: new DialogueSynchronizationSystem(),
+                    lightingSystem: new DynamicLightingSystem(scene, renderer),
+                    cameraSystem: new CinematicCameraSystem(camera, null, scene),
+                    animationSystem: {
+                        playGesture: (gestureName) => {
+                            logEvent(`Playing gesture: ${gestureName}`, 'info');
+                        }
+                    },
+                    character3DRenderer: {
+                        setExpression: (expression, duration) => {
+                            logEvent(`Setting expression: ${JSON.stringify(expression)} for ${duration}ms`, 'info');
+                        },
+                        startEmergenceAnimation: (config) => {
+                            logEvent(`Starting emergence animation: ${config.animation}`, 'info');
+                        },
+                        startReturnAnimation: () => {
+                            logEvent('Starting return animation', 'info');
+                        }
+                    }
+                };
+                
+                await orchestrationSystem.initialize(mockSystems);
+                
+                // Set up event listeners
+                setupEventListeners();
+                
+                // Start render loop
+                startRenderLoop();
+                
+                isSystemInitialized = true;
+                logEvent('Cinematic Orchestration System ready!', 'info');
+                updateStatus();
+                
+            } catch (error) {
+                logEvent(`Initialization failed: ${error.message}`, 'error');
+                console.error('Initialization error:', error);
+            }
+        }
+        
+        // Set up event listeners for orchestration events
+        function setupEventListeners() {
+            // Listen for orchestration events
+            orchestrationSystem.addEventListener('Completed', (event) => {
+                logEvent(`Cinematic completed: ${event.detail.cinematicId}`, 'info');
+                updateStatus();
+            });
+            
+            orchestrationSystem.addEventListener('EmergencyStop', (event) => {
+                logEvent(`Emergency stop: ${event.detail.error}`, 'error');
+                updateStatus();
+            });
+            
+            orchestrationSystem.addEventListener('wordSpoken', (event) => {
+                logEvent(`Word spoken: "${event.detail.word}" at ${event.detail.startTime}ms`, 'info');
+            });
+            
+            orchestrationSystem.addEventListener('performanceWarning', (event) => {
+                logEvent(`Performance warning: ${event.detail.type} = ${event.detail.value}`, 'warn');
+            });
+        }
+        
+        // Start render loop
+        function startRenderLoop() {
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Rotate character placeholder
+                const characterMesh = scene.children.find(child => child.geometry?.type === 'BoxGeometry');
+                if (characterMesh) {
+                    characterMesh.rotation.y += 0.01;
+                }
+                
+                renderer.render(scene, camera);
+                
+                // Update status periodically
+                if (Math.random() < 0.01) { // ~1% chance per frame
+                    updateStatus();
+                }
+            }
+            animate();
+        }
+        
+        // Test a cinematic moment
+        async function testCinematicMoment(momentId) {
+            if (!isSystemInitialized) {
+                logEvent('System not initialized yet', 'warn');
+                return;
+            }
+            
+            if (orchestrationSystem.isOrchestrationActive()) {
+                logEvent('Cinematic already active, please wait...', 'warn');
+                return;
+            }
+            
+            // Get cinematic configuration
+            const moment = window.cinematicManager?.getMoment(momentId);
+            if (!moment) {
+                logEvent(`Cinematic moment not found: ${momentId}`, 'error');
+                return;
+            }
+            
+            logEvent(`Starting cinematic moment: ${moment.title}`, 'info');
+            
+            try {
+                // Disable all buttons during cinematic
+                setButtonsEnabled(false);
+                
+                // Start cinematic moment
+                await orchestrationSystem.startCinematicMoment(moment);
+                
+                logEvent(`Cinematic moment completed: ${moment.title}`, 'info');
+                
+            } catch (error) {
+                logEvent(`Cinematic failed: ${error.message}`, 'error');
+            } finally {
+                // Re-enable buttons
+                setButtonsEnabled(true);
+                updateStatus();
+            }
+        }
+        
+        // Emergency stop function
+        function emergencyStop() {
+            if (!orchestrationSystem) {
+                logEvent('Orchestration system not available', 'warn');
+                return;
+            }
+            
+            logEvent('Emergency stop activated!', 'warn');
+            orchestrationSystem.emergencyStop();
+            setButtonsEnabled(true);
+            updateStatus();
+        }
+        
+        // Enable/disable buttons
+        function setButtonsEnabled(enabled) {
+            const buttons = document.querySelectorAll('.moment-button');
+            buttons.forEach(button => {
+                button.disabled = !enabled;
+            });
+        }
+        
+        // Update status display
+        function updateStatus() {
+            if (!orchestrationSystem) return;
+            
+            const status = orchestrationSystem.getStatus();
+            
+            // Update status indicators
+            document.getElementById('orchestrationStatus').textContent = status.isActive ? 'Active' : 'Inactive';
+            document.getElementById('orchestrationStatus').className = status.isActive ? 'status-active' : 'status-inactive';
+            
+            document.getElementById('currentPhase').textContent = status.phase || '-';
+            
+            document.getElementById('dialogueStatus').textContent = status.systemStatus.dialogue ? 'Active' : 'Ready';
+            document.getElementById('dialogueStatus').className = status.systemStatus.dialogue ? 'status-active' : 'status-inactive';
+            
+            document.getElementById('lightingStatus').textContent = status.systemStatus.lighting ? 'Active' : 'Ready';
+            document.getElementById('lightingStatus').className = status.systemStatus.lighting ? 'status-active' : 'status-inactive';
+            
+            document.getElementById('cameraStatus').textContent = status.systemStatus.camera ? 'Active' : 'Ready';
+            document.getElementById('cameraStatus').className = status.systemStatus.camera ? 'status-active' : 'status-inactive';
+            
+            document.getElementById('frameRate').textContent = `${Math.round(status.performanceMetrics.frameRate)} FPS`;
+        }
+        
+        // Log event to the event log
+        function logEvent(message, type = 'info') {
+            const logPanel = document.getElementById('eventLog');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span class="log-${type}">${message}</span>
+            `;
+            
+            logPanel.appendChild(logEntry);
+            logPanel.scrollTop = logPanel.scrollHeight;
+            
+            // Keep only last 100 entries
+            while (logPanel.children.length > 100) {
+                logPanel.removeChild(logPanel.firstChild);
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', initializeTest);
+        
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (orchestrationSystem) {
+                orchestrationSystem.cleanup();
+            }
+        });
+    </script>
+</body>
+</html>
