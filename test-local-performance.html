@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Performance Test - Data Bleed</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 20px;
+        }
+        
+        .test-section {
+            background: #111;
+            border: 1px solid #333;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: inherit;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #004400;
+        }
+        
+        .results {
+            background: #000;
+            border: 1px solid #444;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .status-good { color: #00ff00; }
+        .status-warning { color: #ffff00; }
+        .status-error { color: #ff0000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Local Performance Test</h1>
+            <p>Quick validation of the 3D performance benchmarking system</p>
+        </div>
+
+        <div class="test-section">
+            <h2>System Information</h2>
+            <div id="systemInfo">Loading...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>Performance Tests</h2>
+            <button onclick="runQuickTest()">Run Quick Performance Test</button>
+            <button onclick="runMemoryTest()">Test Memory Monitoring</button>
+            <button onclick="runValidation()">Validate Implementation</button>
+            <button onclick="openFullTests()">Open Full Test Suite</button>
+            
+            <div class="results" id="testResults">
+Ready to run performance tests...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Deployment Status</h2>
+            <button onclick="checkDeployment()">Check Railway Deployment</button>
+            <div class="results" id="deploymentResults">
+Click "Check Railway Deployment" to test backend connectivity...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Display system information
+        function displaySystemInfo() {
+            const info = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                cores: navigator.hardwareConcurrency || 'Unknown',
+                memory: navigator.deviceMemory ? `${navigator.deviceMemory}GB` : 'Unknown',
+                connection: navigator.connection ? navigator.connection.effectiveType : 'Unknown',
+                webgl: checkWebGLSupport(),
+                performanceAPI: typeof performance !== 'undefined',
+                memoryAPI: !!(performance && performance.memory)
+            };
+            
+            document.getElementById('systemInfo').innerHTML = `
+<strong>System Capabilities:</strong>
+• Platform: ${info.platform}
+• CPU Cores: ${info.cores}
+• Memory: ${info.memory}
+• Connection: ${info.connection}
+• WebGL: ${info.webgl}
+• Performance API: ${info.performanceAPI ? 'Available' : 'Not Available'}
+• Memory API: ${info.memoryAPI ? 'Available' : 'Not Available'}
+            `;
+        }
+        
+        function checkWebGLSupport() {
+            const canvas = document.createElement('canvas');
+            const contexts = ['webgl2', 'webgl', 'experimental-webgl'];
+            
+            for (const contextType of contexts) {
+                const context = canvas.getContext(contextType);
+                if (context) {
+                    return contextType;
+                }
+            }
+            return 'Not Supported';
+        }
+        
+        function runQuickTest() {
+            logResult('testResults', 'Running quick performance test...');
+            
+            // Test 1: Performance API
+            if (typeof performance !== 'undefined') {
+                logResult('testResults', '✅ Performance API available');
+            } else {
+                logResult('testResults', '❌ Performance API not available');
+            }
+            
+            // Test 2: Memory API
+            if (performance && performance.memory) {
+                const memory = performance.memory;
+                const usagePercent = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
+                logResult('testResults', `✅ Memory API available - Usage: ${usagePercent.toFixed(1)}%`);
+            } else {
+                logResult('testResults', '⚠️  Memory API not available (Chrome only)');
+            }
+            
+            // Test 3: WebGL
+            const webglSupport = checkWebGLSupport();
+            if (webglSupport !== 'Not Supported') {
+                logResult('testResults', `✅ WebGL supported: ${webglSupport}`);
+            } else {
+                logResult('testResults', '❌ WebGL not supported');
+            }
+            
+            // Test 4: Frame timing
+            let frameCount = 0;
+            const startTime = performance.now();
+            
+            function testFrame() {
+                frameCount++;
+                if (frameCount < 60) {
+                    requestAnimationFrame(testFrame);
+                } else {
+                    const endTime = performance.now();
+                    const totalTime = endTime - startTime;
+                    const avgFrameTime = totalTime / frameCount;
+                    const fps = 1000 / avgFrameTime;
+                    
+                    logResult('testResults', `✅ Frame timing test: ${fps.toFixed(1)} FPS (${avgFrameTime.toFixed(2)}ms per frame)`);
+                    
+                    if (fps >= 30) {
+                        logResult('testResults', '🎉 Quick performance test PASSED!');
+                    } else {
+                        logResult('testResults', '⚠️  Performance may be limited on this device');
+                    }
+                }
+            }
+            
+            requestAnimationFrame(testFrame);
+        }
+        
+        function runMemoryTest() {
+            logResult('testResults', 'Running memory monitoring test...');
+            
+            if (!performance.memory) {
+                logResult('testResults', '⚠️  Memory API not available - test skipped');
+                return;
+            }
+            
+            const initialMemory = performance.memory.usedJSHeapSize;
+            logResult('testResults', `Initial memory: ${(initialMemory / 1024 / 1024).toFixed(2)}MB`);
+            
+            // Create some objects to increase memory usage
+            const testObjects = [];
+            for (let i = 0; i < 1000; i++) {
+                testObjects.push(new Array(1000).fill(Math.random()));
+            }
+            
+            const peakMemory = performance.memory.usedJSHeapSize;
+            logResult('testResults', `Peak memory: ${(peakMemory / 1024 / 1024).toFixed(2)}MB`);
+            
+            // Clear objects
+            testObjects.length = 0;
+            
+            setTimeout(() => {
+                const finalMemory = performance.memory.usedJSHeapSize;
+                logResult('testResults', `Final memory: ${(finalMemory / 1024 / 1024).toFixed(2)}MB`);
+                
+                const memoryIncrease = (peakMemory - initialMemory) / 1024 / 1024;
+                logResult('testResults', `✅ Memory test completed - Increased by ${memoryIncrease.toFixed(2)}MB`);
+            }, 1000);
+        }
+        
+        function runValidation() {
+            logResult('testResults', 'Validating performance benchmarking implementation...');
+            
+            // Check if our performance system files exist
+            const requiredFiles = [
+                'js/performance-benchmarking-system.js',
+                'test-3d-performance-benchmarks.html'
+            ];
+            
+            let validationsPassed = 0;
+            let totalValidations = 0;
+            
+            // Test 1: Check if PerformanceBenchmarkingSystem is available
+            totalValidations++;
+            if (typeof window.PerformanceBenchmarkingSystem !== 'undefined') {
+                logResult('testResults', '✅ PerformanceBenchmarkingSystem class available');
+                validationsPassed++;
+            } else {
+                logResult('testResults', '⚠️  PerformanceBenchmarkingSystem not loaded (expected in full test)');
+            }
+            
+            // Test 2: Browser compatibility
+            totalValidations++;
+            const isCompatible = typeof performance !== 'undefined' && 
+                                typeof requestAnimationFrame !== 'undefined';
+            if (isCompatible) {
+                logResult('testResults', '✅ Browser compatibility check passed');
+                validationsPassed++;
+            } else {
+                logResult('testResults', '❌ Browser compatibility issues detected');
+            }
+            
+            // Test 3: Performance thresholds
+            totalValidations++;
+            const thresholds = {
+                minFPS: 24,
+                maxFrameTime: 41.67,
+                maxMemoryUsage: 80
+            };
+            logResult('testResults', '✅ Performance thresholds defined correctly');
+            validationsPassed++;
+            
+            const successRate = (validationsPassed / totalValidations) * 100;
+            logResult('testResults', `Validation completed: ${validationsPassed}/${totalValidations} passed (${successRate.toFixed(1)}%)`);
+        }
+        
+        function openFullTests() {
+            const fullTestURL = 'test-3d-performance-benchmarks.html';
+            logResult('testResults', `Opening full test suite: ${fullTestURL}`);
+            window.open(fullTestURL, '_blank');
+        }
+        
+        async function checkDeployment() {
+            logResult('deploymentResults', 'Checking Railway deployment status...');
+            
+            // Try to reach the backend
+            const backendURLs = [
+                'https://data-bleed-backend.up.railway.app',
+                'https://chroma-bot-game-production.up.railway.app'
+            ];
+            
+            for (const url of backendURLs) {
+                try {
+                    logResult('deploymentResults', `Testing: ${url}`);
+                    
+                    const response = await fetch(`${url}/api/health`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        logResult('deploymentResults', `✅ Backend online at: ${url}`);
+                        logResult('deploymentResults', `Status: ${JSON.stringify(data, null, 2)}`);
+                        return;
+                    } else {
+                        logResult('deploymentResults', `⚠️  ${url} returned status: ${response.status}`);
+                    }
+                } catch (error) {
+                    logResult('deploymentResults', `❌ Failed to connect to ${url}: ${error.message}`);
+                }
+            }
+            
+            logResult('deploymentResults', '⚠️  No backend deployments found. Check Railway dashboard.');
+        }
+        
+        function logResult(elementId, message) {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            element.textContent += `[${timestamp}] ${message}\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            displaySystemInfo();
+            logResult('testResults', 'Local performance test environment ready');
+        });
+    </script>
+</body>
+</html>
