@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 import os, json, re
@@ -242,3 +243,14 @@ async def chat(req: ChatRequest):
         "trust_score": trust_score,
         "persona": persona
     }
+# ---------- Static File Serving ----------
+# Serve the game files (HTML, CSS, JS, assets)
+# This allows the same server to handle both API calls and serve the game
+
+# Mount static files - this serves all game files
+app.mount("/", StaticFiles(directory=".", html=True), name="static")
+
+print("🎮 Game files will be served from the root directory")
+print("🌐 Access the game at: http://localhost:8000/")
+print("🧪 Performance tests at: http://localhost:8000/test-3d-performance-benchmarks.html")
+print("💬 Character chat at: http://localhost:8000/eli_login.html")
