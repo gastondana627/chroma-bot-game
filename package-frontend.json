@@ -1,11 +1,13 @@
 {
   "name": "data-bleed-frontend",
   "version": "1.0.0",
-  "description": "Data Bleed Game Frontend Server",
+  "description": "Data Bleed Game Frontend - Interactive narrative game with 3D characters",
   "main": "chroma-bot/server.js",
   "scripts": {
     "start": "node chroma-bot/server.js",
-    "dev": "node chroma-bot/server.js"
+    "build": "echo 'No build step required for static assets'",
+    "dev": "node chroma-bot/server.js",
+    "test": "echo 'Frontend tests run in browser'"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -15,5 +17,15 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "keywords": [
+    "game",
+    "interactive",
+    "narrative",
+    "3d",
+    "education",
+    "safety"
+  ],
+  "author": "Data Bleed Team",
+  "license": "MIT"
 }
