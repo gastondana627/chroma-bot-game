@@ -96,3 +96,68 @@ This feature enhances the Data_Bleed interactive narrative engine with immersive
 4. WHEN narrative consequences unfold THEN they SHALL be shown through character-specific storytelling elements
 5. WHEN players reach story endpoints THEN they SHALL see clear educational summaries of their choices' impacts
 6. WHEN players want to replay scenarios THEN they SHALL be able to restart with different mode choices to see alternative outcomes
+
+### Requirement 8: Scene-Based Decision System
+
+**User Story:** As a player, I want each scene to present me with meaningful decisions that unlock different gaming mechanics based on my choices, so that I can experience varied gameplay that feels realistic and engaging.
+
+#### Acceptance Criteria
+
+1. WHEN entering any scene THEN the system SHALL present at least 2-3 decision options that lead to different mechanic types
+2. WHEN a decision is made THEN the system SHALL activate the appropriate gaming mechanic (investigation, puzzle, action sequence, or social interaction)
+3. WHEN decisions are presented THEN they SHALL be contextually relevant to the character's cybersecurity domain
+4. WHEN a mechanic is activated THEN it SHALL provide realistic challenges based on real-world cybersecurity scenarios
+5. WHEN decisions have consequences THEN they SHALL affect subsequent scene options and available mechanics
+6. WHEN players make choices THEN the system SHALL track decision patterns to personalize future scenarios
+
+### Requirement 9: Investigation Mechanics System
+
+**User Story:** As a player, I want to conduct realistic digital investigations using evidence analysis and pattern recognition, so that I can learn to identify cybersecurity threats through hands-on detective work.
+
+#### Acceptance Criteria
+
+1. WHEN investigation mode is triggered THEN the system SHALL present evidence collection interfaces with realistic digital artifacts
+2. WHEN analyzing evidence THEN players SHALL use tools like metadata viewers, reverse image search, and communication pattern analysis
+3. WHEN examining digital communications THEN the system SHALL highlight suspicious language patterns, timing anomalies, and verification gaps
+4. WHEN investigating profiles or accounts THEN players SHALL cross-reference information across multiple sources to detect inconsistencies
+5. WHEN evidence is correctly identified THEN the system SHALL provide positive feedback and unlock additional investigation paths
+6. WHEN investigations conclude THEN players SHALL compile findings into actionable cybersecurity recommendations
+
+### Requirement 10: Real-Time Decision Mechanics
+
+**User Story:** As a player, I want to make time-pressured decisions that simulate real cybersecurity scenarios, so that I can practice quick threat assessment and response under realistic conditions.
+
+#### Acceptance Criteria
+
+1. WHEN real-time scenarios activate THEN the system SHALL present decisions with countdown timers reflecting realistic urgency
+2. WHEN time pressure is applied THEN players SHALL have 15-60 seconds to analyze situations and choose responses
+3. WHEN quick decisions are required THEN the system SHALL provide just enough information to make informed choices without overwhelming detail
+4. WHEN time runs out THEN the system SHALL apply default consequences that demonstrate the cost of delayed response
+5. WHEN decisions are made quickly THEN the system SHALL show immediate results and explain the reasoning behind optimal choices
+6. WHEN scenarios involve active threats THEN players SHALL use rapid threat assessment tools and emergency response protocols
+
+### Requirement 11: Social Engineering Puzzle Mechanics
+
+**User Story:** As a player, I want to solve puzzles that teach me to recognize and counter social engineering tactics, so that I can develop skills to protect against manipulation attempts.
+
+#### Acceptance Criteria
+
+1. WHEN social engineering puzzles activate THEN the system SHALL present realistic manipulation scenarios with subtle warning signs
+2. WHEN analyzing conversations THEN players SHALL identify psychological pressure tactics, urgency creation, and trust exploitation
+3. WHEN examining requests for information THEN players SHALL recognize legitimate vs. suspicious verification attempts
+4. WHEN solving identity verification puzzles THEN players SHALL use multiple authentication methods and cross-verification techniques
+5. WHEN manipulation attempts are detected THEN players SHALL choose appropriate counter-responses from realistic options
+6. WHEN puzzles are completed THEN the system SHALL explain the psychology behind the tactics and provide prevention strategies
+
+### Requirement 12: Character-Specific Action Sequences
+
+**User Story:** As a player, I want to engage in character-appropriate action sequences that simulate cybersecurity response scenarios, so that I can practice incident response in realistic, high-stakes situations.
+
+#### Acceptance Criteria
+
+1. WHEN action sequences trigger THEN they SHALL be tailored to each character's cybersecurity domain and threat landscape
+2. WHEN Maya's action sequences activate THEN they SHALL focus on romance scam intervention, profile verification, and safe dating practices
+3. WHEN Eli's action sequences activate THEN they SHALL focus on gaming account security, trade verification, and tournament safety protocols
+4. WHEN Stanley's action sequences activate THEN they SHALL focus on identity theft response, financial fraud prevention, and elder protection measures
+5. WHEN action sequences require rapid response THEN players SHALL use appropriate cybersecurity tools and protocols under time pressure
+6. WHEN sequences conclude THEN players SHALL see the realistic outcomes of their response choices and learn from the results

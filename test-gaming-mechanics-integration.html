@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaming Mechanics Integration Test</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #0a0a0a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid #00FFFF;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-button {
+            background: #FF0080;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 5px;
+            transition: background 0.3s ease;
+        }
+        
+        .test-button:hover {
+            background: #FF1493;
+        }
+        
+        .test-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00FF00;
+        }
+        
+        .status.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #FF0000;
+        }
+        
+        .status.info {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00FFFF;
+        }
+        
+        .log {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        
+        .character-selector {
+            margin: 10px 0;
+        }
+        
+        .character-selector select {
+            background: #222;
+            color: white;
+            border: 1px solid #444;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body data-character="eli">
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Gaming Mechanics Integration Test</h1>
+            <p>Testing the core gaming mechanics infrastructure</p>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 System Status</h2>
+            <div id="systemStatus" class="status info">
+                Initializing system...
+            </div>
+            <div id="loadingProgress" class="status info">
+                Loading components...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 Component Tests</h2>
+            <button id="testLoader" class="test-button" disabled>Test Loader</button>
+            <button id="testEngine" class="test-button" disabled>Test Engine</button>
+            <button id="testDecisionSystem" class="test-button" disabled>Test Decision System</button>
+            <button id="testMechanicRouter" class="test-button" disabled>Test Mechanic Router</button>
+            <button id="testIntegration" class="test-button" disabled>Test Integration</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Decision System Demo</h2>
+            <div class="character-selector">
+                <label for="characterSelect">Character:</label>
+                <select id="characterSelect">
+                    <option value="eli">Eli (Gaming)</option>
+                    <option value="maya">Maya (Dating/Social)</option>
+                    <option value="stanley">Stanley (Elder/Social)</option>
+                </select>
+                
+                <label for="areaSelect">Area:</label>
+                <select id="areaSelect">
+                    <option value="1">Area 1</option>
+                    <option value="2">Area 2</option>
+                    <option value="3">Area 3</option>
+                    <option value="4">Area 4</option>
+                    <option value="5">Area 5</option>
+                    <option value="6">Area 6</option>
+                </select>
+            </div>
+            <button id="presentDecisions" class="test-button" disabled>Present Decisions</button>
+            <button id="clearDecisions" class="test-button" disabled>Clear Decisions</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Test Log</h2>
+            <div id="testLog" class="log">
+                Test log will appear here...
+            </div>
+            <button id="clearLog" class="test-button">Clear Log</button>
+        </div>
+    </div>
+
+    <!-- Load gaming mechanics system -->
+    <script src="Game/Mechanics/gaming-mechanics-loader.js"></script>
+
+    <script>
+        // Test controller
+        class GamingMechanicsTestController {
+            constructor() {
+                this.log = document.getElementById('testLog');
+                this.systemStatus = document.getElementById('systemStatus');
+                this.loadingProgress = document.getElementById('loadingProgress');
+                
+                this.setupEventListeners();
+                this.startInitialization();
+            }
+
+            setupEventListeners() {
+                // Component tests
+                document.getElementById('testLoader').addEventListener('click', () => this.testLoader());
+                document.getElementById('testEngine').addEventListener('click', () => this.testEngine());
+                document.getElementById('testDecisionSystem').addEventListener('click', () => this.testDecisionSystem());
+                document.getElementById('testMechanicRouter').addEventListener('click', () => this.testMechanicRouter());
+                document.getElementById('testIntegration').addEventListener('click', () => this.testIntegration());
+                
+                // Decision system demo
+                document.getElementById('presentDecisions').addEventListener('click', () => this.presentDecisions());
+                document.getElementById('clearDecisions').addEventListener('click', () => this.clearDecisions());
+                
+                // Utility
+                document.getElementById('clearLog').addEventListener('click', () => this.clearLog());
+                
+                // Listen for gaming mechanics events
+                window.addEventListener('gamingMechanicsengineInitialized', (event) => {
+                    this.logMessage('✅ Gaming engine initialized', event.detail);
+                    this.enableButtons();
+                });
+                
+                window.addEventListener('decisionMade', (event) => {
+                    this.logMessage('🎯 Decision made', event.detail);
+                });
+                
+                window.addEventListener('mechanicActivated', (event) => {
+                    this.logMessage('🎮 Mechanic activated', event.detail);
+                });
+            }
+
+            async startInitialization() {
+                this.logMessage('🚀 Starting Gaming Mechanics System initialization...');
+                
+                // Wait for loader to be available
+                let attempts = 0;
+                while (!window.gamingMechanicsLoader && attempts < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (!window.gamingMechanicsLoader) {
+                    this.updateStatus('❌ Gaming Mechanics Loader not available', 'error');
+                    return;
+                }
+                
+                // Monitor loading progress
+                const progressInterval = setInterval(() => {
+                    const status = window.gamingMechanicsLoader.getStatus();
+                    this.updateLoadingProgress(status);
+                    
+                    if (status.isFullyLoaded) {
+                        clearInterval(progressInterval);
+                        this.updateStatus('✅ All components loaded successfully', 'success');
+                        
+                        // Wait a bit more for engine initialization
+                        setTimeout(() => {
+                            if (window.gamingEngine && window.gamingEngine.initialized) {
+                                this.enableButtons();
+                            }
+                        }, 1000);
+                    }
+                }, 200);
+                
+                // Set up initialization callback
+                window.gamingMechanicsLoader.onInitialized(() => {
+                    this.logMessage('🎮 Gaming Mechanics System fully initialized');
+                    this.enableButtons();
+                });
+            }
+
+            updateStatus(message, type) {
+                this.systemStatus.textContent = message;
+                this.systemStatus.className = `status ${type}`;
+            }
+
+            updateLoadingProgress(status) {
+                const progress = Math.round(status.loadingProgress * 100);
+                this.loadingProgress.textContent = `Loading: ${status.loadedCount}/${status.totalComponents} (${progress}%)`;
+            }
+
+            enableButtons() {
+                const buttons = document.querySelectorAll('.test-button');
+                buttons.forEach(button => {
+                    button.disabled = false;
+                });
+            }
+
+            logMessage(message, data = null) {
+                const timestamp = new Date().toLocaleTimeString();
+                let logEntry = `[${timestamp}] ${message}`;
+                
+                if (data) {
+                    logEntry += '\n' + JSON.stringify(data, null, 2);
+                }
+                
+                this.log.textContent += logEntry + '\n\n';
+                this.log.scrollTop = this.log.scrollHeight;
+                
+                console.log(message, data);
+            }
+
+            clearLog() {
+                this.log.textContent = '';
+            }
+
+            // Test methods
+            testLoader() {
+                this.logMessage('🧪 Testing Gaming Mechanics Loader...');
+                
+                if (!window.gamingMechanicsLoader) {
+                    this.logMessage('❌ Loader not available');
+                    return;
+                }
+                
+                const status = window.gamingMechanicsLoader.getStatus();
+                this.logMessage('✅ Loader status:', status);
+            }
+
+            testEngine() {
+                this.logMessage('🧪 Testing Gaming Mechanics Engine...');
+                
+                if (!window.gamingEngine) {
+                    this.logMessage('❌ Engine not available');
+                    return;
+                }
+                
+                const status = window.gamingEngine.getStatus();
+                this.logMessage('✅ Engine status:', status);
+                
+                const mechanics = window.gamingEngine.getRegisteredMechanics();
+                this.logMessage('✅ Registered mechanics:', mechanics.map(m => m.name));
+            }
+
+            testDecisionSystem() {
+                this.logMessage('🧪 Testing Decision System...');
+                
+                if (!window.gamingEngine || !window.gamingEngine.decisionSystem) {
+                    this.logMessage('❌ Decision system not available');
+                    return;
+                }
+                
+                const decisionSystem = window.gamingEngine.decisionSystem;
+                const stats = decisionSystem.getStatistics();
+                this.logMessage('✅ Decision system statistics:', stats);
+            }
+
+            testMechanicRouter() {
+                this.logMessage('🧪 Testing Mechanic Router...');
+                
+                if (!window.gamingEngine || !window.gamingEngine.mechanicRouter) {
+                    this.logMessage('❌ Mechanic router not available');
+                    return;
+                }
+                
+                const router = window.gamingEngine.mechanicRouter;
+                const stats = router.getStatistics();
+                this.logMessage('✅ Router statistics:', stats);
+            }
+
+            async testIntegration() {
+                this.logMessage('🧪 Testing Full Integration...');
+                
+                try {
+                    // Test story tracker integration
+                    if (window.storyTracker) {
+                        window.storyTracker.trackAreaVisit('eli', 1, { test: true });
+                        this.logMessage('✅ Story tracker integration working');
+                    }
+                    
+                    // Test cinematic manager integration
+                    if (window.cinematicManager) {
+                        const moments = window.cinematicManager.getCharacterMoments('eli');
+                        this.logMessage('✅ Cinematic manager integration working', Object.keys(moments));
+                    }
+                    
+                    // Test mechanic activation
+                    if (window.gamingEngine) {
+                        const success = await window.gamingEngine.activateMechanic('investigation', {
+                            character: 'eli',
+                            area: 1,
+                            test: true
+                        });
+                        this.logMessage(`✅ Mechanic activation test: ${success ? 'SUCCESS' : 'FAILED'}`);
+                    }
+                    
+                } catch (error) {
+                    this.logMessage('❌ Integration test failed:', error.message);
+                }
+            }
+
+            presentDecisions() {
+                this.logMessage('🎯 Presenting decisions...');
+                
+                if (!window.gamingEngine || !window.gamingEngine.decisionSystem) {
+                    this.logMessage('❌ Decision system not available');
+                    return;
+                }
+                
+                const character = document.getElementById('characterSelect').value;
+                const area = parseInt(document.getElementById('areaSelect').value);
+                
+                // Update body data attribute for context
+                document.body.dataset.character = character;
+                
+                const result = window.gamingEngine.decisionSystem.presentDecisions(character, area, {
+                    test: true,
+                    timestamp: Date.now()
+                });
+                
+                if (result) {
+                    this.logMessage('✅ Decisions presented successfully', {
+                        decisionId: result.decisionId,
+                        character,
+                        area
+                    });
+                } else {
+                    this.logMessage('❌ Failed to present decisions');
+                }
+            }
+
+            clearDecisions() {
+                this.logMessage('🧹 Clearing active decisions...');
+                
+                if (window.gamingEngine && window.gamingEngine.decisionSystem) {
+                    window.gamingEngine.decisionSystem.clearActiveDecisions();
+                    this.logMessage('✅ Active decisions cleared');
+                }
+            }
+        }
+
+        // Initialize test controller when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.testController = new GamingMechanicsTestController();
+        });
+    </script>
+</body>
+</html>

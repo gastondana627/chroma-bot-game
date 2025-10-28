@@ -259,3 +259,9 @@ print("🎮 Game files will be served at /static/")
 print("🌐 Main game at: /static/index.html")
 print("🧪 Performance tests at: /static/test-3d-performance-benchmarks.html")
 print("💬 Character chat at: /static/eli_login.html")
+
+# ---------- Server Startup ----------
+if __name__ == "__main__":
+    import uvicorn
+    print("🚀 Starting Data_Bleed FastAPI server...")
+    uvicorn.run(app, host="0.0.0.0", port=8001)
