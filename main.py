@@ -19,12 +19,19 @@ def try_load_env():
 
 try_load_env()
 api_key = os.getenv("OPENAI_API_KEY")
+client = None
+
 if not api_key:
     print("❌ OPENAI_API_KEY not found! Put it in .env or chroma-bot/.env")
+    print("🔄 Server will run in demo mode without AI features")
 else:
     print("✅ OPENAI_API_KEY loaded successfully.")
-
-client = OpenAI(api_key=api_key)
+    try:
+        client = OpenAI(api_key=api_key)
+        print("✅ OpenAI client initialized")
+    except Exception as e:
+        print(f"❌ OpenAI client initialization failed: {e}")
+        client = None
 
 # ---------- Config loading (characters.json from either layout) ----------
 def load_json_from_candidates(candidates: List[str]) -> Dict[str, Any]:
@@ -169,8 +176,8 @@ def health():
     return {
         "ok": True, 
         "characters_loaded": list(CHARACTERS.keys()),
-        "openai_configured": bool(api_key),
-        "status": "healthy"
+        "openai_configured": bool(client),
+        "status": "healthy" if client else "demo_mode"
     }
 
 @app.get("/api/characters")
@@ -223,21 +230,30 @@ async def chat(req: ChatRequest):
     # --- Build system prompt with persona ---
     system_prompt = build_system_prompt(character, char_cfg, persona_prompt)
 
-    # --- Call GPT ---
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message}
-            ],
-            max_tokens=220,
-            temperature=0.6
-        )
-        reply_text = response.choices[0].message.content
-    except Exception as e:
-        print("❌ Error calling OpenAI:", e)
-        reply_text = "⚠️ Backend error, please try again later."
+    # --- Call GPT or use fallback ---
+    if client:
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message}
+                ],
+                max_tokens=220,
+                temperature=0.6
+            )
+            reply_text = response.choices[0].message.content
+        except Exception as e:
+            print("❌ Error calling OpenAI:", e)
+            reply_text = f"⚠️ I'm {character.title()}, and I understand your message about '{user_message[:50]}...' but I'm having connection issues right now."
+    else:
+        # Demo mode fallback
+        demo_responses = {
+            "maya": f"Hi! I'm Maya. I received your message: '{user_message[:50]}...' This is demo mode - add your OpenAI API key for full AI responses.",
+            "eli": f"Hey! Eli here. Got your message: '{user_message[:50]}...' Running in demo mode - need OpenAI API key for smart responses.",
+            "stanley": f"Hello! Stanley speaking. About your message: '{user_message[:50]}...' This is demo mode - please configure OpenAI API key."
+        }
+        reply_text = demo_responses.get(character, "Demo mode - please configure OpenAI API key.")
 
     return {
         "reply": reply_text,
