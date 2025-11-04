@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character-Specific Investigation Tools Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .test-section {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #00ff88;
+        }
+        .character-section {
+            border-left-color: #ff6b6b;
+        }
+        .character-section.maya {
+            border-left-color: #ff69b4;
+        }
+        .character-section.eli {
+            border-left-color: #ff8c00;
+        }
+        .character-section.stanley {
+            border-left-color: #32cd32;
+        }
+        .tool-test {
+            background-color: #3a3a3a;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .result {
+            background-color: #4a4a4a;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .success {
+            border-left: 3px solid #00ff88;
+        }
+        .error {
+            border-left: 3px solid #ff4444;
+        }
+        button {
+            background-color: #00ff88;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #00cc6a;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.loading {
+            background-color: #ffa500;
+            color: #000;
+        }
+        .status.success {
+            background-color: #00ff88;
+            color: #000;
+        }
+        .status.error {
+            background-color: #ff4444;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Character-Specific Investigation Tools Test</h1>
+    <p>Testing the implementation of specialized investigation tools for Maya, Eli, and Stanley.</p>
+
+    <div class="test-section">
+        <h2>System Initialization</h2>
+        <button onclick="initializeSystem()">Initialize Investigation System</button>
+        <div id="init-status" class="status loading" style="display: none;">Initializing...</div>
+        <div id="init-result" class="result"></div>
+    </div>
+
+    <div class="test-section character-section maya">
+        <h2>Maya's Dating Safety Tools</h2>
+        <div class="tool-test">
+            <h3>Dating Profile Verifier</h3>
+            <button onclick="testMayaProfileVerifier()">Test Profile Verification</button>
+            <div id="maya-profile-result" class="result"></div>
+        </div>
+        <div class="tool-test">
+            <h3>Advanced Reverse Image Search</h3>
+            <button onclick="testMayaImageSearch()">Test Image Search</button>
+            <div id="maya-image-result" class="result"></div>
+        </div>
+        <div class="tool-test">
+            <h3>Romance Communication Analyzer</h3>
+            <button onclick="testMayaCommunication()">Test Communication Analysis</button>
+            <div id="maya-comm-result" class="result"></div>
+        </div>
+    </div>
+
+    <div class="test-section character-section eli">
+        <h2>Eli's Gaming Security Tools</h2>
+        <div class="tool-test">
+            <h3>Gaming Trade Verifier</h3>
+            <button onclick="testEliTradeVerifier()">Test Trade Verification</button>
+            <div id="eli-trade-result" class="result"></div>
+        </div>
+        <div class="tool-test">
+            <h3>Account Security Analyzer</h3>
+            <button onclick="testEliAccountSecurity()">Test Account Security</button>
+            <div id="eli-security-result" class="result"></div>
+        </div>
+        <div class="tool-test">
+            <h3>Gaming Scam Detector</h3>
+            <button onclick="testEliScamDetector()">Test Scam Detection</button>
+            <div id="eli-scam-result" class="result"></div>
+        </div>
+    </div>
+
+    <div class="test-section character-section stanley">
+        <h2>Stanley's Elder Protection Tools</h2>
+        <div class="tool-test">
+            <h3>Identity Theft Detector</h3>
+            <button onclick="testStanleyIdentityTheft()">Test Identity Theft Detection</button>
+            <div id="stanley-identity-result" class="result"></div>
+        </div>
+        <div class="tool-test">
+            <h3>Advanced Document Verifier</h3>
+            <button onclick="testStanleyDocumentVerifier()">Test Document Verification</button>
+            <div id="stanley-doc-result" class="result"></div>
+        </div>
+        <div class="tool-test">
+            <h3>Elder Fraud Detector</h3>
+            <button onclick="testStanleyElderFraud()">Test Elder Fraud Detection</button>
+            <div id="stanley-fraud-result" class="result"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Integration Test</h2>
+        <button onclick="runFullIntegrationTest()">Run Full Integration Test</button>
+        <div id="integration-result" class="result"></div>
+    </div>
+
+    <!-- Load the investigation system -->
+    <script src="Game/Mechanics/evidence-database.js"></script>
+    <script src="Game/Mechanics/investigation-engine.js"></script>
+    <script src="Game/Mechanics/character-investigation-tools.js" type="module"></script>
+    <script src="Game/Mechanics/character-tools-integration.js"></script>
+
+    <script>
+        let investigationEngine = null;
+        let evidenceDatabase = null;
+        let characterToolsManager = null;
+
+        async function initializeSystem() {
+            const statusDiv = document.getElementById('init-status');
+            const resultDiv = document.getElementById('init-result');
+            
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status loading';
+            statusDiv.textContent = 'Initializing investigation system...';
+
+            try {
+                // Initialize evidence database
+                evidenceDatabase = new EvidenceDatabase();
+                
+                // Initialize investigation engine
+                investigationEngine = new InvestigationEngine();
+                
+                // Initialize character tools manager
+                characterToolsManager = new CharacterToolsManager();
+                await characterToolsManager.initialize();
+
+                statusDiv.className = 'status success';
+                statusDiv.textContent = 'System initialized successfully!';
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `Investigation System Status:
+- Evidence Database: ${evidenceDatabase ? 'Loaded' : 'Failed'}
+- Investigation Engine: ${investigationEngine ? 'Loaded' : 'Failed'}
+- Character Tools Manager: ${characterToolsManager ? 'Loaded' : 'Failed'}
+- Available Characters: Maya, Eli, Stanley
+- Total Evidence Scenarios: ${evidenceDatabase.scenarios.size}`;
+
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = 'Initialization failed!';
+                
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}\n\nStack: ${error.stack}`;
+            }
+        }
+
+        // Maya's tool tests
+        async function testMayaProfileVerifier() {
+            const resultDiv = document.getElementById('maya-profile-result');
+            
+            try {
+                const testProfile = {
+                    id: 'test_profile_1',
+                    content: {
+                        name: 'Alex Johnson',
+                        age: 28,
+                        profession: 'Military Engineer',
+                        photos: ['profile1.jpg', 'profile2.jpg'],
+                        bio: 'Looking for serious relationship. Currently deployed overseas.',
+                        quality: 'Professional'
+                    },
+                    profile: {
+                        consistent: false,
+                        verified: false,
+                        anomalies: ['Military claims without verification', 'Professional photos'],
+                        suspicious: ['Deployment story', 'Limited personal details']
+                    }
+                };
+
+                const result = await characterToolsManager.executeToolAnalysis(
+                    'maya', 
+                    'dating_profile_verifier', 
+                    testProfile
+                );
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function testMayaImageSearch() {
+            const resultDiv = document.getElementById('maya-image-result');
+            
+            try {
+                const testImage = {
+                    id: 'test_image_1',
+                    reverseSearch: {
+                        source: 'Stock photo website',
+                        duplicates: 15,
+                        firstSeen: '2020-03-10',
+                        contexts: ['Dating sites', 'Social media', 'Romance scams'],
+                        suspicious: ['Multiple dating profiles', 'Stock photo origin']
+                    },
+                    metadata: {
+                        created: '2024-01-15',
+                        location: 'Unknown',
+                        device: 'Unknown',
+                        suspicious: ['No location data', 'Generic device info']
+                    }
+                };
+
+                const result = await characterToolsManager.executeToolAnalysis(
+                    'maya', 
+                    'advanced_reverse_image_search', 
+                    testImage
+                );
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function testMayaCommunication() {
+            const resultDiv = document.getElementById('maya-comm-result');
+            
+            try {
+                const testCommunication = {
+                    id: 'test_comm_1',
+                    content: {
+                        messages: [
+                            'Hello beautiful, I saw your profile and felt instant connection',
+                            'I am military engineer deployed in Syria, looking for true love',
+                            'Can you help me with small financial emergency? Will pay back soon'
+                        ]
+                    },
+                    communication: {
+                        patterns: ['Love bombing', 'Sob story', 'Financial request'],
+                        urgency: 'high',
+                        tactics: ['Emotional manipulation', 'False emergency'],
+                        authentic: false,
+                        suspicious: ['Quick progression to love', 'Financial request', 'Military deployment story']
+                    }
+                };
+
+                const result = await characterToolsManager.executeToolAnalysis(
+                    'maya', 
+                    'romance_communication_analyzer', 
+                    testCommunication
+                );
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Eli's tool tests
+        async function testEliTradeVerifier() {
+            const resultDiv = document.getElementById('eli-trade-result');
+            
+            try {
+                const testTrade = {
+                    id: 'test_trade_1',
+                    content: {
+                        username: 'TrustedTrader2024',
+                        reputation: '5 stars (50 reviews)',
+                        joinDate: '2024-01-01',
+                        trades: 'Over 1000 successful trades',
+                        messages: [
+                            'Hey bro, want to trade rare skins? I give you good deal!',
+                            'Send me your items first, I am trusted trader with many vouches',
+                            'Hurry up! This offer expires in 10 minutes!'
+                        ]
+                    },
+                    profile: {
+                        consistent: false,
+                        verified: false,
+                        anomalies: ['New account with high reputation', 'Generic reviews'],
+                        suspicious: ['Account age vs reputation mismatch', 'Fake review patterns']
+                    }
+                };
+
+                const result = await characterToolsManager.executeToolAnalysis(
+                    'eli', 
+                    'gaming_trade_verifier', 
+                    testTrade
+                );
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function testEliAccountSecurity() {
+            const resultDiv = document.getElementById('eli-security-result');
+            
+            try {
+                const testAccount = {
+                    id: 'test_account_1',
+                    content: {
+                        account: 'ProGamer2024',
+                        recentLogins: [
+                            { time: '2024-01-20 03:00', location: 'Russia', ip: '185.220.101.5' },
+                            { time: '2024-01-20 15:30', location: 'USA', ip: '192.168.1.100' }
+                        ],
+                        trades: [
+                            { item: 'Rare Skin', value: '$500', buyer: 'QuickCash99' },
+                            { item: 'Tournament Pass', value: '$200', buyer: 'FastTrade2024' }
+                        ]
+                    },
+                    network: {
+                        ip: '185.220.101.5',
+                        location: 'Moscow, Russia',
+                        provider: 'Unknown VPN',
+                        reputation: 'suspicious',
+                        suspicious: ['VPN usage', 'Known fraud IP range', 'Unusual location']
+                    }
+                };
+
+                const result = await characterToolsManager.executeToolAnalysis(
+                    'eli', 
+                    'account_security_analyzer', 
+                    testAccount
+                );
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function testEliScamDetector() {
+            const resultDiv = document.getElementById('eli-scam-result');
+            
+            try {
+                const testScam = {
+                    id: 'test_scam_1',
+                    content: {
+                        messages: [
+                            'Congratulations! You have won exclusive gaming items worth $1000!',
+                            'Click this link to claim your prize immediately',
+                            'This offer expires in 1 hour - act fast!'
+                        ]
+                    },
+                    communication: {
+                        patterns: ['Urgency creation', 'Trust claims', 'Advance fee'],
+                        urgency: 'high',
+                        tactics: ['False scarcity', 'Social proof claims'],
+                        authentic: false,
+                        suspicious: ['Pressure tactics', 'Unverified trust claims', 'Advance payment request']
+                    }
+                };
+
+                const result = await characterToolsManager.executeToolAnalysis(
+                    'eli', 
+                    'gaming_scam_detector', 
+                    testScam
+                );
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Stanley's tool tests
+        async function testStanleyIdentityTheft() {
+            const resultDiv = document.getElementById('stanley-identity-result');
+            
+            try {
+                const testIdentity = {
+                    id: 'test_identity_1',
+                    content: {
+                        transactions: [
+                            { date: '2024-01-18', amount: '$50', description: 'Medicare Verification Fee' },
+                            { date: '2024-01-19', amount: '$200', description: 'Account Protection Service' }
+                        ],
+                        messages: [
+                            'This is urgent call about your Medicare benefits',
+                            'We need to verify your Social Security number to prevent suspension'
+                        ]
+                    },
+                    communication: {
+                        patterns: ['Authority impersonation', 'Urgency creation', 'Information harvesting'],
+                        urgency: 'critical',
+                        tactics: ['Fear tactics', 'False authority'],
+                        authentic: false,
+                        suspicious: ['Unsolicited call', 'SSN request', 'Threat of suspension']
+                    }
+                };
+
+                const result = await characterToolsManager.executeToolAnalysis(
+                    'stanley', 
+                    'identity_theft_detector', 
+                    testIdentity
+                );
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function testStanleyDocumentVerifier() {
+            const resultDiv = document.getElementById('stanley-doc-result');
+            
+            try {
+                const testDocument = {
+                    id: 'test_doc_1',
+                    content: {
+                        sender: 'Social Security Administration',
+                        subject: 'Urgent: Account Verification Required',
+                        content: 'Your benefits will be suspended unless you verify your information immediately'
+                    },
+                    document: {
+                        authentic: false,
+                        issuer: 'Fake government agency',
+                        marks: ['Missing official seal', 'Incorrect formatting'],
+                        altered: true,
+                        suspicious: ['Urgency language', 'Unofficial contact methods', 'Spelling errors']
+                    }
+                };
+
+                const result = await characterToolsManager.executeToolAnalysis(
+                    'stanley', 
+                    'document_verifier_advanced', 
+                    testDocument
+                );
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function testStanleyElderFraud() {
+            const resultDiv = document.getElementById('stanley-fraud-result');
+            
+            try {
+                const testFraud = {
+                    id: 'test_fraud_1',
+                    content: {
+                        caller: 'Medicare Representative',
+                        message: 'This is urgent call about your Medicare benefits. We need to verify your Social Security number to prevent suspension.'
+                    },
+                    communication: {
+                        patterns: ['Authority impersonation', 'Urgency creation', 'Information harvesting'],
+                        urgency: 'critical',
+                        tactics: ['Fear tactics', 'False authority'],
+                        authentic: false,
+                        suspicious: ['Unsolicited call', 'SSN request', 'Threat of suspension']
+                    }
+                };
+
+                const result = await characterToolsManager.executeToolAnalysis(
+                    'stanley', 
+                    'elder_fraud_detector', 
+                    testFraud
+                );
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function runFullIntegrationTest() {
+            const resultDiv = document.getElementById('integration-result');
+            
+            try {
+                resultDiv.textContent = 'Running full integration test...\n';
+                
+                // Test all characters and tools
+                const characters = ['maya', 'eli', 'stanley'];
+                const results = {};
+                
+                for (const character of characters) {
+                    results[character] = {};
+                    const tools = characterToolsManager.getAvailableToolsForCharacter(character);
+                    
+                    resultDiv.textContent += `\nTesting ${character.toUpperCase()}:\n`;
+                    resultDiv.textContent += `Available tools: ${tools.length}\n`;
+                    
+                    for (const tool of tools) {
+                        resultDiv.textContent += `- ${tool.name}: ${tool.description}\n`;
+                    }
+                    
+                    // Get educational content
+                    const education = characterToolsManager.getEducationalContent(character);
+                    if (education) {
+                        resultDiv.textContent += `Educational domain: ${education.domain}\n`;
+                        resultDiv.textContent += `Key topics: ${education.keyTopics.length}\n`;
+                    }
+                }
+                
+                resultDiv.textContent += '\n✅ Integration test completed successfully!';
+                resultDiv.className = 'result success';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Integration test failed: ${error.message}`;
+            }
+        }
+
+        // Initialize system on page load
+        window.addEventListener('load', () => {
+            console.log('Character Investigation Tools Test Page Loaded');
+        });
+    </script>
+</body>
+</html>

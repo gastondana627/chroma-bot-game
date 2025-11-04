@@ -180,15 +180,15 @@ class GamingMechanicsEngine {
         this.registerMechanic('realtime', {
             name: 'Real-Time Decision Mechanics',
             description: 'Time-pressured cybersecurity scenarios',
-            activate: this.createPlaceholderMechanic('realtime'),
-            deactivate: this.createPlaceholderDeactivator('realtime')
+            activate: this.activateRealTimeMechanic.bind(this),
+            deactivate: this.deactivateRealTimeMechanic.bind(this)
         });
 
         this.registerMechanic('puzzle', {
             name: 'Social Engineering Puzzle Mechanics',
             description: 'Recognition and counter-manipulation puzzles',
-            activate: this.createPlaceholderMechanic('puzzle'),
-            deactivate: this.createPlaceholderDeactivator('puzzle')
+            activate: this.activatePuzzleMechanic.bind(this),
+            deactivate: this.deactivatePuzzleMechanic.bind(this)
         });
 
         this.registerMechanic('action', {
@@ -532,6 +532,104 @@ class GamingMechanicsEngine {
             } else {
                 console.log(`🎮 Gaming Mechanics Engine: ${message}`);
             }
+        }
+    }
+
+    /**
+     * Activate real-time decision mechanic
+     * @param {Object} context - Activation context
+     * @returns {Promise<Object>} Activation result
+     */
+    async activateRealTimeMechanic(context) {
+        console.log('🎮 Activating real-time decision mechanic', context);
+        
+        // Ensure real-time engine is available
+        if (!window.realTimeEngine) {
+            console.error('Real-time decision engine not available');
+            return null;
+        }
+
+        try {
+            // Start real-time scenario
+            const result = await window.realTimeEngine.handleMechanicActivation(context);
+            
+            return {
+                type: 'realtime',
+                context,
+                result,
+                engine: window.realTimeEngine
+            };
+        } catch (error) {
+            console.error('Failed to activate real-time mechanic:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Deactivate real-time decision mechanic
+     * @param {Object} context - Deactivation context
+     */
+    async deactivateRealTimeMechanic(context) {
+        console.log('🎮 Deactivating real-time decision mechanic');
+        
+        if (window.realTimeEngine) {
+            // Stop any active scenarios
+            const activeScenarios = window.realTimeEngine.activeScenarios;
+            for (const [scenarioId, scenario] of activeScenarios) {
+                if (scenario.status === 'active') {
+                    window.realTimeEngine.completeScenario(scenario, 'cancelled');
+                }
+            }
+        }
+    }
+
+    /**
+     * Activate social engineering puzzle mechanic
+     * @param {Object} context - Activation context
+     * @returns {Promise<Object>} Activation result
+     */
+    async activatePuzzleMechanic(context) {
+        console.log('🎮 Activating social engineering puzzle mechanic', context);
+        
+        // Ensure puzzle engine is available
+        if (!window.socialEngineeringPuzzleEngine) {
+            console.error('Social engineering puzzle engine not available');
+            return null;
+        }
+
+        try {
+            // Activate puzzle through puzzle engine
+            const result = await window.socialEngineeringPuzzleEngine.handleMechanicActivation(context);
+            
+            return {
+                type: 'social_engineering_puzzle',
+                context,
+                result,
+                engine: window.socialEngineeringPuzzleEngine
+            };
+        } catch (error) {
+            console.error('Failed to activate puzzle mechanic:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Deactivate social engineering puzzle mechanic
+     * @param {Object} context - Deactivation context
+     */
+    async deactivatePuzzleMechanic(context) {
+        console.log('🎮 Deactivating social engineering puzzle mechanic');
+        
+        if (window.socialEngineeringPuzzleEngine) {
+            // Close any active puzzles
+            const activePuzzles = window.socialEngineeringPuzzleEngine.getActivePuzzles();
+            for (const puzzle of activePuzzles) {
+                window.socialEngineeringPuzzleEngine.closePuzzle(puzzle.id);
+            }
+            
+            // Remove any puzzle UI elements
+            const puzzleElements = document.querySelectorAll('.social-engineering-puzzle-container');
+            puzzleElements.forEach(element => element.remove());
         }
     }
 

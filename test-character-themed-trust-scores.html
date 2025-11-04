@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character-Themed Trust Scores - Data_Bleed</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 50%, #0a1a2a 100%);
+            font-family: 'Inter', sans-serif;
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00FFFF;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .test-header h1 {
+            color: #00FFFF;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .character-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .character-demo {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            min-height: 500px;
+        }
+
+        /* Maya Theme */
+        .character-demo.maya {
+            background: linear-gradient(135deg, 
+                rgba(20, 10, 40, 0.9) 0%, 
+                rgba(40, 10, 60, 0.8) 50%, 
+                rgba(10, 30, 60, 0.9) 100%);
+            border: 2px solid;
+            border-image: linear-gradient(45deg, #ff1493, #00bfff, #ff1493) 1;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .character-demo.maya::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #ff1493, #00bfff, #ff1493, #00bfff);
+            border-radius: 12px;
+            z-index: -1;
+            animation: borderRotate 4s linear infinite;
+            filter: blur(2px);
+        }
+
+        /* Eli Theme */
+        .character-demo.eli {
+            background: rgba(5, 20, 35, 0.85);
+            border: 2px solid #00ffff;
+            border-radius: 0;
+            font-family: 'Orbitron', monospace;
+            clip-path: polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%);
+        }
+
+        .character-demo.eli::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            background: linear-gradient(45deg, #00ffff, transparent, #00ffff, transparent, #00ffff);
+            z-index: -1;
+            border-radius: 0;
+            animation: borderPulse 3s linear infinite;
+            opacity: 0.7;
+        }
+
+        /* Stanley Theme */
+        .character-demo.stanley {
+            background: linear-gradient(145deg, #e5e7eb 0%, #d1d5db 100%);
+            border: 2px solid #9ca3af;
+            color: #1f2937;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.5s ease;
+        }
+
+        .character-demo.stanley.corrupted {
+            background: linear-gradient(145deg, #374151 0%, #1f2937 100%);
+            border-color: #7f1d1d;
+            color: #e5e7eb;
+            animation: glitch 0.3s infinite;
+        }
+
+        .character-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .character-name {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .maya .character-name {
+            color: #ff1493;
+            text-shadow: 0 0 8px rgba(255, 20, 147, 0.6);
+            animation: titleGlitch 3s ease-in-out infinite;
+        }
+
+        .eli .character-name {
+            color: #00ffff;
+            text-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.8),
+                0 0 40px rgba(0, 255, 255, 0.4);
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        .stanley .character-name {
+            color: #374151;
+        }
+
+        .stanley.corrupted .character-name {
+            color: #dc2626;
+            text-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
+        }
+
+        .character-description {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            padding: 10px 12px;
+            border: 2px solid;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .maya .action-btn {
+            background: rgba(255, 20, 147, 0.2);
+            border-color: #ff1493;
+            color: #ff1493;
+        }
+
+        .maya .action-btn:hover {
+            background: rgba(255, 20, 147, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .eli .action-btn {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+
+        .eli .action-btn:hover {
+            background: rgba(0, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .stanley .action-btn {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .stanley.corrupted .action-btn {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+
+        .stanley .action-btn:hover {
+            background: rgba(59, 130, 246, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .trust-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .trust-score {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .trust-level {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .trust-description {
+            text-align: center;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .scenario-selector {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .scenario-selector h3 {
+            color: #00FFFF;
+            margin-bottom: 15px;
+        }
+
+        .scenario-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .scenario-btn {
+            padding: 12px 16px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid #00FFFF;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .scenario-btn:hover {
+            background: rgba(0, 255, 255, 0.4);
+        }
+
+        .scenario-btn.active {
+            background: #00FFFF;
+            color: black;
+        }
+
+        /* Animations */
+        @keyframes borderRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes borderPulse {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        @keyframes titleGlitch {
+            0%, 90%, 100% { 
+                text-shadow: 0 0 8px rgba(255, 20, 147, 0.6);
+                transform: translateX(0);
+            }
+            92% { 
+                text-shadow: 
+                    2px 0 rgba(255, 20, 147, 0.8),
+                    -2px 0 rgba(0, 191, 255, 0.8);
+                transform: translateX(2px);
+            }
+            94% { 
+                text-shadow: 
+                    -2px 0 rgba(255, 20, 147, 0.8),
+                    2px 0 rgba(0, 191, 255, 0.8);
+                transform: translateX(-2px);
+            }
+        }
+
+        @keyframes titleGlow {
+            from { 
+                text-shadow: 
+                    0 0 20px rgba(0, 255, 255, 0.8),
+                    0 0 40px rgba(0, 255, 255, 0.4);
+            }
+            to { 
+                text-shadow: 
+                    0 0 30px rgba(0, 255, 255, 1),
+                    0 0 60px rgba(0, 255, 255, 0.6);
+            }
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        .reset-all-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(255, 0, 64, 0.2);
+            border: 2px solid #FF0040;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .reset-all-btn:hover {
+            background: rgba(255, 0, 64, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🎭 Character-Themed Trust Scores</h1>
+            <p>Experience how each character's unique visual identity shapes their trust score system</p>
+        </div>
+
+        <!-- Scenario Selector -->
+        <div class="scenario-selector">
+            <h3>Select Scenario Context</h3>
+            <div class="scenario-buttons">
+                <button class="scenario-btn active" data-scenario="romantic">💕 Romantic Context</button>
+                <button class="scenario-btn" data-scenario="gaming">🎮 Gaming Context</button>
+                <button class="scenario-btn" data-scenario="authority">👔 Authority Context</button>
+                <button class="scenario-btn" data-scenario="technical">💻 Technical Context</button>
+            </div>
+        </div>
+
+        <!-- Character Showcase -->
+        <div class="character-showcase">
+            <!-- Maya Demo -->
+            <div class="character-demo maya" data-character="maya">
+                <div class="character-header">
+                    <div class="character-name">MAYA</div>
+                    <div class="character-description">Romance & Dating Safety Expert</div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn" data-action="trust_stranger">Trust Immediately</button>
+                    <button class="action-btn" data-action="verify_identity">Verify Identity</button>
+                    <button class="action-btn" data-action="share_personal_info">Share Personal Info</button>
+                    <button class="action-btn" data-action="ask_questions">Ask Questions</button>
+                    <button class="action-btn" data-action="send_money">Send Money</button>
+                    <button class="action-btn" data-action="report_suspicious">Report Suspicious</button>
+                </div>
+
+                <div class="trust-display">
+                    <div class="trust-score" id="maya-score">50</div>
+                    <div class="trust-level" id="maya-level">AWARE</div>
+                    <div class="trust-description" id="maya-description">Moderate security awareness</div>
+                </div>
+            </div>
+
+            <!-- Eli Demo -->
+            <div class="character-demo eli" data-character="eli">
+                <div class="character-header">
+                    <div class="character-name">ELI</div>
+                    <div class="character-description">Gaming Security Specialist</div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn" data-action="trust_stranger">Accept Offer</button>
+                    <button class="action-btn" data-action="verify_identity">Check Profile</button>
+                    <button class="action-btn" data-action="share_personal_info">Share Account</button>
+                    <button class="action-btn" data-action="ask_questions">Ask Community</button>
+                    <button class="action-btn" data-action="send_money">Trade Items</button>
+                    <button class="action-btn" data-action="report_suspicious">Report Scammer</button>
+                </div>
+
+                <div class="trust-display">
+                    <div class="trust-score" id="eli-score">50</div>
+                    <div class="trust-level" id="eli-level">ALERT</div>
+                    <div class="trust-description" id="eli-description">Moderate gaming security</div>
+                </div>
+            </div>
+
+            <!-- Stanley Demo -->
+            <div class="character-demo stanley" data-character="stanley">
+                <div class="character-header">
+                    <div class="character-name">STANLEY</div>
+                    <div class="character-description">Digital Safety Newcomer</div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn" data-action="trust_stranger">Follow Instructions</button>
+                    <button class="action-btn" data-action="verify_identity">Call Company</button>
+                    <button class="action-btn" data-action="share_personal_info">Provide Info</button>
+                    <button class="action-btn" data-action="ask_questions">Ask for Help</button>
+                    <button class="action-btn" data-action="send_money">Make Payment</button>
+                    <button class="action-btn" data-action="report_suspicious">Report Fraud</button>
+                </div>
+
+                <div class="trust-display">
+                    <div class="trust-score" id="stanley-score">50</div>
+                    <div class="trust-level" id="stanley-level">CAREFUL</div>
+                    <div class="trust-description" id="stanley-description">Moderately cautious online</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="reset-all-btn" onclick="resetAllScores()">🔄 Reset All Scores</button>
+    </div>
+
+    <!-- Load Trust Score System -->
+    <script src="Game/Mechanics/bayesian-trust-engine.js"></script>
+    <script src="Game/Mechanics/character-trust-profiles.js"></script>
+
+    <script>
+        // Initialize systems
+        let trustEngine = new BayesianTrustEngine();
+        let trustProfiles = new CharacterTrustProfiles();
+        
+        // Character states
+        let characterStates = {
+            maya: { score: 50, corruption: 0 },
+            eli: { score: 50, corruption: 0 },
+            stanley: { score: 50, corruption: 0 }
+        };
+
+        let currentScenario = 'romantic';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            updateAllDisplays();
+        });
+
+        function setupEventListeners() {
+            // Scenario selection
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentScenario = this.dataset.scenario;
+                    console.log('Scenario changed to:', currentScenario);
+                });
+            });
+
+            // Action buttons
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const character = this.closest('.character-demo').dataset.character;
+                    const action = this.dataset.action;
+                    performAction(character, action);
+                });
+            });
+        }
+
+        function getCurrentContext() {
+            const contexts = {
+                'romantic': {
+                    type: 'romantic',
+                    platform: 'dating_app',
+                    emotional_investment: 0.6,
+                    time_pressure: 0.3
+                },
+                'gaming': {
+                    type: 'gaming',
+                    platform: 'gaming_platform',
+                    involves_rare_items: true,
+                    involves_gaming_community: true
+                },
+                'authority': {
+                    type: 'authority',
+                    platform: 'phone_call',
+                    isolation_level: 0.7,
+                    supportive_community: false
+                },
+                'technical': {
+                    type: 'technical',
+                    platform: 'email',
+                    isolation_level: 0.5,
+                    supportive_community: false
+                }
+            };
+
+            return contexts[currentScenario] || contexts['romantic'];
+        }
+
+        function performAction(character, action) {
+            const context = getCurrentContext();
+            const currentScore = characterStates[character].score;
+            
+            // Calculate trust delta
+            const delta = trustEngine.calculateTrustDelta(character, action, context, currentScore);
+            const newScore = trustEngine.applyTrustChange(currentScore, delta);
+            
+            // Update character state
+            characterStates[character].score = newScore;
+            
+            // Update corruption for Stanley
+            if (character === 'stanley') {
+                characterStates[character].corruption = Math.max(0, (20 - newScore) / 120);
+                updateStanleyCorruption(characterStates[character].corruption);
+            }
+            
+            // Update display
+            updateCharacterDisplay(character);
+            
+            // Show feedback
+            showActionFeedback(character, action, delta, newScore);
+        }
+
+        function updateCharacterDisplay(character) {
+            const state = characterStates[character];
+            const score = state.score;
+            
+            // Get character-specific trust level
+            const levelInfo = trustEngine.getTrustLevel(score, character);
+            
+            // Update display elements
+            document.getElementById(`${character}-score`).textContent = Math.round(score);
+            document.getElementById(`${character}-level`).textContent = levelInfo.level;
+            document.getElementById(`${character}-description`).textContent = levelInfo.description;
+            
+            // Update colors
+            const scoreEl = document.getElementById(`${character}-score`);
+            const levelEl = document.getElementById(`${character}-level`);
+            
+            scoreEl.style.color = levelInfo.color;
+            levelEl.style.color = levelInfo.color;
+        }
+
+        function updateStanleyCorruption(corruptionLevel) {
+            const stanleyDemo = document.querySelector('.character-demo.stanley');
+            
+            if (corruptionLevel > 0.5) {
+                stanleyDemo.classList.add('corrupted');
+            } else {
+                stanleyDemo.classList.remove('corrupted');
+            }
+        }
+
+        function updateAllDisplays() {
+            Object.keys(characterStates).forEach(character => {
+                updateCharacterDisplay(character);
+            });
+        }
+
+        function showActionFeedback(character, action, delta, newScore) {
+            // Create temporary feedback element
+            const characterDemo = document.querySelector(`[data-character="${character}"]`);
+            const feedback = document.createElement('div');
+            
+            const deltaColor = delta > 0 ? '#00FF88' : (delta < -20 ? '#FF0040' : '#FF6B35');
+            const deltaSign = delta > 0 ? '+' : '';
+            
+            feedback.style.cssText = `
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                color: ${deltaColor};
+                padding: 8px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: bold;
+                z-index: 100;
+                animation: fadeInOut 2s ease-in-out;
+            `;
+            
+            feedback.textContent = `${deltaSign}${delta}`;
+            characterDemo.appendChild(feedback);
+            
+            // Remove after animation
+            setTimeout(() => {
+                if (feedback.parentNode) {
+                    feedback.parentNode.removeChild(feedback);
+                }
+            }, 2000);
+        }
+
+        function resetAllScores() {
+            characterStates = {
+                maya: { score: 50, corruption: 0 },
+                eli: { score: 50, corruption: 0 },
+                stanley: { score: 50, corruption: 0 }
+            };
+            
+            // Remove Stanley corruption
+            document.querySelector('.character-demo.stanley').classList.remove('corrupted');
+            
+            updateAllDisplays();
+        }
+
+        // Add CSS for feedback animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translateY(10px); }
+                20% { opacity: 1; transform: translateY(0); }
+                80% { opacity: 1; transform: translateY(0); }
+                100% { opacity: 0; transform: translateY(-10px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

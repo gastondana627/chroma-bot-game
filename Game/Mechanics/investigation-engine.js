@@ -10,9 +10,37 @@ class InvestigationEngine {
         this.analysisTools = new ToolRegistry();
         this.investigationState = new Map();
         this.activeInvestigations = new Map();
+        this.characterToolsManager = null;
         
         // Initialize with default tools
         this.initializeAnalysisTools();
+        
+        // Initialize character-specific tools
+        this.initializeCharacterTools();
+    }
+
+    /**
+     * Initialize character-specific tools integration
+     * @private
+     */
+    async initializeCharacterTools() {
+        try {
+            // Import and initialize character tools manager
+            if (typeof window !== 'undefined' && window.characterToolsManager) {
+                this.characterToolsManager = window.characterToolsManager;
+            } else if (typeof require !== 'undefined') {
+                const { characterToolsManager } = require('./character-tools-integration.js');
+                this.characterToolsManager = characterToolsManager;
+            }
+            
+            if (this.characterToolsManager) {
+                await this.characterToolsManager.initialize();
+                console.log('Character-specific investigation tools integrated successfully');
+            }
+        } catch (error) {
+            console.warn('Character-specific tools not available:', error.message);
+            // Continue without character-specific tools
+        }
     }
 
     /**
@@ -214,14 +242,63 @@ class InvestigationEngine {
      * @private
      */
     getAvailableTools(character) {
+        // Import character-specific tools
+        const characterSpecificTools = this.getCharacterSpecificTools(character);
+        
         const characterTools = {
-            maya: ['metadata_viewer', 'reverse_image_search', 'communication_analyzer', 'profile_verifier'],
-            eli: ['metadata_viewer', 'network_analyzer', 'profile_verifier', 'communication_analyzer'],
-            stanley: ['document_verifier', 'profile_verifier', 'communication_analyzer', 'metadata_viewer']
+            maya: ['metadata_viewer', 'reverse_image_search', 'communication_analyzer', 'profile_verifier', 
+                   'dating_profile_verifier', 'advanced_reverse_image_search', 'romance_communication_analyzer'],
+            eli: ['metadata_viewer', 'network_analyzer', 'profile_verifier', 'communication_analyzer',
+                  'gaming_trade_verifier', 'account_security_analyzer', 'gaming_scam_detector'],
+            stanley: ['document_verifier', 'profile_verifier', 'communication_analyzer', 'metadata_viewer',
+                      'identity_theft_detector', 'document_verifier_advanced', 'elder_fraud_detector']
         };
 
         const toolIds = characterTools[character] || [];
-        return toolIds.map(id => this.analysisTools.getTool(id)).filter(Boolean);
+        const standardTools = toolIds.filter(id => this.analysisTools.getTool(id)).map(id => this.analysisTools.getTool(id));
+        
+        return [...standardTools, ...characterSpecificTools];
+    }
+
+    /**
+     * Get character-specific investigation tools
+     * @private
+     */
+    getCharacterSpecificTools(character) {
+        if (this.characterToolsManager) {
+            return this.characterToolsManager.getAvailableToolsForCharacter(character);
+        }
+        
+        // Fallback to basic tool definitions if character tools manager is not available
+        const basicTools = [];
+        
+        if (character === 'maya') {
+            basicTools.push({
+                id: 'dating_profile_verifier',
+                name: 'Dating Profile Verifier',
+                description: 'Specialized tool for verifying dating profile authenticity',
+                character: 'maya',
+                type: 'character_specific'
+            });
+        } else if (character === 'eli') {
+            basicTools.push({
+                id: 'gaming_trade_verifier',
+                name: 'Gaming Trade Verifier',
+                description: 'Verifies gaming trades for fraud and security risks',
+                character: 'eli',
+                type: 'character_specific'
+            });
+        } else if (character === 'stanley') {
+            basicTools.push({
+                id: 'identity_theft_detector',
+                name: 'Identity Theft Detector',
+                description: 'Comprehensive identity theft detection and prevention',
+                character: 'stanley',
+                type: 'character_specific'
+            });
+        }
+        
+        return basicTools;
     }
 
     /**
@@ -238,6 +315,12 @@ class InvestigationEngine {
      */
     processAnalysis(evidence, tool, userInput) {
         try {
+            // Handle character-specific tools
+            if (tool.type === 'character_specific') {
+                return this.processCharacterSpecificAnalysis(evidence, tool, userInput);
+            }
+            
+            // Handle standard tools
             return tool.analyze(evidence, userInput);
         } catch (error) {
             return {
@@ -247,6 +330,85 @@ class InvestigationEngine {
             };
         }
     }
+
+    /**
+     * Process analysis with character-specific tools
+     * @private
+     */
+    async processCharacterSpecificAnalysis(evidence, tool, userInput) {
+        // Use character tools manager if available
+        if (this.characterToolsManager) {
+            try {
+                return await this.characterToolsManager.executeToolAnalysis(
+                    tool.character, 
+                    tool.id, 
+                    evidence, 
+                    userInput
+                );
+            } catch (error) {
+                console.error(`Error using character tools manager:`, error);
+                // Fall back to basic implementation
+            }
+        }
+
+        // Fallback implementation for basic functionality
+        return this.processBasicCharacterAnalysis(evidence, tool, userInput);
+    }
+
+    /**
+     * Basic character-specific analysis fallback
+     * @private
+     */
+    processBasicCharacterAnalysis(evidence, tool, userInput) {
+        const basicAnalysis = {
+            success: true,
+            timestamp: Date.now(),
+            toolUsed: tool.id,
+            character: tool.character,
+            findings: {},
+            educationalPoints: []
+        };
+
+        // Basic analysis based on evidence type and character
+        if (tool.character === 'maya') {
+            basicAnalysis.findings = {
+                profileRisk: evidence.profile?.suspicious?.length || 0,
+                imageAuthenticity: evidence.reverseSearch ? 'questionable' : 'unknown',
+                communicationRisk: evidence.communication?.suspicious?.length || 0
+            };
+            basicAnalysis.educationalPoints = [
+                'Always verify dating profiles through multiple methods',
+                'Use reverse image search to check photo authenticity',
+                'Be cautious of rapid emotional escalation in online relationships'
+            ];
+        } else if (tool.character === 'eli') {
+            basicAnalysis.findings = {
+                accountSecurity: evidence.network?.reputation === 'suspicious' ? 'compromised' : 'secure',
+                tradingRisk: evidence.profile?.suspicious?.length || 0,
+                scamIndicators: evidence.communication?.suspicious?.length || 0
+            };
+            basicAnalysis.educationalPoints = [
+                'Monitor account login locations for unauthorized access',
+                'Use official trading platforms with escrow services',
+                'Be suspicious of deals that seem too good to be true'
+            ];
+        } else if (tool.character === 'stanley') {
+            basicAnalysis.findings = {
+                documentAuthenticity: evidence.document?.authentic === false ? 'forged' : 'authentic',
+                identityRisk: evidence.communication?.suspicious?.length || 0,
+                fraudType: 'government_impersonation'
+            };
+            basicAnalysis.educationalPoints = [
+                'Government agencies do not make threatening phone calls',
+                'Official documents have specific security features',
+                'Take time to verify before taking any action'
+            ];
+        }
+
+        return basicAnalysis;
+    }
+
+
 
     /**
      * Generate educational feedback

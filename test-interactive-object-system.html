@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Object System Test - Data_Bleed</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            min-height: 100vh;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #00FFFF;
+            padding-bottom: 20px;
+        }
+
+        .test-section {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .test-button {
+            background: linear-gradient(45deg, #00FFFF, #0080FF);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .test-button.guardian {
+            background: linear-gradient(45deg, #4CAF50, #66BB6A);
+        }
+
+        .test-button.shadow {
+            background: linear-gradient(45deg, #F44336, #EF5350);
+        }
+
+        .test-area {
+            min-height: 300px;
+            border: 2px dashed #444;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .interactive-object {
+            width: 120px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #666;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            font-size: 12px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .interactive-object:hover {
+            transform: scale(1.05);
+        }
+
+        .status-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00FFFF;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .character-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .character-btn {
+            padding: 8px 16px;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .character-btn.active {
+            border-color: #00FFFF;
+            background: rgba(0, 255, 255, 0.2);
+        }
+
+        .character-btn.eli { border-color: #FF9800; }
+        .character-btn.maya { border-color: #E91E63; }
+        .character-btn.stanley { border-color: #4CAF50; }
+
+        .mode-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00FFFF;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 14px;
+            z-index: 1000;
+        }
+
+        .trust-score {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 14px;
+            z-index: 1000;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid #00FFFF;
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .log-entry.error {
+            border-left-color: #F44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .log-entry.success {
+            border-left-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        /* 3D Canvas Overlay */
+        #three-overlay-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1500;
+            pointer-events: none;
+            display: none;
+        }
+
+        .three-active #three-overlay-canvas {
+            display: block;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🎮 Interactive Object System Test</h1>
+            <p>Testing interactive object manager and 3D integration</p>
+        </div>
+
+        <!-- Mode Indicator -->
+        <div class="mode-indicator" id="mode-indicator">
+            Mode: <span id="current-mode">Guardian</span>
+        </div>
+
+        <!-- Trust Score -->
+        <div class="trust-score" id="trust-score">
+            Trust Score: <span id="trust-value">0</span>
+        </div>
+
+        <!-- Character Selection -->
+        <div class="test-section">
+            <h3>Character Selection</h3>
+            <div class="character-selector">
+                <div class="character-btn eli active" data-character="eli">Eli (Gaming)</div>
+                <div class="character-btn maya" data-character="maya">Maya (Dating)</div>
+                <div class="character-btn stanley" data-character="stanley">Stanley (Elder)</div>
+            </div>
+        </div>
+
+        <!-- Mode Controls -->
+        <div class="test-section">
+            <h3>Mode Controls</h3>
+            <div class="test-controls">
+                <button class="test-button guardian" onclick="setMode('guardian')">🛡️ Guardian Mode</button>
+                <button class="test-button shadow" onclick="setMode('shadowObserver')">👤 Shadow Observer Mode</button>
+                <button class="test-button" onclick="toggleHighlighting()">Toggle Highlighting</button>
+                <button class="test-button" onclick="toggle3DMode()">Toggle 3D Mode</button>
+            </div>
+        </div>
+
+        <!-- Interactive Objects Test Area -->
+        <div class="test-section">
+            <h3>Interactive Objects Test Area</h3>
+            <div class="test-controls">
+                <button class="test-button" onclick="createTestObjects()">Create Test Objects</button>
+                <button class="test-button" onclick="clearAllObjects()">Clear All Objects</button>
+                <button class="test-button" onclick="simulateAreaChange()">Simulate Area Change</button>
+            </div>
+            <div class="test-area" id="test-area">
+                <p>Click "Create Test Objects" to populate this area with interactive objects</p>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="test-section">
+            <h3>System Status</h3>
+            <div class="test-controls">
+                <button class="test-button" onclick="checkSystemStatus()">Check Status</button>
+                <button class="test-button" onclick="clearLog()">Clear Log</button>
+            </div>
+            <div class="status-display" id="status-log">
+                <div class="log-entry">System initialized. Ready for testing.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Canvas Overlay -->
+    <canvas id="three-overlay-canvas"></canvas>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Core Dependencies -->
+    <script src="Game/Mechanics/story-progression-tracker.js"></script>
+    <script src="Game/Mechanics/cinematic-moments-config.js"></script>
+    <script src="Game/Mechanics/mode-manager.js"></script>
+    <script src="Game/Mechanics/interactive-object-manager.js"></script>
+    <script src="js/three-scene-manager.js"></script>
+    <script src="js/character-3d-system.js"></script>
+    <script src="js/ui-3d-integration.js"></script>
+    <script src="Game/Mechanics/3d-interactive-elements.js"></script>
+
+    <script>
+        // Test state
+        let currentCharacter = 'eli';
+        let currentArea = 1;
+        let currentMode = 'guardian';
+        let is3DModeActive = false;
+        let testObjectCounter = 0;
+
+        // Initialize systems
+        async function initializeSystems() {
+            try {
+                log('Initializing test systems...', 'info');
+
+                // Initialize story tracker
+                if (!window.storyTracker) {
+                    window.storyTracker = new StoryProgressionTracker();
+                    await window.storyTracker.initialize();
+                }
+
+                // Initialize cinematic manager
+                if (!window.cinematicManager) {
+                    window.cinematicManager = new CinematicMomentsManager();
+                }
+
+                // Initialize mode manager
+                if (!window.modeManager) {
+                    window.modeManager = new ModeManager();
+                }
+
+                // Initialize interactive object manager
+                if (!window.interactiveObjectManager) {
+                    window.interactiveObjectManager = new InteractiveObjectManager();
+                    await window.interactiveObjectManager.initialize();
+                }
+
+                // Initialize 3D systems
+                if (!window.threeSceneManager) {
+                    window.threeSceneManager = new ThreeSceneManager();
+                    await window.threeSceneManager.initialize('three-overlay-canvas');
+                }
+
+                if (!window.character3DSystem) {
+                    window.character3DSystem = new Character3DSystem(window.threeSceneManager);
+                }
+
+                if (!window.ui3DIntegration) {
+                    window.ui3DIntegration = new UI3DIntegration();
+                }
+
+                if (!window.threeDInteractiveElements) {
+                    window.threeDInteractiveElements = new ThreeDInteractiveElements();
+                    await window.threeDInteractiveElements.initialize();
+                }
+
+                // Set initial mode
+                await setMode('guardian');
+
+                log('All systems initialized successfully!', 'success');
+                updateUI();
+
+            } catch (error) {
+                log(`Initialization error: ${error.message}`, 'error');
+                console.error('Initialization error:', error);
+            }
+        }
+
+        // Set gameplay mode
+        async function setMode(mode) {
+            try {
+                currentMode = mode;
+                
+                if (window.modeManager) {
+                    await window.modeManager.setMode(mode, currentCharacter, currentArea);
+                }
+
+                document.getElementById('current-mode').textContent = 
+                    mode === 'guardian' ? 'Guardian 🛡️' : 'Shadow Observer 👤';
+
+                log(`Mode changed to: ${mode}`, 'success');
+                updateUI();
+
+            } catch (error) {
+                log(`Mode change error: ${error.message}`, 'error');
+            }
+        }
+
+        // Set current character
+        async function setCharacter(character) {
+            try {
+                currentCharacter = character;
+                
+                // Update character selector UI
+                document.querySelectorAll('.character-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-character="${character}"]`).classList.add('active');
+
+                // Update mode manager
+                if (window.modeManager) {
+                    await window.modeManager.setMode(currentMode, character, currentArea);
+                }
+
+                log(`Character changed to: ${character}`, 'success');
+                
+                // Recreate objects for new character
+                clearAllObjects();
+                createTestObjects();
+
+            } catch (error) {
+                log(`Character change error: ${error.message}`, 'error');
+            }
+        }
+
+        // Create test interactive objects
+        function createTestObjects() {
+            try {
+                const testArea = document.getElementById('test-area');
+                testArea.innerHTML = '';
+
+                // Get character-specific object types
+                const objectTypes = getCharacterObjectTypes(currentCharacter);
+
+                objectTypes.forEach((objectType, index) => {
+                    const objectElement = document.createElement('div');
+                    const objectId = `test_object_${currentCharacter}_${index}_${++testObjectCounter}`;
+                    
+                    objectElement.className = 'interactive-object';
+                    objectElement.innerHTML = `
+                        <div>
+                            <strong>${objectType.name}</strong><br>
+                            <small>${objectType.description}</small>
+                        </div>
+                    `;
+
+                    testArea.appendChild(objectElement);
+
+                    // Create interactive object
+                    if (window.interactiveObjectManager) {
+                        window.interactiveObjectManager.createInteractiveObject(
+                            objectId,
+                            objectType.type,
+                            objectElement,
+                            { testMode: true }
+                        );
+                    }
+                });
+
+                log(`Created ${objectTypes.length} test objects for ${currentCharacter}`, 'success');
+
+            } catch (error) {
+                log(`Object creation error: ${error.message}`, 'error');
+            }
+        }
+
+        // Get character-specific object types
+        function getCharacterObjectTypes(character) {
+            const types = {
+                eli: [
+                    { name: 'Gaming Setup', type: 'eli_gaming_setup', description: 'Security configuration' },
+                    { name: 'Tournament Entry', type: 'eli_tournament_entry', description: 'Tournament verification' }
+                ],
+                maya: [
+                    { name: 'Dating Profile', type: 'maya_dating_profile', description: 'Profile verification' },
+                    { name: 'Message Analysis', type: 'maya_message_analysis', description: 'Communication analysis' }
+                ],
+                stanley: [
+                    { name: 'Identity Scanner', type: 'stanley_identity_scanner', description: 'Identity verification' },
+                    { name: 'Financial Checker', type: 'stanley_financial_checker', description: 'Financial verification' }
+                ]
+            };
+
+            return types[character] || [];
+        }
+
+        // Clear all interactive objects
+        function clearAllObjects() {
+            try {
+                if (window.interactiveObjectManager) {
+                    window.interactiveObjectManager.clearAllObjects();
+                }
+
+                const testArea = document.getElementById('test-area');
+                testArea.innerHTML = '<p>Test area cleared. Click "Create Test Objects" to add new objects.</p>';
+
+                log('All objects cleared', 'success');
+
+            } catch (error) {
+                log(`Clear objects error: ${error.message}`, 'error');
+            }
+        }
+
+        // Toggle highlighting
+        function toggleHighlighting() {
+            try {
+                if (window.interactiveObjectManager) {
+                    const currentConfig = window.interactiveObjectManager.config;
+                    currentConfig.enableHighlighting = !currentConfig.enableHighlighting;
+                    
+                    log(`Highlighting ${currentConfig.enableHighlighting ? 'enabled' : 'disabled'}`, 'info');
+                }
+            } catch (error) {
+                log(`Toggle highlighting error: ${error.message}`, 'error');
+            }
+        }
+
+        // Toggle 3D mode
+        async function toggle3DMode() {
+            try {
+                is3DModeActive = !is3DModeActive;
+                
+                if (is3DModeActive) {
+                    document.body.classList.add('three-active');
+                    
+                    // Initialize character in 3D
+                    if (window.character3DSystem) {
+                        await window.character3DSystem.initializeCharacter(currentCharacter);
+                    }
+                    
+                    // Simulate character emergence
+                    if (window.threeDInteractiveElements) {
+                        await window.threeDInteractiveElements.handleCharacterEmergence({
+                            character: currentCharacter
+                        });
+                    }
+                    
+                    log('3D mode activated', 'success');
+                } else {
+                    document.body.classList.remove('three-active');
+                    
+                    // Simulate character return
+                    if (window.threeDInteractiveElements) {
+                        await window.threeDInteractiveElements.handleCharacterReturn({
+                            character: currentCharacter
+                        });
+                    }
+                    
+                    log('3D mode deactivated', 'success');
+                }
+
+            } catch (error) {
+                log(`3D mode toggle error: ${error.message}`, 'error');
+            }
+        }
+
+        // Simulate area change
+        function simulateAreaChange() {
+            try {
+                currentArea = currentArea === 1 ? 2 : 1;
+                
+                // Dispatch area change event
+                window.dispatchEvent(new CustomEvent('storyTriggerFired', {
+                    detail: {
+                        character: currentCharacter,
+                        areaNumber: currentArea
+                    }
+                }));
+
+                log(`Area changed to: ${currentArea}`, 'info');
+                
+                // Recreate objects for new area
+                clearAllObjects();
+                createTestObjects();
+
+            } catch (error) {
+                log(`Area change error: ${error.message}`, 'error');
+            }
+        }
+
+        // Check system status
+        function checkSystemStatus() {
+            try {
+                const status = {
+                    interactiveObjectManager: window.interactiveObjectManager?.getStatus(),
+                    threeDInteractiveElements: window.threeDInteractiveElements?.getStatus(),
+                    modeManager: window.modeManager?.getCurrentMode(),
+                    character3DSystem: window.character3DSystem?.getSystemStatus()
+                };
+
+                log('=== SYSTEM STATUS ===', 'info');
+                Object.entries(status).forEach(([system, data]) => {
+                    if (data) {
+                        log(`${system}: ${JSON.stringify(data, null, 2)}`, 'info');
+                    } else {
+                        log(`${system}: Not available`, 'error');
+                    }
+                });
+
+            } catch (error) {
+                log(`Status check error: ${error.message}`, 'error');
+            }
+        }
+
+        // Clear log
+        function clearLog() {
+            document.getElementById('status-log').innerHTML = '';
+        }
+
+        // Log function
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('status-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        // Update UI
+        function updateUI() {
+            // Update mode indicator
+            document.getElementById('current-mode').textContent = 
+                currentMode === 'guardian' ? 'Guardian 🛡️' : 'Shadow Observer 👤';
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', initializeSystems);
+
+        // Character selector event listeners
+        document.querySelectorAll('.character-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setCharacter(btn.dataset.character);
+            });
+        });
+
+        // Listen for trust score updates
+        document.addEventListener('trustScoreUpdated', (event) => {
+            document.getElementById('trust-value').textContent = event.detail.score;
+            log(`Trust score updated: ${event.detail.score} (${event.detail.change > 0 ? '+' : ''}${event.detail.change})`, 'info');
+        });
+
+        // Listen for object interactions
+        document.addEventListener('interactiveObjectInteraction', (event) => {
+            const { objectId, objectType, mode, result } = event.detail;
+            log(`Object interaction: ${objectId} (${objectType}) in ${mode} mode`, 'success');
+        });
+
+        // Listen for 3D interactions
+        document.addEventListener('threeDInteractiveObjectInteraction', (event) => {
+            const { objectId, objectType, mode } = event.detail;
+            log(`3D Object interaction: ${objectId} (${objectType}) in ${mode} mode`, 'success');
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            switch (event.key) {
+                case '1':
+                    setCharacter('eli');
+                    break;
+                case '2':
+                    setCharacter('maya');
+                    break;
+                case '3':
+                    setCharacter('stanley');
+                    break;
+                case 'g':
+                case 'G':
+                    setMode('guardian');
+                    break;
+                case 's':
+                case 'S':
+                    setMode('shadowObserver');
+                    break;
+                case ' ':
+                    event.preventDefault();
+                    toggle3DMode();
+                    break;
+            }
+        });
+
+        // Display keyboard shortcuts
+        log('Keyboard shortcuts: 1-3 (characters), G (guardian), S (shadow), Space (3D mode)', 'info');
+    </script>
+</body>
+</html>

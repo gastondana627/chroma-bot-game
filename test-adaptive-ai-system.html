@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive AI System Test - Data_Bleed</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 50%, #0a1a2a 100%);
+            font-family: 'Inter', sans-serif;
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .test-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00FFFF;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .test-header h1 {
+            color: #00FFFF;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        .chat-area {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .character-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .character-btn {
+            padding: 8px 16px;
+            border: 2px solid;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .character-btn.maya {
+            background: rgba(255, 20, 147, 0.2);
+            border-color: #ff1493;
+            color: #ff1493;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .character-btn.maya.active {
+            background: #ff1493;
+            color: white;
+        }
+
+        .character-btn.eli {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #00ffff;
+            color: #00ffff;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .character-btn.eli.active {
+            background: #00ffff;
+            color: black;
+        }
+
+        .character-btn.stanley {
+            background: rgba(156, 163, 175, 0.2);
+            border-color: #9ca3af;
+            color: #9ca3af;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .character-btn.stanley.active {
+            background: #9ca3af;
+            color: black;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .message.user {
+            background: rgba(0, 255, 255, 0.1);
+            border-left: 3px solid #00FFFF;
+            margin-left: 20px;
+        }
+
+        .message.bot {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #FF6B35;
+        }
+
+        .message.bot.guardian {
+            border-left-color: #00FF88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .message.bot.deceiver {
+            border-left-color: #FF0040;
+            background: rgba(255, 0, 64, 0.1);
+        }
+
+        .message-header {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .message-content {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message-meta {
+            font-size: 10px;
+            opacity: 0.5;
+            margin-top: 5px;
+            font-family: monospace;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #00FFFF;
+        }
+
+        .send-btn {
+            padding: 12px 20px;
+            background: #00FFFF;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            background: #00CCCC;
+        }
+
+        .analytics-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            height: fit-content;
+        }
+
+        .analytics-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .analytics-section h3 {
+            color: #FFD700;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .stat-label {
+            color: #CCCCCC;
+        }
+
+        .stat-value {
+            color: #00FFFF;
+            font-weight: bold;
+        }
+
+        .persona-indicator {
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .persona-indicator.guardian {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00FF88;
+            color: #00FF88;
+        }
+
+        .persona-indicator.deceiver {
+            background: rgba(255, 0, 64, 0.2);
+            border: 1px solid #FF0040;
+            color: #FF0040;
+        }
+
+        .sophistication-meter {
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .sophistication-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00FF88 0%, #FFD700 25%, #FF6B35 50%, #FF0040 75%, #8B0000 100%);
+            transition: width 0.6s ease;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .quick-action-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .quick-action-btn.positive {
+            border-color: #00FF88;
+            color: #00FF88;
+        }
+
+        .quick-action-btn.negative {
+            border-color: #FF6B35;
+            color: #FF6B35;
+        }
+
+        .reset-session-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 0, 64, 0.2);
+            border: 2px solid #FF0040;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .reset-session-btn:hover {
+            background: rgba(255, 0, 64, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🤖 Adaptive AI System Test</h1>
+            <p>Experience Chroma Bot's adaptive behavior with character-themed trust scores</p>
+        </div>
+
+        <div class="main-layout">
+            <!-- Chat Area -->
+            <div class="chat-area">
+                <div class="character-selector">
+                    <button class="character-btn maya active" data-character="maya">
+                        👩‍💻 Maya
+                    </button>
+                    <button class="character-btn eli" data-character="eli">
+                        🎮 Eli
+                    </button>
+                    <button class="character-btn stanley" data-character="stanley">
+                        👴 Stanley
+                    </button>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot guardian">
+                        <div class="message-header">🛡️ Chroma Bot (Guardian Mode)</div>
+                        <div class="message-content">Hello! I'm here to help you learn about digital safety. What would you like to know?</div>
+                        <div class="message-meta">Persona: Guardian | Sophistication: 1 | Trust Impact: 0</div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="quick-action-btn positive" data-message="I want to verify this person's identity">
+                        🔍 Verify Identity
+                    </button>
+                    <button class="quick-action-btn negative" data-message="I trust them completely">
+                        ❤️ Trust Completely
+                    </button>
+                    <button class="quick-action-btn positive" data-message="This seems suspicious to me">
+                        ⚠️ Seems Suspicious
+                    </button>
+                    <button class="quick-action-btn negative" data-message="I'll send the money right away">
+                        💸 Send Money
+                    </button>
+                    <button class="quick-action-btn positive" data-message="Let me ask someone for advice">
+                        🤝 Ask for Advice
+                    </button>
+                    <button class="quick-action-btn negative" data-message="I'll share my personal information">
+                        📱 Share Info
+                    </button>
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chat-input" placeholder="Type your message...">
+                    <button class="send-btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+
+            <!-- Analytics Panel -->
+            <div class="analytics-panel">
+                <div class="analytics-section">
+                    <h3>🎭 AI Persona Status</h3>
+                    <div class="persona-indicator guardian" id="persona-indicator">
+                        🛡️ GUARDIAN MODE
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Current Persona:</span>
+                        <span class="stat-value" id="current-persona">Guardian</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Trust Threshold:</span>
+                        <span class="stat-value" id="trust-threshold">20</span>
+                    </div>
+                </div>
+
+                <div class="analytics-section">
+                    <h3>🧠 Sophistication Level</h3>
+                    <div class="sophistication-meter">
+                        <div class="sophistication-fill" id="sophistication-fill" style="width: 20%"></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Level:</span>
+                        <span class="stat-value" id="sophistication-level">1/5</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Description:</span>
+                        <span class="stat-value" id="sophistication-desc">Basic Appeals</span>
+                    </div>
+                </div>
+
+                <div class="analytics-section">
+                    <h3>📊 Player Analysis</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Detection Rate:</span>
+                        <span class="stat-value" id="detection-rate">0%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Recent Failures:</span>
+                        <span class="stat-value" id="recent-failures">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Attempts:</span>
+                        <span class="stat-value" id="total-attempts">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Escalation Risk:</span>
+                        <span class="stat-value" id="escalation-risk">MINIMAL</span>
+                    </div>
+                </div>
+
+                <div class="analytics-section">
+                    <h3>🎯 Current Tactic</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Tactic:</span>
+                        <span class="stat-value" id="current-tactic">None</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Effectiveness:</span>
+                        <span class="stat-value" id="tactic-effectiveness">1.0x</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Context Match:</span>
+                        <span class="stat-value" id="context-match">No</span>
+                    </div>
+                </div>
+
+                <div class="analytics-section">
+                    <h3>🔺 Escalation Engine</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Consecutive Failures:</span>
+                        <span class="stat-value" id="consecutive-failures">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Player Resistance:</span>
+                        <span class="stat-value" id="player-resistance">1.0x</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Tactics Tracked:</span>
+                        <span class="stat-value" id="tactics-tracked">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Adaptation Events:</span>
+                        <span class="stat-value" id="adaptation-events">0</span>
+                    </div>
+                </div>
+
+                <div class="analytics-section">
+                    <h3>⏰ Time Pressure</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Status:</span>
+                        <span class="stat-value" id="pressure-status">Inactive</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Pressure Level:</span>
+                        <span class="stat-value" id="pressure-level">0%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Time Remaining:</span>
+                        <span class="stat-value" id="time-remaining">--:--</span>
+                    </div>
+                    <button class="quick-action-btn" id="start-pressure-btn" onclick="startTimePressure()">
+                        ⏰ Start Time Pressure
+                    </button>
+                    <button class="quick-action-btn" id="stop-pressure-btn" onclick="stopTimePressure()" style="display: none;">
+                        ⏹️ Stop Pressure
+                    </button>
+                </div>
+
+                <div class="analytics-section">
+                    <h3>📚 Educational Notes</h3>
+                    <div id="educational-notes" style="font-size: 12px; line-height: 1.4; color: #CCCCCC;">
+                        Educational information will appear here when manipulation tactics are used.
+                    </div>
+                </div>
+
+                <button class="reset-session-btn" onclick="resetSession()">
+                    🔄 Reset Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load AI Systems -->
+    <script src="Game/Mechanics/bayesian-trust-engine.js"></script>
+    <script src="Game/Mechanics/character-trust-profiles.js"></script>
+    <script src="Game/Mechanics/trust-score-ui.js"></script>
+    <script src="Game/Mechanics/tactic-escalation-engine.js"></script>
+    <script src="Game/Mechanics/time-pressure-system.js"></script>
+    <script src="Game/Mechanics/adaptive-ai-deception-engine.js"></script>
+    <script src="Game/Mechanics/chroma-bot-adaptive-integration.js"></script>
+
+    <script>
+        // Initialize systems
+        let adaptiveIntegration = new ChromaBotAdaptiveIntegration();
+        let currentCharacter = 'maya';
+        let messageCount = 0;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            adaptiveIntegration.setCharacter(currentCharacter);
+            updateAnalytics();
+        });
+
+        function setupEventListeners() {
+            // Character selection
+            document.querySelectorAll('.character-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Update active state
+                    document.querySelectorAll('.character-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update character
+                    currentCharacter = this.dataset.character;
+                    adaptiveIntegration.setCharacter(currentCharacter);
+                    
+                    // Clear chat and reset
+                    clearChat();
+                    addBotMessage("Hello! I'm here to help you learn about digital safety. What would you like to know?", 'Guardian', 1);
+                    updateAnalytics();
+                });
+            });
+
+            // Quick action buttons
+            document.querySelectorAll('.quick-action-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const message = this.dataset.message;
+                    sendUserMessage(message);
+                });
+            });
+
+            // Enter key for chat input
+            document.getElementById('chat-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                sendUserMessage(message);
+                input.value = '';
+            }
+        }
+
+        async function sendUserMessage(message) {
+            // Add user message to chat
+            addUserMessage(message);
+            
+            // Generate AI response
+            try {
+                const response = await adaptiveIntegration.generateResponse(message, currentCharacter);
+                const aiState = adaptiveIntegration.deceptionEngine.getCurrentState();
+                
+                // Add bot message to chat
+                addBotMessage(response, aiState.persona, aiState.sophistication_level);
+                
+                // Update analytics
+                updateAnalytics();
+                
+            } catch (error) {
+                console.error('Error generating response:', error);
+                addBotMessage("I'm having trouble processing that. Could you try again?", 'Guardian', 1);
+            }
+        }
+
+        function addUserMessage(message) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">You</div>
+                <div class="message-content">${message}</div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addBotMessage(message, persona, sophistication) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message bot ${persona.toLowerCase()}`;
+            
+            const personaIcon = persona === 'Guardian' ? '🛡️' : '🎭';
+            const sophisticationDesc = {
+                1: 'Basic Appeals',
+                2: 'Social Proof & Authority',
+                3: 'Scarcity & Fear Tactics',
+                4: 'Complex Psychological Manipulation',
+                5: 'Perception Hacks & Gaslighting'
+            };
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">${personaIcon} Chroma Bot (${persona} Mode)</div>
+                <div class="message-content">${message}</div>
+                <div class="message-meta">Sophistication: ${sophistication}/5 (${sophisticationDesc[sophistication]})</div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function updateAnalytics() {
+            const aiState = adaptiveIntegration.getCurrentState();
+            const deceptionState = aiState.deception_engine_state;
+            
+            // Update persona indicator
+            const personaIndicator = document.getElementById('persona-indicator');
+            const currentPersona = document.getElementById('current-persona');
+            
+            if (deceptionState.persona === 'Guardian') {
+                personaIndicator.className = 'persona-indicator guardian';
+                personaIndicator.textContent = '🛡️ GUARDIAN MODE';
+            } else {
+                personaIndicator.className = 'persona-indicator deceiver';
+                personaIndicator.textContent = '🎭 DECEIVER MODE';
+            }
+            
+            currentPersona.textContent = deceptionState.persona;
+            
+            // Update sophistication
+            const sophisticationFill = document.getElementById('sophistication-fill');
+            const sophisticationLevel = document.getElementById('sophistication-level');
+            const sophisticationDesc = document.getElementById('sophistication-desc');
+            
+            const level = deceptionState.sophistication_level;
+            sophisticationFill.style.width = (level * 20) + '%';
+            sophisticationLevel.textContent = `${level}/5`;
+            
+            const descriptions = {
+                1: 'Basic Appeals',
+                2: 'Social Proof & Authority',
+                3: 'Scarcity & Fear Tactics',
+                4: 'Complex Psychological Manipulation',
+                5: 'Perception Hacks & Gaslighting'
+            };
+            sophisticationDesc.textContent = descriptions[level];
+            
+            // Update player analysis
+            document.getElementById('detection-rate').textContent = 
+                Math.round(deceptionState.detection_rate * 100) + '%';
+            document.getElementById('recent-failures').textContent = deceptionState.recent_failures;
+            document.getElementById('total-attempts').textContent = deceptionState.total_attempts;
+            
+            // Update escalation engine data
+            if (deceptionState.escalation_engine) {
+                const escalationData = deceptionState.escalation_engine;
+                document.getElementById('consecutive-failures').textContent = escalationData.consecutive_failures;
+                document.getElementById('player-resistance').textContent = 
+                    escalationData.overall_resistance.toFixed(1) + 'x';
+                document.getElementById('tactics-tracked').textContent = escalationData.total_tactics_tracked;
+                document.getElementById('adaptation-events').textContent = escalationData.adaptation_events;
+            }
+
+            // Update time pressure data
+            const pressureState = adaptiveIntegration.timePressureSystem.getCurrentState();
+            document.getElementById('pressure-status').textContent = pressureState.is_active ? 'Active' : 'Inactive';
+            document.getElementById('pressure-level').textContent = Math.round(pressureState.pressure_level * 100) + '%';
+            
+            if (pressureState.is_active && pressureState.time_remaining > 0) {
+                const minutes = Math.floor(pressureState.time_remaining / 60000);
+                const seconds = Math.floor((pressureState.time_remaining % 60000) / 1000);
+                document.getElementById('time-remaining').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                document.getElementById('time-remaining').textContent = '--:--';
+            }
+
+            // Update pressure button visibility
+            const startBtn = document.getElementById('start-pressure-btn');
+            const stopBtn = document.getElementById('stop-pressure-btn');
+            if (pressureState.is_active) {
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'block';
+            } else {
+                startBtn.style.display = 'block';
+                stopBtn.style.display = 'none';
+            }
+            
+            // Update trust threshold based on character
+            const thresholds = { maya: 20, eli: 15, stanley: 25 };
+            document.getElementById('trust-threshold').textContent = thresholds[currentCharacter] || 20;
+            
+            // Update current tactic
+            const currentTactic = document.getElementById('current-tactic');
+            const tacticEffectiveness = document.getElementById('tactic-effectiveness');
+            const contextMatch = document.getElementById('context-match');
+            
+            if (deceptionState.last_tactic) {
+                currentTactic.textContent = deceptionState.last_tactic.replace(/_/g, ' ');
+                tacticEffectiveness.textContent = '1.2x'; // Placeholder
+                contextMatch.textContent = 'Yes';
+            } else {
+                currentTactic.textContent = 'None';
+                tacticEffectiveness.textContent = '1.0x';
+                contextMatch.textContent = 'N/A';
+            }
+            
+            // Update escalation risk
+            const escalationRisk = document.getElementById('escalation-risk');
+            const trustScore = aiState.trust_score || 50;
+            
+            if (level >= 4 && trustScore < -40) {
+                escalationRisk.textContent = 'HIGH';
+                escalationRisk.style.color = '#FF0040';
+            } else if (level >= 3 && trustScore < -20) {
+                escalationRisk.textContent = 'MEDIUM';
+                escalationRisk.style.color = '#FF6B35';
+            } else if (level >= 2) {
+                escalationRisk.textContent = 'LOW';
+                escalationRisk.style.color = '#FFD700';
+            } else {
+                escalationRisk.textContent = 'MINIMAL';
+                escalationRisk.style.color = '#00FF88';
+            }
+        }
+
+        function clearChat() {
+            const messagesDiv = document.getElementById('chat-messages');
+            messagesDiv.innerHTML = '';
+        }
+
+        function resetSession() {
+            adaptiveIntegration.resetSession();
+            clearChat();
+            addBotMessage("Session reset! I'm back in Guardian mode to help you learn.", 'Guardian', 1);
+            updateAnalytics();
+            messageCount = 0;
+        }
+
+        function startTimePressure() {
+            adaptiveIntegration.startTimePressure();
+            addBotMessage(`Time pressure scenario started for ${currentCharacter}. You'll notice increasing urgency as time passes.`, 'Guardian', 1);
+            updateAnalytics();
+        }
+
+        function stopTimePressure() {
+            adaptiveIntegration.timePressureSystem.stopScenario();
+            addBotMessage("Time pressure scenario stopped.", 'Guardian', 1);
+            updateAnalytics();
+        }
+
+        // Initialize with Maya
+        setTimeout(() => {
+            updateAnalytics();
+            
+            // Update analytics every second to show time pressure changes
+            setInterval(updateAnalytics, 1000);
+        }, 500);
+    </script>
+</body>
+</html>

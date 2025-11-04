@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Action Sequences Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-section h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .character-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .character-tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .character-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .character-tab.active {
+            background: #4CAF50;
+        }
+
+        .sequence-panel {
+            display: none;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .sequence-panel.active {
+            display: block;
+        }
+
+        .sequence-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .sequence-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .phase-display {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .tools-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .tool-card {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tool-card h4 {
+            margin: 0 0 10px 0;
+            color: #4CAF50;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            transition: width 0.3s ease;
+        }
+
+        .feedback-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4CAF50;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .error-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid #f44336;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-completed {
+            background: #2196F3;
+            color: white;
+        }
+
+        .status-cancelled {
+            background: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Character Action Sequences Test</h1>
+
+        <div class="test-section">
+            <h2>System Status</h2>
+            <div id="systemStatus">Initializing...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>Character Action Sequences</h2>
+            
+            <div class="character-tabs">
+                <button class="character-tab active" onclick="switchCharacter('maya')">Maya</button>
+                <button class="character-tab" onclick="switchCharacter('eli')">Eli</button>
+                <button class="character-tab" onclick="switchCharacter('stanley')">Stanley</button>
+            </div>
+
+            <div id="maya-panel" class="sequence-panel active">
+                <div class="sequence-info">
+                    <h3>Maya - Romance Scam Intervention</h3>
+                    <p>Specializes in dating app safety and romance scam detection</p>
+                </div>
+                
+                <div class="sequence-controls">
+                    <button class="btn btn-primary" onclick="startSequence('maya', 'romance_intervention')">
+                        Start Romance Intervention
+                    </button>
+                    <button class="btn btn-secondary" onclick="getAvailableSequences('maya')">
+                        Show Available Sequences
+                    </button>
+                </div>
+                
+                <div id="maya-status"></div>
+            </div>
+
+            <div id="eli-panel" class="sequence-panel">
+                <div class="sequence-info">
+                    <h3>Eli - Gaming Account Security</h3>
+                    <p>Specializes in gaming account protection and tournament safety</p>
+                </div>
+                
+                <div class="sequence-controls">
+                    <button class="btn btn-primary" onclick="startSequence('eli', 'account_security')">
+                        Start Account Security Response
+                    </button>
+                    <button class="btn btn-secondary" onclick="getAvailableSequences('eli')">
+                        Show Available Sequences
+                    </button>
+                </div>
+                
+                <div id="eli-status"></div>
+            </div>
+
+            <div id="stanley-panel" class="sequence-panel">
+                <div class="sequence-info">
+                    <h3>Stanley - Identity Theft Response</h3>
+                    <p>Specializes in identity protection and elder fraud prevention</p>
+                </div>
+                
+                <div class="sequence-controls">
+                    <button class="btn btn-primary" onclick="startSequence('stanley', 'identity_response')">
+                        Start Identity Theft Response
+                    </button>
+                    <button class="btn btn-secondary" onclick="getAvailableSequences('stanley')">
+                        Show Available Sequences
+                    </button>
+                </div>
+                
+                <div id="stanley-status"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Active Sequence Control</h2>
+            <div id="activeSequenceControl">No active sequence</div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test Results</h2>
+            <div id="testResults"></div>
+        </div>
+    </div>
+
+    <!-- Load the action sequence system -->
+    <script src="Game/Mechanics/action-sequence-controller.js"></script>
+    <script src="Game/Mechanics/character-action-sequences.js"></script>
+    <script src="Game/Mechanics/action-sequence-integration.js"></script>
+
+    <script>
+        let currentCharacter = 'maya';
+        let activeSequenceId = null;
+        let actionSequenceIntegration = null;
+
+        // Initialize the system
+        async function initializeSystem() {
+            try {
+                actionSequenceIntegration = new ActionSequenceIntegration();
+                const initialized = await actionSequenceIntegration.initialize();
+                
+                if (initialized) {
+                    updateSystemStatus('✅ System initialized successfully', 'success');
+                    runInitialTests();
+                } else {
+                    updateSystemStatus('❌ System initialization failed', 'error');
+                }
+            } catch (error) {
+                updateSystemStatus(`❌ Initialization error: ${error.message}`, 'error');
+            }
+        }
+
+        function updateSystemStatus(message, type = 'info') {
+            const statusElement = document.getElementById('systemStatus');
+            statusElement.innerHTML = `<span class="status-${type}">${message}</span>`;
+        }
+
+        function switchCharacter(character) {
+            // Update tabs
+            document.querySelectorAll('.character-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update panels
+            document.querySelectorAll('.sequence-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(`${character}-panel`).classList.add('active');
+
+            currentCharacter = character;
+        }
+
+        async function startSequence(character, sequenceType) {
+            if (!actionSequenceIntegration) {
+                showError('System not initialized');
+                return;
+            }
+
+            try {
+                const sequence = actionSequenceIntegration.startActionSequence(character, 2, {
+                    threatType: sequenceType === 'romance_intervention' ? 'romance_scam' :
+                               sequenceType === 'account_security' ? 'account_takeover' :
+                               'identity_theft'
+                });
+
+                if (sequence) {
+                    activeSequenceId = sequence.sequenceId;
+                    updateSequenceDisplay(character, sequence);
+                    updateActiveSequenceControl(sequence);
+                    showSuccess(`Started ${sequenceType} sequence for ${character}`);
+                } else {
+                    showError(`Failed to start sequence for ${character}`);
+                }
+            } catch (error) {
+                showError(`Error starting sequence: ${error.message}`);
+            }
+        }
+
+        function updateSequenceDisplay(character, sequence) {
+            const statusElement = document.getElementById(`${character}-status`);
+            
+            statusElement.innerHTML = `
+                <div class="phase-display">
+                    <h4>Active Sequence: ${sequence.sequenceId}</h4>
+                    <p><strong>Current Phase:</strong> ${sequence.currentPhase.name} (${sequence.currentPhase.phaseNumber}/${sequence.currentPhase.totalPhases})</p>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(sequence.currentPhase.phaseNumber / sequence.currentPhase.totalPhases) * 100}%"></div>
+                    </div>
+                    
+                    <h5>Available Tools:</h5>
+                    <div class="tools-list">
+                        ${sequence.availableTools.map(tool => `
+                            <div class="tool-card" onclick="useTool('${tool.id}', '${sequence.sequenceId}')">
+                                <h4>${tool.name}</h4>
+                                <p>${tool.description}</p>
+                                <small>Character: ${tool.character}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <h5>Objectives:</h5>
+                    <ul>
+                        ${sequence.objectives.map(obj => `<li>${obj}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        function updateActiveSequenceControl(sequence) {
+            const controlElement = document.getElementById('activeSequenceControl');
+            
+            controlElement.innerHTML = `
+                <div>
+                    <h4>Active Sequence: ${sequence.sequenceId}</h4>
+                    <p>Phase: ${sequence.currentPhase.name}</p>
+                    <div class="sequence-controls">
+                        <button class="btn btn-secondary" onclick="getSequenceStatus('${sequence.sequenceId}')">
+                            Get Status
+                        </button>
+                        <button class="btn btn-danger" onclick="cancelSequence('${sequence.sequenceId}')">
+                            Cancel Sequence
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function useTool(toolId, sequenceId) {
+            if (!actionSequenceIntegration) {
+                showError('System not initialized');
+                return;
+            }
+
+            try {
+                const action = {
+                    toolId: toolId,
+                    type: 'tool_usage',
+                    objective: 'test_objective',
+                    context: { userTriggered: true }
+                };
+
+                const result = actionSequenceIntegration.processSequenceAction(sequenceId, action);
+                
+                if (result.success) {
+                    showSuccess(`Tool ${toolId} used successfully! Effectiveness: ${(result.effectiveness * 100).toFixed(1)}%`);
+                    
+                    if (result.feedback) {
+                        showFeedback(result.feedback);
+                    }
+
+                    // Update display if phase changed
+                    if (result.newPhase) {
+                        const sequence = actionSequenceIntegration.getSequenceStatus(sequenceId);
+                        if (sequence) {
+                            updateSequenceDisplay(currentCharacter, {
+                                sequenceId: sequenceId,
+                                currentPhase: result.newPhase,
+                                availableTools: result.availableTools || [],
+                                objectives: result.objectives || []
+                            });
+                        }
+                    }
+
+                    // Check if sequence completed
+                    if (result.sequenceComplete) {
+                        showSequenceComplete(result);
+                        activeSequenceId = null;
+                        document.getElementById('activeSequenceControl').innerHTML = 'No active sequence';
+                    }
+                } else {
+                    showError(`Tool usage failed: ${result.feedback || 'Unknown error'}`);
+                }
+            } catch (error) {
+                showError(`Error using tool: ${error.message}`);
+            }
+        }
+
+        function getSequenceStatus(sequenceId) {
+            if (!actionSequenceIntegration) {
+                showError('System not initialized');
+                return;
+            }
+
+            const status = actionSequenceIntegration.getSequenceStatus(sequenceId);
+            if (status) {
+                showInfo(`Sequence Status: ${JSON.stringify(status, null, 2)}`);
+            } else {
+                showError('Sequence not found');
+            }
+        }
+
+        function cancelSequence(sequenceId) {
+            if (!actionSequenceIntegration) {
+                showError('System not initialized');
+                return;
+            }
+
+            const cancelled = actionSequenceIntegration.cancelSequence(sequenceId);
+            if (cancelled) {
+                showSuccess('Sequence cancelled successfully');
+                activeSequenceId = null;
+                document.getElementById('activeSequenceControl').innerHTML = 'No active sequence';
+                document.getElementById(`${currentCharacter}-status`).innerHTML = '';
+            } else {
+                showError('Failed to cancel sequence');
+            }
+        }
+
+        function getAvailableSequences(character) {
+            if (!actionSequenceIntegration) {
+                showError('System not initialized');
+                return;
+            }
+
+            const sequences = actionSequenceIntegration.getAvailableActionSequences(character, 2);
+            showInfo(`Available sequences for ${character}: ${JSON.stringify(sequences, null, 2)}`);
+        }
+
+        function showSuccess(message) {
+            showMessage(message, 'feedback-panel');
+        }
+
+        function showError(message) {
+            showMessage(message, 'error-panel');
+        }
+
+        function showInfo(message) {
+            showMessage(message, 'feedback-panel');
+        }
+
+        function showFeedback(message) {
+            showMessage(`Educational Feedback: ${message}`, 'feedback-panel');
+        }
+
+        function showSequenceComplete(result) {
+            const message = `
+                <h4>Sequence Complete!</h4>
+                <p><strong>Performance:</strong></p>
+                <ul>
+                    <li>Speed: ${(result.performance.speed * 100).toFixed(1)}%</li>
+                    <li>Accuracy: ${(result.performance.accuracy * 100).toFixed(1)}%</li>
+                    <li>Completeness: ${(result.performance.completeness * 100).toFixed(1)}%</li>
+                    <li>Overall: ${(result.performance.overall * 100).toFixed(1)}%</li>
+                </ul>
+                <p><strong>Duration:</strong> ${(result.duration / 1000).toFixed(1)} seconds</p>
+                <p><strong>Feedback:</strong> ${result.feedback.title}</p>
+                <p>${result.feedback.content}</p>
+                ${result.achievements && result.achievements.length > 0 ? 
+                    `<p><strong>Achievements:</strong></p><ul>${result.achievements.map(a => `<li>${a}</li>`).join('')}</ul>` : 
+                    ''
+                }
+            `;
+            showMessage(message, 'feedback-panel');
+        }
+
+        function showMessage(message, className) {
+            const resultsElement = document.getElementById('testResults');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = className;
+            messageDiv.innerHTML = `<p><strong>${new Date().toLocaleTimeString()}:</strong> ${message}</p>`;
+            resultsElement.appendChild(messageDiv);
+            resultsElement.scrollTop = resultsElement.scrollHeight;
+        }
+
+        function runInitialTests() {
+            showSuccess('Running initial system tests...');
+            
+            // Test character domain retrieval
+            ['maya', 'eli', 'stanley'].forEach(character => {
+                const expertise = actionSequenceIntegration.getCharacterExpertise(character);
+                if (expertise) {
+                    showSuccess(`✅ ${character} expertise loaded: ${expertise.primaryDomain}`);
+                } else {
+                    showError(`❌ Failed to load ${character} expertise`);
+                }
+            });
+
+            // Test sequence availability
+            ['maya', 'eli', 'stanley'].forEach(character => {
+                const hasSequences = actionSequenceIntegration.hasActionSequences(character, 2);
+                if (hasSequences) {
+                    showSuccess(`✅ ${character} has action sequences available`);
+                } else {
+                    showError(`❌ ${character} has no action sequences available`);
+                }
+            });
+
+            showSuccess('Initial tests completed');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeSystem);
+    </script>
+</body>
+</html>

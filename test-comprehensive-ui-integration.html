@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive UI Integration Test - Data_Bleed</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .test-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .test-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .test-button {
+            padding: 10px 20px;
+            background: #00FFFF;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .test-button:hover {
+            background: #00CCCC;
+            transform: translateY(-2px);
+        }
+
+        .test-button.active {
+            background: #FF1493;
+            color: white;
+        }
+
+        .status-display {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .demo-elements {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .demo-element {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .demo-element:hover {
+            transform: scale(1.05);
+        }
+
+        /* Gaming UI Elements for Testing */
+        .test-pause-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 10px 20px;
+            background: #00FFFF;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .test-continue-button {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #ff1493 0%, #00bfff 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .test-chroma-orb {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #00FFFF, #0088CC);
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .test-chat-box {
+            position: fixed;
+            bottom: 120px;
+            right: 20px;
+            width: 280px;
+            height: 300px;
+            background: rgba(20, 20, 20, 0.9);
+            border: 2px solid #00FFFF;
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 2001;
+            display: none;
+        }
+
+        .test-character-hud {
+            position: fixed;
+            top: 20px;
+            left: 200px;
+            width: 250px;
+            padding: 15px;
+            background: rgba(20, 20, 20, 0.8);
+            border: 2px solid #00FFFF;
+            border-radius: 12px;
+            z-index: 1700;
+        }
+
+        .accessibility-controls {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 3000;
+        }
+
+        .accessibility-controls label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .accessibility-controls input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .test-controls {
+                flex-direction: column;
+            }
+            
+            .demo-elements {
+                grid-template-columns: 1fr;
+            }
+            
+            .accessibility-controls {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Test Gaming UI Elements -->
+    <button class="test-pause-button" id="test-pause-btn">⏸ Pause</button>
+    <button class="test-continue-button" id="test-continue-btn">Continue</button>
+    <div class="test-chroma-orb" id="test-chroma-orb">🤖</div>
+    <div class="test-chat-box" id="test-chat-box">
+        <h4>Chroma Bot</h4>
+        <p>This is a test chat interface.</p>
+    </div>
+    <div class="test-character-hud" id="test-character-hud">
+        <h4>Character HUD</h4>
+        <p>Status: Testing</p>
+        <p>Mode: Guardian</p>
+    </div>
+
+    <!-- Accessibility Controls -->
+    <div class="accessibility-controls">
+        <h4>Accessibility</h4>
+        <label>
+            <input type="checkbox" id="high-contrast"> High Contrast
+        </label>
+        <label>
+            <input type="checkbox" id="reduced-motion"> Reduced Motion
+        </label>
+        <label>
+            <input type="checkbox" id="large-text"> Large Text
+        </label>
+        <label>
+            <input type="checkbox" id="keyboard-nav"> Keyboard Navigation
+        </label>
+    </div>
+
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Comprehensive UI Integration Test</h1>
+            <p>Testing Data_Bleed aesthetic integration and responsive gaming interface</p>
+        </div>
+
+        <!-- Character Theme Testing -->
+        <div class="test-section">
+            <h2>Character Theme Testing</h2>
+            <div class="test-controls">
+                <button class="test-button" onclick="testCharacterTheme('maya')">Maya Theme</button>
+                <button class="test-button" onclick="testCharacterTheme('eli')">Eli Theme</button>
+                <button class="test-button" onclick="testCharacterTheme('stanley')">Stanley Theme</button>
+            </div>
+            <div class="status-display" id="theme-status">Click a character button to test themes...</div>
+        </div>
+
+        <!-- Mode Testing -->
+        <div class="test-section">
+            <h2>Mode Testing</h2>
+            <div class="test-controls">
+                <button class="test-button" onclick="testMode('guardian')">Guardian Mode</button>
+                <button class="test-button" onclick="testMode('shadowObserver')">Shadow Observer Mode</button>
+            </div>
+            <div class="status-display" id="mode-status">Click a mode button to test modes...</div>
+        </div>
+
+        <!-- 3D Mode Testing -->
+        <div class="test-section">
+            <h2>3D Mode Testing</h2>
+            <div class="test-controls">
+                <button class="test-button" onclick="test3DMode(true)">Activate 3D Mode</button>
+                <button class="test-button" onclick="test3DMode(false)">Deactivate 3D Mode</button>
+            </div>
+            <div class="status-display" id="3d-status">Click a 3D mode button to test...</div>
+        </div>
+
+        <!-- Responsive Testing -->
+        <div class="test-section">
+            <h2>Responsive Testing</h2>
+            <div class="test-controls">
+                <button class="test-button" onclick="testResponsive('mobile')">Simulate Mobile</button>
+                <button class="test-button" onclick="testResponsive('tablet')">Simulate Tablet</button>
+                <button class="test-button" onclick="testResponsive('desktop')">Simulate Desktop</button>
+                <button class="test-button" onclick="testResponsive('reset')">Reset</button>
+            </div>
+            <div class="status-display" id="responsive-status">Click a responsive button to test...</div>
+        </div>
+
+        <!-- Glassmorphism Testing -->
+        <div class="test-section">
+            <h2>Glassmorphism Testing</h2>
+            <div class="test-controls">
+                <button class="test-button" onclick="testGlassmorphism('light')">Light Glass</button>
+                <button class="test-button" onclick="testGlassmorphism('medium')">Medium Glass</button>
+                <button class="test-button" onclick="testGlassmorphism('heavy')">Heavy Glass</button>
+            </div>
+            <div class="demo-elements">
+                <div class="demo-element" id="glass-demo-1">Glass Demo 1</div>
+                <div class="demo-element" id="glass-demo-2">Glass Demo 2</div>
+                <div class="demo-element" id="glass-demo-3">Glass Demo 3</div>
+            </div>
+            <div class="status-display" id="glass-status">Click a glassmorphism button to test...</div>
+        </div>
+
+        <!-- System Status -->
+        <div class="test-section">
+            <h2>System Status</h2>
+            <div class="test-controls">
+                <button class="test-button" onclick="refreshStatus()">Refresh Status</button>
+                <button class="test-button" onclick="testAllSystems()">Test All Systems</button>
+            </div>
+            <div class="status-display" id="system-status">Loading system status...</div>
+        </div>
+    </div>
+
+    <!-- Load UI Integration Systems -->
+    <script src="./Game/Mechanics/ui-aesthetic-integration.js"></script>
+    <script src="./Game/Mechanics/responsive-gaming-interface.js"></script>
+    <script src="./js/ui-3d-integration.js"></script>
+    <script src="./Game/Mechanics/comprehensive-ui-integration.js"></script>
+
+    <script>
+        // Test variables
+        let comprehensiveUI = null;
+        let currentCharacter = 'maya';
+        let currentMode = 'guardian';
+
+        // Initialize test environment
+        async function initializeTest() {
+            try {
+                console.log('🧪 Initializing test environment...');
+                
+                // Wait for systems to load
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Get comprehensive UI integration instance
+                if (window.comprehensiveUIIntegration) {
+                    comprehensiveUI = window.comprehensiveUIIntegration;
+                } else if (window.ComprehensiveUIIntegration) {
+                    comprehensiveUI = new window.ComprehensiveUIIntegration();
+                    await comprehensiveUI.initialize();
+                }
+                
+                if (comprehensiveUI) {
+                    console.log('✅ Comprehensive UI Integration loaded');
+                    updateStatus('system-status', 'Comprehensive UI Integration initialized successfully');
+                } else {
+                    console.error('❌ Failed to load Comprehensive UI Integration');
+                    updateStatus('system-status', 'ERROR: Failed to load Comprehensive UI Integration');
+                }
+                
+                // Set up test event listeners
+                setupTestEventListeners();
+                
+                // Apply initial character theme
+                await testCharacterTheme('maya');
+                
+                // Refresh status
+                refreshStatus();
+                
+            } catch (error) {
+                console.error('❌ Test initialization failed:', error);
+                updateStatus('system-status', `ERROR: ${error.message}`);
+            }
+        }
+
+        // Set up test event listeners
+        function setupTestEventListeners() {
+            // Chroma orb click
+            document.getElementById('test-chroma-orb').addEventListener('click', () => {
+                const chatBox = document.getElementById('test-chat-box');
+                chatBox.style.display = chatBox.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            // Accessibility controls
+            document.getElementById('high-contrast').addEventListener('change', (e) => {
+                if (comprehensiveUI && comprehensiveUI.responsiveInterface) {
+                    comprehensiveUI.responsiveInterface.setAccessibilityFeature('highContrast', e.target.checked);
+                }
+            });
+            
+            document.getElementById('reduced-motion').addEventListener('change', (e) => {
+                if (comprehensiveUI && comprehensiveUI.responsiveInterface) {
+                    comprehensiveUI.responsiveInterface.setAccessibilityFeature('reducedMotion', e.target.checked);
+                }
+            });
+            
+            document.getElementById('large-text').addEventListener('change', (e) => {
+                if (comprehensiveUI && comprehensiveUI.responsiveInterface) {
+                    comprehensiveUI.responsiveInterface.setAccessibilityFeature('largeText', e.target.checked);
+                }
+            });
+            
+            document.getElementById('keyboard-nav').addEventListener('change', (e) => {
+                if (comprehensiveUI && comprehensiveUI.responsiveInterface) {
+                    comprehensiveUI.responsiveInterface.setAccessibilityFeature('keyboardNavigation', e.target.checked);
+                }
+            });
+        }
+
+        // Test character theme
+        async function testCharacterTheme(character) {
+            try {
+                currentCharacter = character;
+                
+                if (comprehensiveUI) {
+                    await comprehensiveUI.setCharacter(character);
+                    updateStatus('theme-status', `Applied ${character} theme successfully`);
+                } else {
+                    updateStatus('theme-status', 'ERROR: Comprehensive UI not available');
+                }
+                
+                // Update active button
+                document.querySelectorAll('.test-section:first-of-type .test-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+            } catch (error) {
+                updateStatus('theme-status', `ERROR: ${error.message}`);
+            }
+        }
+
+        // Test mode
+        async function testMode(mode) {
+            try {
+                currentMode = mode;
+                
+                if (comprehensiveUI) {
+                    await comprehensiveUI.setMode(mode);
+                    updateStatus('mode-status', `Applied ${mode} mode successfully`);
+                } else {
+                    updateStatus('mode-status', 'ERROR: Comprehensive UI not available');
+                }
+                
+                // Update active button
+                document.querySelectorAll('.test-section:nth-of-type(2) .test-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+            } catch (error) {
+                updateStatus('mode-status', `ERROR: ${error.message}`);
+            }
+        }
+
+        // Test 3D mode
+        async function test3DMode(activate) {
+            try {
+                if (comprehensiveUI) {
+                    if (activate) {
+                        await comprehensiveUI.activate3DMode(currentCharacter);
+                        updateStatus('3d-status', '3D mode activated successfully');
+                    } else {
+                        await comprehensiveUI.deactivate3DMode();
+                        updateStatus('3d-status', '3D mode deactivated successfully');
+                    }
+                } else {
+                    updateStatus('3d-status', 'ERROR: Comprehensive UI not available');
+                }
+                
+            } catch (error) {
+                updateStatus('3d-status', `ERROR: ${error.message}`);
+            }
+        }
+
+        // Test responsive behavior
+        function testResponsive(type) {
+            try {
+                const container = document.querySelector('.test-container');
+                
+                switch (type) {
+                    case 'mobile':
+                        container.style.maxWidth = '480px';
+                        document.body.classList.add('mobile-device');
+                        document.body.classList.remove('tablet-device', 'desktop-device');
+                        updateStatus('responsive-status', 'Simulating mobile device (480px)');
+                        break;
+                    case 'tablet':
+                        container.style.maxWidth = '768px';
+                        document.body.classList.add('tablet-device');
+                        document.body.classList.remove('mobile-device', 'desktop-device');
+                        updateStatus('responsive-status', 'Simulating tablet device (768px)');
+                        break;
+                    case 'desktop':
+                        container.style.maxWidth = '1200px';
+                        document.body.classList.add('desktop-device');
+                        document.body.classList.remove('mobile-device', 'tablet-device');
+                        updateStatus('responsive-status', 'Simulating desktop device (1200px)');
+                        break;
+                    case 'reset':
+                        container.style.maxWidth = '1200px';
+                        document.body.classList.remove('mobile-device', 'tablet-device', 'desktop-device');
+                        updateStatus('responsive-status', 'Reset to default responsive behavior');
+                        break;
+                }
+                
+                // Trigger resize event
+                window.dispatchEvent(new Event('resize'));
+                
+            } catch (error) {
+                updateStatus('responsive-status', `ERROR: ${error.message}`);
+            }
+        }
+
+        // Test glassmorphism
+        function testGlassmorphism(intensity) {
+            try {
+                const demoElements = document.querySelectorAll('.demo-element');
+                
+                if (comprehensiveUI && comprehensiveUI.aestheticIntegration) {
+                    demoElements.forEach(element => {
+                        comprehensiveUI.aestheticIntegration.applyGlassmorphism(element, intensity);
+                    });
+                    updateStatus('glass-status', `Applied ${intensity} glassmorphism to demo elements`);
+                } else {
+                    // Fallback CSS classes
+                    demoElements.forEach(element => {
+                        element.classList.remove('glass-light', 'glass-medium', 'glass-heavy');
+                        element.classList.add(`glass-${intensity}`);
+                    });
+                    updateStatus('glass-status', `Applied ${intensity} glassmorphism (fallback CSS)`);
+                }
+                
+            } catch (error) {
+                updateStatus('glass-status', `ERROR: ${error.message}`);
+            }
+        }
+
+        // Refresh system status
+        function refreshStatus() {
+            try {
+                let status = 'System Status:\n';
+                
+                if (comprehensiveUI) {
+                    const systemStatus = comprehensiveUI.getStatus();
+                    status += `Version: ${systemStatus.version}\n`;
+                    status += `Initialized: ${systemStatus.initialized}\n`;
+                    status += `Current Character: ${systemStatus.currentCharacter || 'None'}\n`;
+                    status += `Current Mode: ${systemStatus.currentMode || 'None'}\n`;
+                    status += `3D Active: ${systemStatus.is3DActive}\n`;
+                    status += `Managed Elements: ${systemStatus.managedElements}\n`;
+                    status += `Components:\n`;
+                    status += `  - Aesthetic: ${systemStatus.components.aesthetic}\n`;
+                    status += `  - Responsive: ${systemStatus.components.responsive}\n`;
+                    status += `  - UI 3D: ${systemStatus.components.ui3D}\n`;
+                } else {
+                    status += 'ERROR: Comprehensive UI Integration not available\n';
+                }
+                
+                // Add device info if available
+                if (comprehensiveUI && comprehensiveUI.responsiveInterface) {
+                    const deviceInfo = comprehensiveUI.responsiveInterface.deviceInfo;
+                    status += `\nDevice Info:\n`;
+                    status += `  - Screen Size: ${deviceInfo.screenSize}\n`;
+                    status += `  - Has Touch: ${deviceInfo.hasTouch}\n`;
+                    status += `  - Orientation: ${deviceInfo.orientation}\n`;
+                    status += `  - Pixel Ratio: ${deviceInfo.pixelRatio}\n`;
+                }
+                
+                updateStatus('system-status', status);
+                
+            } catch (error) {
+                updateStatus('system-status', `ERROR: ${error.message}`);
+            }
+        }
+
+        // Test all systems
+        async function testAllSystems() {
+            try {
+                updateStatus('system-status', 'Testing all systems...\n');
+                
+                // Test character themes
+                for (const character of ['maya', 'eli', 'stanley']) {
+                    await testCharacterTheme(character);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                // Test modes
+                for (const mode of ['guardian', 'shadowObserver']) {
+                    await testMode(mode);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                // Test 3D mode
+                await test3DMode(true);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await test3DMode(false);
+                
+                // Test glassmorphism
+                for (const intensity of ['light', 'medium', 'heavy']) {
+                    testGlassmorphism(intensity);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                updateStatus('system-status', 'All systems tested successfully!');
+                
+            } catch (error) {
+                updateStatus('system-status', `ERROR during system test: ${error.message}`);
+            }
+        }
+
+        // Update status display
+        function updateStatus(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeTest);
+    </script>
+</body>
+</html>

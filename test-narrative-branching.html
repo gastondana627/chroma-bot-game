@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Narrative Branching System Test</title>
+    <style>
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid #00FFFF;
+        }
+        
+        .test-section {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #00FFFF;
+            border: none;
+            color: black;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #00CCCC;
+            transform: translateY(-2px);
+        }
+        
+        button.secondary {
+            background: #666;
+            color: white;
+        }
+        
+        button.secondary:hover {
+            background: #888;
+        }
+        
+        .status-display {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00FFFF;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .character-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .character-btn {
+            background: #333;
+            color: white;
+            border: 1px solid #666;
+        }
+        
+        .character-btn.active {
+            background: #00FFFF;
+            color: black;
+            border-color: #00FFFF;
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .mode-btn {
+            background: #333;
+            color: white;
+            border: 1px solid #666;
+        }
+        
+        .mode-btn.active {
+            background: #FF0080;
+            color: white;
+            border-color: #FF0080;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid #00FFFF;
+            background: rgba(0, 255, 255, 0.05);
+        }
+        
+        .log-entry.error {
+            border-left-color: #FF0000;
+            background: rgba(255, 0, 0, 0.05);
+        }
+        
+        .log-entry.success {
+            border-left-color: #00FF00;
+            background: rgba(0, 255, 0, 0.05);
+        }
+        
+        .branch-visualization {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #FFD700;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .progress-bar {
+            background: #333;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #00FFFF, #00FF00);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body data-character="eli">
+    <div class="container">
+        <div class="header">
+            <h1>📖 Narrative Branching System Test</h1>
+            <p>Test the dynamic narrative branching system with story progression integration</p>
+        </div>
+
+        <!-- Character Selection -->
+        <div class="test-section">
+            <h3>Character Selection</h3>
+            <div class="character-selector">
+                <button class="character-btn active" data-character="eli">Eli (Gaming)</button>
+                <button class="character-btn" data-character="maya">Maya (Dating)</button>
+                <button class="character-btn" data-character="stanley">Stanley (Elder)</button>
+            </div>
+        </div>
+
+        <!-- Mode Selection -->
+        <div class="test-section">
+            <h3>Mode Selection</h3>
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="guardian">Guardian Mode</button>
+                <button class="mode-btn" data-mode="shadow_observer">Shadow Observer Mode</button>
+            </div>
+        </div>
+
+        <!-- Narrative Branching Controls -->
+        <div class="test-section">
+            <h3>Narrative Branching Controls</h3>
+            <div class="test-controls">
+                <button onclick="initializeSystems()">Initialize Systems</button>
+                <button onclick="simulateDecision()">Simulate Decision</button>
+                <button onclick="triggerStoryProgression()">Trigger Story Event</button>
+                <button onclick="completeBranch()">Complete Branch</button>
+                <button onclick="generateSummary()">Generate Summary</button>
+                <button class="secondary" onclick="resetBranch()">Reset Branch</button>
+            </div>
+        </div>
+
+        <!-- Integration Testing -->
+        <div class="test-section">
+            <h3>Integration Testing</h3>
+            <div class="test-controls">
+                <button onclick="testStoryIntegration()">Test Story Integration</button>
+                <button onclick="testReplaySystem()">Test Replay System</button>
+                <button onclick="testCinematicIntegration()">Test Cinematic Integration</button>
+                <button onclick="testModeSwitch()">Test Mode Switch</button>
+            </div>
+        </div>
+
+        <!-- Current Branch Status -->
+        <div class="test-section">
+            <h3>Current Branch Status</h3>
+            <div id="branchStatus" class="branch-visualization">
+                <p>No active branch</p>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="test-section">
+            <h3>System Status</h3>
+            <div id="systemStatus" class="status-display">
+                <div class="log-entry">System not initialized</div>
+            </div>
+        </div>
+
+        <!-- Test Log -->
+        <div class="test-section">
+            <h3>Test Log</h3>
+            <div id="testLog" class="status-display">
+                <div class="log-entry">Ready to start testing...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Dependencies -->
+    <script src="Game/Mechanics/story-progression-tracker.js"></script>
+    <script src="Game/Mechanics/cinematic-moments-config.js"></script>
+    <script src="Game/Mechanics/decision-system-manager.js"></script>
+    <script src="Game/Mechanics/narrative-branching-system.js"></script>
+    <script src="Game/Mechanics/narrative-story-integration.js"></script>
+
+    <script>
+        // Test state
+        let currentCharacter = 'eli';
+        let currentMode = 'guardian';
+        let narrativeBranching = null;
+        let storyIntegration = null;
+        let testCounter = 0;
+
+        // Initialize test environment
+        function initializeTestEnvironment() {
+            log('Initializing test environment...', 'info');
+            
+            // Set up character selection
+            document.querySelectorAll('.character-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.character-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCharacter = btn.dataset.character;
+                    document.body.dataset.character = currentCharacter;
+                    log(`Selected character: ${currentCharacter}`, 'success');
+                    updateBranchStatus();
+                });
+            });
+
+            // Set up mode selection
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentMode = btn.dataset.mode;
+                    log(`Selected mode: ${currentMode}`, 'success');
+                    
+                    // Trigger mode change event
+                    if (storyIntegration) {
+                        window.dispatchEvent(new CustomEvent('modeSelected', {
+                            detail: {
+                                character: currentCharacter,
+                                newMode: currentMode,
+                                previousMode: currentMode === 'guardian' ? 'shadow_observer' : 'guardian'
+                            }
+                        }));
+                    }
+                    updateBranchStatus();
+                });
+            });
+
+            log('Test environment initialized', 'success');
+        }
+
+        // Initialize systems
+        function initializeSystems() {
+            log('Initializing narrative branching systems...', 'info');
+            
+            try {
+                // Wait for dependencies
+                if (!window.StoryProgressionTracker || !window.DecisionSystemManager || !window.NarrativeBranchingSystem) {
+                    log('Dependencies not loaded yet, retrying...', 'error');
+                    setTimeout(initializeSystems, 1000);
+                    return;
+                }
+
+                // Initialize story tracker
+                if (!window.storyTracker) {
+                    window.storyTracker = new window.StoryProgressionTracker();
+                }
+
+                // Initialize decision system
+                const decisionSystem = new window.DecisionSystemManager(window.storyTracker, window.cinematicManager);
+
+                // Initialize narrative branching
+                narrativeBranching = new window.NarrativeBranchingSystem(window.storyTracker, decisionSystem);
+
+                // Initialize story integration
+                storyIntegration = new window.NarrativeStoryIntegration(
+                    window.storyTracker,
+                    narrativeBranching,
+                    window.cinematicManager
+                );
+
+                log('All systems initialized successfully!', 'success');
+                updateSystemStatus();
+                updateBranchStatus();
+
+            } catch (error) {
+                log(`Error initializing systems: ${error.message}`, 'error');
+                console.error('Initialization error:', error);
+            }
+        }
+
+        // Simulate a decision
+        function simulateDecision() {
+            if (!narrativeBranching) {
+                log('Systems not initialized', 'error');
+                return;
+            }
+
+            testCounter++;
+            const decisions = [
+                {
+                    id: `test_decision_${testCounter}`,
+                    mechanicType: 'investigation',
+                    consequences: { investigation_progress: 1, awareness: 1 }
+                },
+                {
+                    id: `test_decision_${testCounter}`,
+                    mechanicType: 'realtime',
+                    consequences: { response_speed: 1, threat_mitigation: 1 }
+                },
+                {
+                    id: `test_decision_${testCounter}`,
+                    mechanicType: 'puzzle',
+                    consequences: { social_awareness: 1, manipulation_resistance: 1 }
+                }
+            ];
+
+            const randomDecision = decisions[Math.floor(Math.random() * decisions.length)];
+            
+            log(`Simulating decision: ${randomDecision.id} (${randomDecision.mechanicType})`, 'info');
+            
+            const branch = narrativeBranching.trackBranch(currentCharacter, currentMode, randomDecision, {
+                area: Math.floor(Math.random() * 6) + 1,
+                timestamp: Date.now()
+            });
+
+            log(`Decision tracked in branch: ${branch.id}`, 'success');
+            updateBranchStatus();
+        }
+
+        // Trigger story progression
+        function triggerStoryProgression() {
+            if (!storyIntegration) {
+                log('Integration system not initialized', 'error');
+                return;
+            }
+
+            const area = Math.floor(Math.random() * 6) + 1;
+            const triggers = [
+                { id: 'tournament_victory', stateConditions: { tournament_wins: 1 } },
+                { id: 'investigation_breakthrough', stateConditions: { investigation_clues: 3 } },
+                { id: 'scam_prevention', stateConditions: { scams_prevented: 2 } }
+            ];
+
+            const randomTrigger = triggers[Math.floor(Math.random() * triggers.length)];
+            
+            log(`Triggering story progression: ${randomTrigger.id} in area ${area}`, 'info');
+
+            // Simulate story progression event
+            window.dispatchEvent(new CustomEvent('storyTriggerFired', {
+                detail: {
+                    character: currentCharacter,
+                    areaNumber: area,
+                    trigger: randomTrigger
+                }
+            }));
+
+            log('Story progression triggered', 'success');
+            updateBranchStatus();
+        }
+
+        // Complete current branch
+        function completeBranch() {
+            if (!narrativeBranching) {
+                log('Systems not initialized', 'error');
+                return;
+            }
+
+            const currentBranch = narrativeBranching.getCurrentBranch(currentCharacter, currentMode);
+            if (!currentBranch) {
+                log('No active branch to complete', 'error');
+                return;
+            }
+
+            log(`Completing branch: ${currentBranch.id}`, 'info');
+            
+            // Add enough decisions to complete the branch
+            while (currentBranch.decisions.length < 3) {
+                const decision = {
+                    id: `completion_decision_${currentBranch.decisions.length + 1}`,
+                    mechanicType: ['investigation', 'realtime', 'puzzle'][currentBranch.decisions.length],
+                    consequences: { completion_progress: 1 }
+                };
+                
+                narrativeBranching.trackBranch(currentCharacter, currentMode, decision, {
+                    area: currentBranch.template?.area || 1
+                });
+            }
+
+            // Add educational goals
+            currentBranch.educationalProgress.goalsAchieved.push('test_goal_1', 'test_goal_2');
+            
+            // Force completion
+            narrativeBranching.completeBranch(currentBranch);
+            
+            log('Branch completed successfully', 'success');
+            updateBranchStatus();
+        }
+
+        // Generate educational summary
+        function generateSummary() {
+            if (!narrativeBranching) {
+                log('Systems not initialized', 'error');
+                return;
+            }
+
+            const currentBranch = narrativeBranching.getCurrentBranch(currentCharacter, currentMode);
+            if (!currentBranch) {
+                log('No active branch for summary', 'error');
+                return;
+            }
+
+            log('Generating educational summary...', 'info');
+            
+            const summary = narrativeBranching.generateEducationalSummary(currentBranch);
+            
+            log(`Summary generated: ${summary.id}`, 'success');
+            log(`Path taken: ${summary.pathName}`, 'info');
+            log(`Competency level: ${summary.educationalOutcomes.competencyLevel}`, 'info');
+            log(`Recommendations: ${summary.recommendations.length}`, 'info');
+            
+            updateBranchStatus();
+        }
+
+        // Reset current branch
+        function resetBranch() {
+            if (!narrativeBranching) {
+                log('Systems not initialized', 'error');
+                return;
+            }
+
+            log(`Resetting branch for ${currentCharacter} in ${currentMode} mode`, 'info');
+            narrativeBranching.resetBranch(currentCharacter, currentMode);
+            
+            if (storyIntegration) {
+                storyIntegration.resetIntegration(currentCharacter);
+            }
+            
+            log('Branch reset successfully', 'success');
+            updateBranchStatus();
+        }
+
+        // Test story integration
+        function testStoryIntegration() {
+            if (!storyIntegration) {
+                log('Integration system not initialized', 'error');
+                return;
+            }
+
+            log('Testing story integration...', 'info');
+            
+            // Simulate area visit
+            window.dispatchEvent(new CustomEvent('areaVisited', {
+                detail: {
+                    character: currentCharacter,
+                    area: 2,
+                    timestamp: Date.now()
+                }
+            }));
+
+            // Simulate story state update
+            window.dispatchEvent(new CustomEvent('storyStateUpdated', {
+                detail: {
+                    character: currentCharacter,
+                    stateKey: 'test_progress',
+                    newValue: 5
+                }
+            }));
+
+            log('Story integration test completed', 'success');
+            updateSystemStatus();
+        }
+
+        // Test replay system
+        function testReplaySystem() {
+            if (!storyIntegration || !storyIntegration.replaySystem) {
+                log('Replay system not available', 'error');
+                return;
+            }
+
+            log('Testing replay system...', 'info');
+            
+            // Simulate replay request
+            window.dispatchEvent(new CustomEvent('replayRequested', {
+                detail: {
+                    character: currentCharacter,
+                    mode: currentMode === 'guardian' ? 'shadow_observer' : 'guardian',
+                    fromArea: 1
+                }
+            }));
+
+            log('Replay system test completed', 'success');
+        }
+
+        // Test cinematic integration
+        function testCinematicIntegration() {
+            if (!storyIntegration || !storyIntegration.cinematicIntegration) {
+                log('Cinematic integration not available', 'error');
+                return;
+            }
+
+            log('Testing cinematic integration...', 'info');
+            
+            // Simulate cinematic moment
+            window.dispatchEvent(new CustomEvent('cinematicMomentTriggered', {
+                detail: {
+                    character: currentCharacter,
+                    momentId: `${currentCharacter}_test_moment`,
+                    area: 2
+                }
+            }));
+
+            // Simulate character emergence
+            window.dispatchEvent(new CustomEvent('characterEmergenceTriggered', {
+                detail: {
+                    character: currentCharacter,
+                    area: 2,
+                    trigger: 'test_emergence'
+                }
+            }));
+
+            log('Cinematic integration test completed', 'success');
+        }
+
+        // Test mode switch
+        function testModeSwitch() {
+            if (!storyIntegration) {
+                log('Integration system not initialized', 'error');
+                return;
+            }
+
+            const newMode = currentMode === 'guardian' ? 'shadow_observer' : 'guardian';
+            log(`Testing mode switch from ${currentMode} to ${newMode}`, 'info');
+            
+            // Simulate mode switch
+            window.dispatchEvent(new CustomEvent('modeSwitched', {
+                detail: {
+                    character: currentCharacter,
+                    newMode: newMode,
+                    previousMode: currentMode,
+                    context: 'test_switch'
+                }
+            }));
+
+            // Update UI
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === newMode);
+            });
+            currentMode = newMode;
+
+            log(`Mode switched to ${newMode}`, 'success');
+            updateBranchStatus();
+        }
+
+        // Update branch status display
+        function updateBranchStatus() {
+            const statusDiv = document.getElementById('branchStatus');
+            
+            if (!narrativeBranching) {
+                statusDiv.innerHTML = '<p>Systems not initialized</p>';
+                return;
+            }
+
+            const currentBranch = narrativeBranching.getCurrentBranch(currentCharacter, currentMode);
+            
+            if (!currentBranch) {
+                statusDiv.innerHTML = `
+                    <p>No active branch for ${currentCharacter} in ${currentMode} mode</p>
+                    <p>Create a branch by simulating decisions or triggering story events</p>
+                `;
+                return;
+            }
+
+            const pathInfo = currentBranch.template?.branches[currentBranch.currentPath];
+            const progressPercent = Math.min(100, (currentBranch.decisions.length / 5) * 100);
+
+            statusDiv.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <h4 style="color: #00FFFF; margin-bottom: 8px;">
+                        ${currentCharacter.toUpperCase()} - ${currentMode.toUpperCase()} MODE
+                    </h4>
+                    <p style="color: #FFD700; margin-bottom: 5px;">
+                        Branch ID: ${currentBranch.id}
+                    </p>
+                    <p style="color: #CCCCCC; margin-bottom: 10px;">
+                        Status: <span style="color: ${currentBranch.status === 'active' ? '#00FF00' : '#FF0080'};">
+                            ${currentBranch.status.toUpperCase()}
+                        </span>
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <div style="color: #CCCCCC; font-size: 13px; margin-bottom: 5px;">
+                        Current Path: <span style="color: #00FF00;">${pathInfo?.name || 'Determining...'}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progressPercent}%;"></div>
+                    </div>
+                    <div style="color: #888; font-size: 11px; margin-top: 2px;">
+                        Progress: ${currentBranch.decisions.length}/5 decisions
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 12px;">
+                    <div style="text-align: center;">
+                        <div style="color: #00FF00; font-size: 18px; font-weight: bold;">
+                            ${currentBranch.educationalProgress.goalsAchieved.length}
+                        </div>
+                        <div style="color: #CCCCCC;">Goals</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: #FFD700; font-size: 18px; font-weight: bold;">
+                            ${currentBranch.educationalProgress.lessonsLearned.length}
+                        </div>
+                        <div style="color: #CCCCCC;">Lessons</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: #FF00FF; font-size: 18px; font-weight: bold;">
+                            ${currentBranch.decisions.length}
+                        </div>
+                        <div style="color: #CCCCCC;">Decisions</div>
+                    </div>
+                </div>
+
+                ${currentBranch.consequences.length > 0 ? `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
+                        <h5 style="color: #FFD700; margin-bottom: 8px;">Recent Consequences:</h5>
+                        ${currentBranch.consequences.slice(-3).map(c => `
+                            <div style="font-size: 11px; color: #CCCCCC; margin-bottom: 3px;">
+                                ${c.type}: ${c.value > 0 ? '+' : ''}${c.value}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Update system status display
+        function updateSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            
+            const status = {
+                storyTracker: !!window.storyTracker,
+                narrativeBranching: !!narrativeBranching,
+                storyIntegration: !!storyIntegration,
+                cinematicManager: !!window.cinematicManager
+            };
+
+            const integrationStatus = storyIntegration ? storyIntegration.getStatus() : null;
+
+            statusDiv.innerHTML = `
+                <div class="log-entry ${status.storyTracker ? 'success' : 'error'}">
+                    Story Tracker: ${status.storyTracker ? 'Active' : 'Inactive'}
+                </div>
+                <div class="log-entry ${status.narrativeBranching ? 'success' : 'error'}">
+                    Narrative Branching: ${status.narrativeBranching ? 'Active' : 'Inactive'}
+                </div>
+                <div class="log-entry ${status.storyIntegration ? 'success' : 'error'}">
+                    Story Integration: ${status.storyIntegration ? 'Active' : 'Inactive'}
+                </div>
+                <div class="log-entry ${status.cinematicManager ? 'success' : 'error'}">
+                    Cinematic Manager: ${status.cinematicManager ? 'Active' : 'Inactive'}
+                </div>
+                ${integrationStatus ? `
+                    <div class="log-entry">
+                        Integration Events: ${integrationStatus.eventHistory}
+                    </div>
+                    <div class="log-entry">
+                        Current Modes: ${JSON.stringify(integrationStatus.currentModes)}
+                    </div>
+                    <div class="log-entry">
+                        Replay System: ${integrationStatus.replaySystemActive ? 'Active' : 'Inactive'}
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Log function
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            
+            // Keep only last 50 entries
+            while (logDiv.children.length > 50) {
+                logDiv.removeChild(logDiv.firstChild);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTestEnvironment();
+            log('Test page loaded successfully', 'success');
+            log('Click "Initialize Systems" to begin testing', 'info');
+        });
+
+        // Listen for narrative events
+        window.addEventListener('narrativeBranchCompleted', (event) => {
+            log(`Branch completed: ${event.detail.branch.id}`, 'success');
+            updateBranchStatus();
+        });
+
+        window.addEventListener('replayStarted', (event) => {
+            log(`Replay started for ${event.detail.character} in ${event.detail.mode} mode`, 'info');
+        });
+
+        window.addEventListener('enhancedCinematicMoment', (event) => {
+            log(`Enhanced cinematic triggered: ${event.detail.character}`, 'info');
+        });
+    </script>
+</body>
+</html>

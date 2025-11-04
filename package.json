@@ -8,7 +8,13 @@
     "start": "python main.py",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:comprehensive": "node tests/comprehensive-test-runner.js",
+    "test:character": "node tests/comprehensive-test-runner.js --character",
+    "test:mechanic": "node tests/comprehensive-test-runner.js --mechanic",
+    "test:gaming-mechanics": "jest --testPathPattern=gaming-mechanics",
+    "test:scenarios": "jest --testPathPattern=scenario-validation",
+    "test:framework": "jest --testPathPattern=framework"
   },
   "dependencies": {
     "three": "^0.160.0"
