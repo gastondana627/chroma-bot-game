@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA_BLEED - Maya's Home Base (Enhanced)</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 50%, #0a1a2a 100%);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            color: white;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            transition: all 0.5s ease;
+        }
+
+        .area-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(255, 20, 147, 0.15) 0%, transparent 50%), 
+                        radial-gradient(circle at 80% 20%, rgba(0, 191, 255, 0.15) 0%, transparent 50%);
+            transition: all 0.8s ease;
+        }
+
+        /* Trust Score Corruption Effects */
+        .area-container.corrupted-light {
+            background: radial-gradient(circle at 20% 80%, rgba(255, 20, 147, 0.25) 0%, transparent 50%), 
+                        radial-gradient(circle at 80% 20%, rgba(255, 0, 0, 0.2) 0%, transparent 50%);
+        }
+
+        .area-container.corrupted-medium {
+            background: radial-gradient(circle at 20% 80%, rgba(255, 0, 0, 0.4) 0%, transparent 50%), 
+                        radial-gradient(circle at 80% 20%, rgba(139, 0, 0, 0.3) 0%, transparent 50%);
+            animation: subtle-glitch 2s infinite;
+        }
+
+        .area-container.corrupted-heavy {
+            background: radial-gradient(circle at 20% 80%, rgba(139, 0, 0, 0.6) 0%, transparent 50%), 
+                        radial-gradient(circle at 80% 20%, rgba(0, 0, 0, 0.8) 0%, transparent 50%);
+            animation: heavy-glitch 1s infinite;
+        }
+
+        @keyframes subtle-glitch {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(10deg) contrast(1.1); }
+        }
+
+        @keyframes heavy-glitch {
+            0%, 90%, 100% { filter: hue-rotate(0deg); }
+            10% { filter: hue-rotate(90deg) contrast(1.5) brightness(1.2); }
+        }
+
+        /* Interactive Elements */
+        .interactive-element {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .interactive-element:hover {
+            border-color: #ff1493;
+            background: rgba(255, 20, 147, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.5);
+        }
+
+        .interactive-element.clicked {
+            animation: element-activate 0.5s ease;
+        }
+
+        @keyframes element-activate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); background: rgba(255, 20, 147, 0.4); }
+            100% { transform: scale(1); }
+        }
+
+        /* Phone Element */
+        .phone-element {
+            top: 60%;
+            left: 15%;
+            width: 80px;
+            height: 120px;
+        }
+
+        /* Computer Element */
+        .computer-element {
+            top: 40%;
+            right: 20%;
+            width: 120px;
+            height: 80px;
+        }
+
+        /* Family Photo Element */
+        .photo-element {
+            top: 20%;
+            left: 25%;
+            width: 100px;
+            height: 80px;
+        }
+
+        /* Mail Element */
+        .mail-element {
+            bottom: 30%;
+            left: 40%;
+            width: 90px;
+            height: 60px;
+        }
+
+        /* Continue Button */
+        .continue-button {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #ff1493 0%, #00bfff 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 20, 147, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .continue-button.enabled {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .continue-button:hover {
+            transform: translateX(-50%) translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 20, 147, 0.6);
+        }
+
+        /* Trust Score Display */
+        .trust-score-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ff1493;
+            border-radius: 8px;
+            font-weight: bold;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .trust-score-value {
+            font-size: 1.2em;
+            color: #00ff88;
+            transition: color 0.3s ease;
+        }
+
+        .trust-score-value.warning { color: #ffd700; }
+        .trust-score-value.danger { color: #ff4444; }
+        .trust-score-value.critical { color: #ff0000; }
+
+        /* Pause Button */
+        .pause-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 10px 20px;
+            background: #00FFFF;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .pause-button:hover {
+            background: #00CCCC;
+            transform: translateY(-2px);
+        }
+
+        /* Chroma Orb */
+        .chroma-orb {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+            animation: orbPulse 3s ease-in-out infinite;
+        }
+
+        .chroma-orb:hover {
+            transform: scale(1.15);
+        }
+
+        .chroma-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        @keyframes orbPulse {
+            0%, 100% { box-shadow: 0 0 12px rgba(0, 255, 255, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(0, 255, 255, 0.8); }
+        }
+
+        /* Chat Box */
+        .chat-box {
+            position: fixed;
+            bottom: 120px;
+            right: 20px;
+            width: 320px;
+            height: 400px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid #00FFFF;
+            border-radius: 12px;
+            display: none;
+            flex-direction: column;
+            padding: 15px;
+            z-index: 2001;
+        }
+
+        .chat-header {
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            position: relative;
+            color: #00FFFF;
+            font-size: 1.1em;
+        }
+
+        .close-chat {
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 14px;
+            color: white;
+            line-height: 1.4;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .chat-message.bot {
+            background: rgba(0, 255, 255, 0.1);
+            border-left: 3px solid #00FFFF;
+        }
+
+        .chat-message.user {
+            background: rgba(255, 20, 147, 0.1);
+            border-left: 3px solid #ff1493;
+        }
+
+        .chat-form {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #7928CA;
+            background: #333;
+            color: white;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .chat-submit {
+            margin-left: 8px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: #FF0080;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Content Area */
+        .content-layer {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 80px 40px 40px 40px;
+        }
+
+        .area-title {
+            font-size: 3.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ff1493;
+            text-shadow: 0 0 20px rgba(255, 20, 147, 0.5);
+            transition: all 0.5s ease;
+        }
+
+        .area-title.corrupted {
+            color: #ff0000;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            animation: title-glitch 0.5s infinite;
+        }
+
+        @keyframes title-glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            10% { transform: translate(-2px, 2px); }
+            20% { transform: translate(2px, -2px); }
+        }
+
+        .area-description {
+            font-size: 1.3em;
+            max-width: 800px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #ff1493;
+            transition: all 0.5s ease;
+        }
+
+        .area-description.corrupted {
+            border-color: #ff0000;
+            background: rgba(139, 0, 0, 0.3);
+        }
+
+        /* Interaction Popup */
+        .interaction-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ff1493;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            z-index: 3000;
+            display: none;
+        }
+
+        .popup-title {
+            color: #ff1493;
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .popup-content {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .popup-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .choice-button {
+            padding: 12px 20px;
+            background: rgba(255, 20, 147, 0.2);
+            border: 2px solid #ff1493;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .choice-button:hover {
+            background: rgba(255, 20, 147, 0.4);
+            transform: translateX(5px);
+        }
+
+        .choice-button.positive {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .choice-button.positive:hover {
+            background: rgba(0, 255, 136, 0.4);
+        }
+
+        .choice-button.negative {
+            border-color: #ff4444;
+            background: rgba(255, 68, 68, 0.2);
+        }
+
+        .choice-button.negative:hover {
+            background: rgba(255, 68, 68, 0.4);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Progress Indicator */
+        .progress-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ff1493;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 0.9em;
+            z-index: 1000;
+        }
+
+        .progress-text {
+            color: #ff1493;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Trust Score Display -->
+    <div class="trust-score-display">
+        <div>Trust Score</div>
+        <div class="trust-score-value" id="trust-score">50</div>
+    </div>
+
+    <!-- Continue Button -->
+    <button class="continue-button" id="continue-btn" onclick="continueToNext()">
+        Continue to Area 2 →
+    </button>
+
+    <!-- Pause Button -->
+    <button class="pause-button" onclick="pauseGame()">⏸ Pause Game</button>
+
+    <!-- Progress Indicator -->
+    <div class="progress-indicator">
+        <div class="progress-text">Explore Maya's apartment</div>
+        <div id="progress-count">0/4 items explored</div>
+    </div>
+
+    <!-- Area Container -->
+    <div class="area-container fade-in" id="area-container">
+        <div class="content-layer">
+            <h1 class="area-title" id="area-title">🏠 Maya's Home Base</h1>
+            <div class="area-description" id="area-description">
+                Maya just moved to this new city for work. She's feeling isolated and considering online dating to meet people. Explore her apartment to understand her situation.
+            </div>
+            
+            <!-- Interactive Elements -->
+            <div class="interactive-element phone-element" onclick="interactWithPhone()" title="Maya's smartphone - check dating apps">
+                📱<br><small>Phone</small>
+            </div>
+            
+            <div class="interactive-element computer-element" onclick="interactWithComputer()" title="Security monitoring setup">
+                💻<br><small>Computer</small>
+            </div>
+            
+            <div class="interactive-element photo-element" onclick="interactWithPhoto()" title="Family photo from home">
+                🖼️<br><small>Photo</small>
+            </div>
+            
+            <div class="interactive-element mail-element" onclick="interactWithMail()" title="Today's mail">
+                📬<br><small>Mail</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chroma Orb -->
+    <div class="chroma-orb" onclick="toggleChat()">
+        <video class="chroma-video" autoplay loop muted playsinline>
+            <source src="../../chroma-bot/assets/vid/Chroma_Vid.mp4" type="video/mp4">
+            🤖
+        </video>
+    </div>
+
+    <!-- Chat Box -->
+    <div class="chat-box" id="chat-box">
+        <div class="chat-header">
+            💬 Chroma Bot - Security Advisor
+            <button class="close-chat" onclick="toggleChat()">✖</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-message bot">
+                <strong>Chroma:</strong> Welcome to Maya's apartment! I'm here to help you understand cybersecurity through her story. Explore the interactive elements to learn about her situation.
+            </div>
+        </div>
+        <form class="chat-form" onsubmit="sendMessage(event)">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Ask about Maya's situation..." required>
+            <button type="submit" class="chat-submit">Send</button>
+        </form>
+    </div>
+
+    <!-- Interaction Popup -->
+    <div class="interaction-popup" id="interaction-popup">
+        <div class="popup-title" id="popup-title">Interaction</div>
+        <div class="popup-content" id="popup-content">Content goes here</div>
+        <div class="popup-choices" id="popup-choices">
+            <!-- Choices will be dynamically added -->
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            trustScore: 50,
+            exploredItems: new Set(),
+            totalItems: 4,
+            interactions: []
+        };
+
+        // Load advanced gaming mechanics
+        const trustScoreUI = {
+            updateScore: function(newScore, showFeedback = true) {
+                gameState.trustScore = Math.max(-100, Math.min(100, newScore));
+                updateTrustDisplay();
+                updateEnvironmentCorruption();
+                
+                if (showFeedback) {
+                    showTrustFeedback(newScore - gameState.trustScore);
+                }
+            },
+            getCurrentScore: function() {
+                return gameState.trustScore;
+            }
+        };
+
+        function updateTrustDisplay() {
+            const scoreElement = document.getElementById('trust-score');
+            const score = gameState.trustScore;
+            
+            scoreElement.textContent = score;
+            
+            // Update color based on score
+            scoreElement.className = 'trust-score-value';
+            if (score < -30) scoreElement.classList.add('critical');
+            else if (score < 0) scoreElement.classList.add('danger');
+            else if (score < 30) scoreElement.classList.add('warning');
+        }
+
+        function updateEnvironmentCorruption() {
+            const container = document.getElementById('area-container');
+            const title = document.getElementById('area-title');
+            const description = document.getElementById('area-description');
+            const score = gameState.trustScore;
+            
+            // Remove existing corruption classes
+            container.className = 'area-container fade-in';
+            title.className = 'area-title';
+            description.className = 'area-description';
+            
+            // Apply corruption based on trust score
+            if (score < -30) {
+                container.classList.add('corrupted-heavy');
+                title.classList.add('corrupted');
+                description.classList.add('corrupted');
+            } else if (score < 0) {
+                container.classList.add('corrupted-medium');
+            } else if (score < 30) {
+                container.classList.add('corrupted-light');
+            }
+        }
+
+        function showTrustFeedback(delta) {
+            const message = delta > 0 ? 
+                `+${delta} Trust: Good security awareness!` : 
+                `${delta} Trust: That choice increased vulnerability.`;
+            
+            addChatMessage('system', message);
+        }
+
+        function updateProgress() {
+            const progressElement = document.getElementById('progress-count');
+            const continueBtn = document.getElementById('continue-btn');
+            
+            progressElement.textContent = `${gameState.exploredItems.size}/${gameState.totalItems} items explored`;
+            
+            // Enable continue button when all items explored
+            if (gameState.exploredItems.size >= gameState.totalItems) {
+                continueBtn.classList.add('enabled');
+                document.querySelector('.progress-text').textContent = 'Ready to continue!';
+            }
+        }
+
+        // Interactive Element Functions
+        function interactWithPhone() {
+            if (gameState.exploredItems.has('phone')) return;
+            
+            gameState.exploredItems.add('phone');
+            markElementAsExplored('phone-element');
+            
+            showInteractionPopup(
+                "📱 Maya's Smartphone",
+                "Maya has several dating apps installed. She's been browsing profiles but hasn't matched with anyone yet. She's feeling lonely in this new city and hopes to meet someone special.",
+                [
+                    {
+                        text: "Encourage her to be cautious with online dating",
+                        type: "positive",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore + 5);
+                            addChatMessage('bot', 'Good advice! Online dating safety is crucial. Always meet in public places first.');
+                            closePopup();
+                        }
+                    },
+                    {
+                        text: "Suggest she should trust her instincts about people",
+                        type: "positive", 
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore + 3);
+                            addChatMessage('bot', 'Trusting your gut feeling is an important security skill!');
+                            closePopup();
+                        }
+                    },
+                    {
+                        text: "Tell her to share personal details to build connections faster",
+                        type: "negative",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore - 8);
+                            addChatMessage('bot', 'Sharing personal details too quickly can be dangerous in online dating.');
+                            closePopup();
+                        }
+                    }
+                ]
+            );
+            
+            updateProgress();
+        }
+
+        function interactWithComputer() {
+            if (gameState.exploredItems.has('computer')) return;
+            
+            gameState.exploredItems.add('computer');
+            markElementAsExplored('computer-element');
+            
+            showInteractionPopup(
+                "💻 Security Setup",
+                "Maya's computer has basic security software installed. She works in IT, so she knows the importance of cybersecurity, but she sometimes lets her guard down in personal situations.",
+                [
+                    {
+                        text: "Review and update her security settings",
+                        type: "positive",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore + 8);
+                            addChatMessage('bot', 'Excellent! Regular security updates are essential for protection.');
+                            closePopup();
+                        }
+                    },
+                    {
+                        text: "Check for any suspicious activity",
+                        type: "positive",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore + 6);
+                            addChatMessage('bot', 'Monitoring for suspicious activity is a great security habit!');
+                            closePopup();
+                        }
+                    },
+                    {
+                        text: "Skip security checks - she's an IT professional",
+                        type: "negative",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore - 5);
+                            addChatMessage('bot', 'Even IT professionals can be vulnerable when they let their guard down.');
+                            closePopup();
+                        }
+                    }
+                ]
+            );
+            
+            updateProgress();
+        }
+
+        function interactWithPhoto() {
+            if (gameState.exploredItems.has('photo')) return;
+            
+            gameState.exploredItems.add('photo');
+            markElementAsExplored('photo-element');
+            
+            showInteractionPopup(
+                "🖼️ Family Photo",
+                "A photo of Maya with her family back home. She misses them and feels isolated in this new city. This emotional vulnerability could make her more susceptible to manipulation.",
+                [
+                    {
+                        text: "Remind her to stay connected with family for support",
+                        type: "positive",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore + 4);
+                            addChatMessage('bot', 'Family support is crucial for emotional security and good decision-making.');
+                            closePopup();
+                        }
+                    },
+                    {
+                        text: "Acknowledge that loneliness can affect judgment",
+                        type: "positive",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore + 6);
+                            addChatMessage('bot', 'Self-awareness about emotional vulnerabilities is key to staying safe.');
+                            closePopup();
+                        }
+                    },
+                    {
+                        text: "Suggest she should find someone to fill the emotional void quickly",
+                        type: "negative",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore - 7);
+                            addChatMessage('bot', 'Rushing to fill emotional needs can lead to poor security decisions.');
+                            closePopup();
+                        }
+                    }
+                ]
+            );
+            
+            updateProgress();
+        }
+
+        function interactWithMail() {
+            if (gameState.exploredItems.has('mail')) return;
+            
+            gameState.exploredItems.add('mail');
+            markElementAsExplored('mail-element');
+            
+            showInteractionPopup(
+                "📬 Today's Mail",
+                "Bills, advertisements, and a letter from her bank about 'suspicious activity' that requires immediate attention. The letter looks official but something seems off about it.",
+                [
+                    {
+                        text: "Call the bank directly using the official number",
+                        type: "positive",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore + 10);
+                            addChatMessage('bot', 'Perfect! Always verify suspicious communications through official channels.');
+                            closePopup();
+                        }
+                    },
+                    {
+                        text: "Examine the letter carefully for signs of fraud",
+                        type: "positive",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore + 8);
+                            addChatMessage('bot', 'Great instinct! Checking for fraud indicators is essential.');
+                            closePopup();
+                        }
+                    },
+                    {
+                        text: "Call the number provided in the letter immediately",
+                        type: "negative",
+                        action: () => {
+                            trustScoreUI.updateScore(gameState.trustScore - 12);
+                            addChatMessage('bot', 'Dangerous! Scammers often provide fake numbers in fraudulent letters.');
+                            closePopup();
+                        }
+                    }
+                ]
+            );
+            
+            updateProgress();
+        }
+
+        function markElementAsExplored(elementClass) {
+            const element = document.querySelector(`.${elementClass}`);
+            element.style.opacity = '0.6';
+            element.style.border = '2px solid #00ff88';
+            element.style.pointerEvents = 'none';
+        }
+
+        function showInteractionPopup(title, content, choices) {
+            const popup = document.getElementById('interaction-popup');
+            const titleElement = document.getElementById('popup-title');
+            const contentElement = document.getElementById('popup-content');
+            const choicesElement = document.getElementById('popup-choices');
+            
+            titleElement.textContent = title;
+            contentElement.textContent = content;
+            
+            // Clear existing choices
+            choicesElement.innerHTML = '';
+            
+            // Add new choices
+            choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = `choice-button ${choice.type}`;
+                button.textContent = choice.text;
+                button.onclick = choice.action;
+                choicesElement.appendChild(button);
+            });
+            
+            popup.style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('interaction-popup').style.display = 'none';
+        }
+
+        // Chat Functions
+        function toggleChat() {
+            const chatBox = document.getElementById('chat-box');
+            const video = document.querySelector('.chroma-video');
+            
+            if (chatBox.style.display === 'flex') {
+                chatBox.style.display = 'none';
+                if (video) video.play();
+            } else {
+                chatBox.style.display = 'flex';
+                if (video) video.pause();
+            }
+        }
+
+        function addChatMessage(sender, message) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            
+            const senderName = sender === 'bot' ? 'Chroma' : sender === 'user' ? 'You' : 'System';
+            messageDiv.innerHTML = `<strong>${senderName}:</strong> ${message}`;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function sendMessage(event) {
+            event.preventDefault();
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                addChatMessage('user', message);
+                
+                // Simulate AI response based on current context
+                setTimeout(() => {
+                    let response = "I understand your question about Maya's situation. ";
+                    
+                    if (message.toLowerCase().includes('trust')) {
+                        response += "Trust is crucial in cybersecurity. Maya needs to balance being open to new relationships while maintaining healthy skepticism.";
+                    } else if (message.toLowerCase().includes('dating')) {
+                        response += "Online dating safety involves meeting in public, verifying identity, and not sharing personal information too quickly.";
+                    } else if (message.toLowerCase().includes('lonely')) {
+                        response += "Loneliness can make people vulnerable to manipulation. It's important to recognize when emotions might cloud judgment.";
+                    } else {
+                        response += "Maya's story teaches us that even cybersecurity professionals can be vulnerable in personal situations. What specific aspect would you like to explore?";
+                    }
+                    
+                    addChatMessage('bot', response);
+                }, 1000);
+                
+                input.value = '';
+            }
+        }
+
+        // Navigation Functions
+        function continueToNext() {
+            if (gameState.exploredItems.size < gameState.totalItems) {
+                addChatMessage('system', 'Please explore all interactive elements before continuing.');
+                return;
+            }
+            
+            // Record final state
+            gameState.interactions.push({
+                area: 'maya-home-base',
+                finalTrustScore: gameState.trustScore,
+                exploredItems: Array.from(gameState.exploredItems),
+                timestamp: Date.now()
+            });
+            
+            // Save state for next area
+            sessionStorage.setItem('gameState', JSON.stringify(gameState));
+            
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                window.location.href = './area-2-dating-app.html';
+            }, 300);
+        }
+
+        function pauseGame() {
+            console.log('⏸️ Pausing game and returning to dashboard');
+            
+            // Save current state
+            sessionStorage.setItem('gameState', JSON.stringify(gameState));
+            
+            // Clear gameplay session data
+            sessionStorage.removeItem('gameplayCharacter');
+            sessionStorage.removeItem('gameplayArea');
+            sessionStorage.removeItem('gameplayMode');
+            
+            // Return to main app
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    action: 'pause-game',
+                    character: 'maya',
+                    currentArea: 1,
+                    gameState: gameState
+                }, '*');
+            } else {
+                window.location.href = '../../index.html#dashboard-maya';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved state if available
+            const savedState = sessionStorage.getItem('gameState');
+            if (savedState) {
+                gameState = { ...gameState, ...JSON.parse(savedState) };
+                updateTrustDisplay();
+                updateEnvironmentCorruption();
+            }
+            
+            updateProgress();
+            
+            console.log('Maya Enhanced Area 1: Home Base loaded');
+            console.log('Current trust score:', gameState.trustScore);
+        });
+    </script>
+</body>
+</html>

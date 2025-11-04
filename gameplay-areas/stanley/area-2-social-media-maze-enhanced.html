@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA_BLEED - Stanley's Social Media Maze</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 30%, #374151 70%, #1f2937 100%);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            color: white;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            transition: all 0.5s ease;
+        }
+
+        /* FriendSpace Interface Styling */
+        .friendspace-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 600px;
+            background: linear-gradient(145deg, #e5e7eb, #d1d5db);
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            transition: all 0.8s ease;
+        }
+
+        .friendspace-header {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 15px 20px;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .friendspace-nav {
+            background: #f3f4f6;
+            padding: 10px 20px;
+            border-bottom: 1px solid #d1d5db;
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .friendspace-content {
+            display: flex;
+            height: calc(100% - 120px);
+        }
+
+        .sidebar {
+            width: 200px;
+            background: #f9fafb;
+            border-right: 1px solid #d1d5db;
+            padding: 20px;
+        }
+
+        .main-feed {
+            flex: 1;
+            padding: 20px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        /* Friend Request Cards */
+        .friend-request {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .friend-request:hover {
+            border-color: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.15);
+        }
+
+        .friend-request.suspicious {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .friend-request.legitimate {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .profile-pic {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #6b7280, #9ca3af);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .friend-info {
+            flex: 1;
+        }
+
+        .friend-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .friend-details {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .mutual-friends {
+            font-size: 12px;
+            color: #4f46e5;
+        }
+
+        .friend-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .accept-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .accept-btn:hover {
+            background: #059669;
+        }
+
+        .decline-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .decline-btn:hover {
+            background: #dc2626;
+        }
+
+        .investigate-btn {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .investigate-btn:hover {
+            background: #d97706;
+        }  
+      /* Trust Score Integration */
+        .trust-score-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #9ca3af;
+            border-radius: 8px;
+            font-weight: bold;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .trust-score-value {
+            font-size: 1.2em;
+            color: #00ff88;
+            transition: color 0.3s ease;
+        }
+
+        .trust-score-value.warning { color: #ffd700; }
+        .trust-score-value.danger { color: #ff4444; }
+        .trust-score-value.critical { color: #ff0000; }
+
+        /* Environmental Corruption Effects */
+        .friendspace-container.corrupted-light {
+            filter: hue-rotate(15deg) contrast(1.1);
+        }
+
+        .friendspace-container.corrupted-medium {
+            filter: hue-rotate(30deg) contrast(1.2) brightness(0.9);
+            animation: subtle-glitch 2s infinite;
+        }
+
+        .friendspace-container.corrupted-heavy {
+            filter: hue-rotate(60deg) contrast(1.4) brightness(0.7);
+            animation: heavy-glitch 1s infinite;
+        }
+
+        @keyframes subtle-glitch {
+            0%, 100% { transform: translate(-50%, -50%); }
+            50% { transform: translate(-50%, -50%) translate(1px, -1px); }
+        }
+
+        @keyframes heavy-glitch {
+            0%, 90%, 100% { transform: translate(-50%, -50%); }
+            10% { transform: translate(-50%, -50%) translate(-2px, 2px); }
+            20% { transform: translate(-50%, -50%) translate(2px, -2px); }
+        }
+
+        /* Controls */
+        .continue-button {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(156, 163, 175, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .continue-button.enabled {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .pause-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 10px 20px;
+            background: #00FFFF;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .chroma-orb {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+            animation: orbPulse 3s ease-in-out infinite;
+        }
+
+        .chroma-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        @keyframes orbPulse {
+            0%, 100% { box-shadow: 0 0 12px rgba(0, 255, 255, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(0, 255, 255, 0.8); }
+        }
+
+        /* Progress Indicator */
+        .progress-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #9ca3af;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 0.9em;
+            z-index: 1000;
+        }
+
+        .progress-text {
+            color: #9ca3af;
+            font-weight: bold;
+        }
+
+        /* Chat Box */
+        .chat-box {
+            position: fixed;
+            bottom: 120px;
+            right: 20px;
+            width: 320px;
+            height: 400px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid #00FFFF;
+            border-radius: 12px;
+            display: none;
+            flex-direction: column;
+            padding: 15px;
+            z-index: 2001;
+        }
+
+        .chat-header {
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            position: relative;
+            color: #00FFFF;
+            font-size: 1.1em;
+        }
+
+        .close-chat {
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 14px;
+            color: white;
+            line-height: 1.4;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .chat-message.bot {
+            background: rgba(0, 255, 255, 0.1);
+            border-left: 3px solid #00FFFF;
+        }
+
+        .chat-message.user {
+            background: rgba(156, 163, 175, 0.1);
+            border-left: 3px solid #9ca3af;
+        }
+
+        .chat-form {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #7928CA;
+            background: #333;
+            color: white;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .chat-submit {
+            margin-left: 8px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: #FF0080;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Trust Score Display -->
+    <div class="trust-score-display">
+        <div>Trust Score</div>
+        <div class="trust-score-value" id="trust-score">50</div>
+    </div>
+
+    <!-- Continue Button -->
+    <button class="continue-button" id="continue-btn" onclick="continueToNext()">
+        Continue to Area 3 →
+    </button>
+
+    <!-- Pause Button -->
+    <button class="pause-button" onclick="pauseGame()">⏸ Pause Game</button>
+
+    <!-- Progress Indicator -->
+    <div class="progress-indicator">
+        <div class="progress-text">Navigate Stanley's social media</div>
+        <div id="progress-count">0/4 friend requests handled</div>
+    </div>
+
+    <!-- FriendSpace Social Media Interface -->
+    <div class="friendspace-container fade-in" id="friendspace-container">
+        <div class="friendspace-header">
+            <span>🌐</span>
+            FriendSpace
+        </div>
+        
+        <div class="friendspace-nav">
+            <div class="nav-item active">Home</div>
+            <div class="nav-item">Profile</div>
+            <div class="nav-item">Friends</div>
+            <div class="nav-item">Messages</div>
+        </div>
+
+        <div class="friendspace-content">
+            <div class="sidebar">
+                <h3 style="color: #374151; margin-bottom: 15px;">Friend Requests</h3>
+                <div style="color: #6b7280; font-size: 14px;">
+                    You have 4 pending friend requests
+                </div>
+            </div>
+
+            <div class="main-feed" id="main-feed">
+                <!-- Friend Request 1: Legitimate -->
+                <div class="friend-request" data-request="legitimate-1">
+                    <div class="profile-pic">👨‍💼</div>
+                    <div class="friend-info">
+                        <div class="friend-name">Robert Johnson</div>
+                        <div class="friend-details">Works at Stanley's former company</div>
+                        <div class="mutual-friends">3 mutual friends</div>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="action-btn accept-btn" onclick="handleFriendRequest('legitimate-1', 'accept')">Accept</button>
+                        <button class="action-btn investigate-btn" onclick="handleFriendRequest('legitimate-1', 'investigate')">Check Profile</button>
+                        <button class="action-btn decline-btn" onclick="handleFriendRequest('legitimate-1', 'decline')">Decline</button>
+                    </div>
+                </div>
+
+                <!-- Friend Request 2: Suspicious -->
+                <div class="friend-request" data-request="suspicious-1">
+                    <div class="profile-pic">👩‍💻</div>
+                    <div class="friend-info">
+                        <div class="friend-name">Sarah Mitchell</div>
+                        <div class="friend-details">Claims to be from your bank's security team</div>
+                        <div class="mutual-friends">0 mutual friends</div>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="action-btn accept-btn" onclick="handleFriendRequest('suspicious-1', 'accept')">Accept</button>
+                        <button class="action-btn investigate-btn" onclick="handleFriendRequest('suspicious-1', 'investigate')">Check Profile</button>
+                        <button class="action-btn decline-btn" onclick="handleFriendRequest('suspicious-1', 'decline')">Decline</button>
+                    </div>
+                </div>
+
+                <!-- Friend Request 3: Romance Scam -->
+                <div class="friend-request" data-request="romance-scam">
+                    <div class="profile-pic">💃</div>
+                    <div class="friend-info">
+                        <div class="friend-name">Clara Williams</div>
+                        <div class="friend-details">Beautiful profile, very interested in you</div>
+                        <div class="mutual-friends">0 mutual friends</div>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="action-btn accept-btn" onclick="handleFriendRequest('romance-scam', 'accept')">Accept</button>
+                        <button class="action-btn investigate-btn" onclick="handleFriendRequest('romance-scam', 'investigate')">Check Profile</button>
+                        <button class="action-btn decline-btn" onclick="handleFriendRequest('romance-scam', 'decline')">Decline</button>
+                    </div>
+                </div>
+
+                <!-- Friend Request 4: Authority Impersonation -->
+                <div class="friend-request" data-request="authority-scam">
+                    <div class="profile-pic">👮</div>
+                    <div class="friend-info">
+                        <div class="friend-name">Officer David Smith</div>
+                        <div class="friend-details">Local police department - urgent matter</div>
+                        <div class="mutual-friends">0 mutual friends</div>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="action-btn accept-btn" onclick="handleFriendRequest('authority-scam', 'accept')">Accept</button>
+                        <button class="action-btn investigate-btn" onclick="handleFriendRequest('authority-scam', 'investigate')">Check Profile</button>
+                        <button class="action-btn decline-btn" onclick="handleFriendRequest('authority-scam', 'decline')">Decline</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chroma Orb -->
+    <div class="chroma-orb" onclick="toggleChat()">
+        <video class="chroma-video" autoplay loop muted playsinline>
+            <source src="../../chroma-bot/assets/vid/Chroma_Vid.mp4" type="video/mp4">
+            🤖
+        </video>
+    </div>
+
+    <!-- Chat Box -->
+    <div class="chat-box" id="chat-box">
+        <div class="chat-header">
+            💬 Chroma Bot - Security Advisor
+            <button class="close-chat" onclick="toggleChat()">✖</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-message bot">
+                <strong>Chroma:</strong> Stanley is on FriendSpace and has received several friend requests. Help him identify which ones are legitimate and which might be scams. Look for red flags!
+            </div>
+        </div>
+        <form class="chat-form" onsubmit="sendMessage(event)">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Ask about social media safety..." required>
+            <button type="submit" class="chat-submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            trustScore: 50,
+            handledRequests: new Set(),
+            totalRequests: 4,
+            interactions: []
+        };
+
+        // Load previous state if available
+        const savedState = sessionStorage.getItem('gameState');
+        if (savedState) {
+            gameState = { ...gameState, ...JSON.parse(savedState) };
+        }
+
+        // Friend Request Scenarios
+        const friendRequestData = {
+            'legitimate-1': {
+                name: 'Robert Johnson',
+                type: 'legitimate',
+                investigation: 'Profile shows genuine work history, mutual connections from Stanley\'s former company, consistent posting history over 5 years.',
+                acceptImpact: +5,
+                declineImpact: 0,
+                investigateImpact: +8
+            },
+            'suspicious-1': {
+                name: 'Sarah Mitchell',
+                type: 'suspicious',
+                investigation: 'Profile created recently, claims bank affiliation but no verification, asking for personal information in messages.',
+                acceptImpact: -15,
+                declineImpact: +10,
+                investigateImpact: +12
+            },
+            'romance-scam': {
+                name: 'Clara Williams',
+                type: 'romance_scam',
+                investigation: 'Profile uses stock photos, very limited personal information, immediately expressing romantic interest.',
+                acceptImpact: -20,
+                declineImpact: +8,
+                investigateImpact: +15
+            },
+            'authority-scam': {
+                name: 'Officer David Smith',
+                type: 'authority_scam',
+                investigation: 'No official police department verification, requesting immediate contact about "urgent legal matter".',
+                acceptImpact: -25,
+                declineImpact: +12,
+                investigateImpact: +18
+            }
+        };
+
+        function updateTrustDisplay() {
+            const scoreElement = document.getElementById('trust-score');
+            const score = gameState.trustScore;
+            
+            scoreElement.textContent = score;
+            
+            // Update color based on score
+            scoreElement.className = 'trust-score-value';
+            if (score < -30) scoreElement.classList.add('critical');
+            else if (score < 0) scoreElement.classList.add('danger');
+            else if (score < 30) scoreElement.classList.add('warning');
+        }
+
+        function updateEnvironmentCorruption() {
+            const container = document.getElementById('friendspace-container');
+            const score = gameState.trustScore;
+            
+            // Remove existing corruption classes
+            container.className = 'friendspace-container fade-in';
+            
+            // Apply corruption based on trust score
+            if (score < -30) {
+                container.classList.add('corrupted-heavy');
+            } else if (score < 0) {
+                container.classList.add('corrupted-medium');
+            } else if (score < 30) {
+                container.classList.add('corrupted-light');
+            }
+        }
+
+        function updateProgress() {
+            const progressElement = document.getElementById('progress-count');
+            const continueBtn = document.getElementById('continue-btn');
+            
+            progressElement.textContent = `${gameState.handledRequests.size}/${gameState.totalRequests} friend requests handled`;
+            
+            // Enable continue button when all requests handled
+            if (gameState.handledRequests.size >= gameState.totalRequests) {
+                continueBtn.classList.add('enabled');
+                document.querySelector('.progress-text').textContent = 'All requests handled - ready to continue!';
+            }
+        }
+
+        function handleFriendRequest(requestId, action) {
+            if (gameState.handledRequests.has(requestId)) return;
+            
+            const requestData = friendRequestData[requestId];
+            let trustDelta = 0;
+            let message = '';
+
+            switch (action) {
+                case 'accept':
+                    trustDelta = requestData.acceptImpact;
+                    if (requestData.type === 'legitimate') {
+                        message = `Good choice! ${requestData.name} is a legitimate connection.`;
+                    } else {
+                        message = `Risky! ${requestData.name} might be a scammer. Always verify before accepting unknown requests.`;
+                    }
+                    break;
+                
+                case 'decline':
+                    trustDelta = requestData.declineImpact;
+                    message = `Safe choice! When in doubt, it's better to decline suspicious requests.`;
+                    break;
+                
+                case 'investigate':
+                    trustDelta = requestData.investigateImpact;
+                    message = `Excellent! Investigation reveals: ${requestData.investigation}`;
+                    break;
+            }
+
+            // Update trust score
+            gameState.trustScore = Math.max(-100, Math.min(100, gameState.trustScore + trustDelta));
+            updateTrustDisplay();
+            updateEnvironmentCorruption();
+
+            // Mark request as handled
+            gameState.handledRequests.add(requestId);
+            
+            // Visual feedback
+            const requestElement = document.querySelector(`[data-request="${requestId}"]`);
+            requestElement.style.opacity = '0.6';
+            requestElement.style.pointerEvents = 'none';
+            
+            if (requestData.type === 'legitimate' && action === 'accept') {
+                requestElement.classList.add('legitimate');
+            } else if (requestData.type !== 'legitimate' && action === 'decline') {
+                requestElement.classList.add('legitimate');
+            } else if (action === 'investigate') {
+                requestElement.classList.add('legitimate');
+            } else {
+                requestElement.classList.add('suspicious');
+            }
+
+            // Add chat message
+            addChatMessage('bot', message);
+
+            // Update progress
+            updateProgress();
+
+            // Save state
+            sessionStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        function addChatMessage(sender, message) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            
+            const senderName = sender === 'bot' ? 'Chroma' : 'You';
+            messageDiv.innerHTML = `<strong>${senderName}:</strong> ${message}`;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function toggleChat() {
+            const chatBox = document.getElementById('chat-box');
+            const video = document.querySelector('.chroma-video');
+            
+            if (chatBox.style.display === 'flex') {
+                chatBox.style.display = 'none';
+                if (video) video.play();
+            } else {
+                chatBox.style.display = 'flex';
+                if (video) video.pause();
+            }
+        }
+
+        function sendMessage(event) {
+            event.preventDefault();
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                addChatMessage('user', message);
+                
+                // Simulate AI response based on context
+                setTimeout(() => {
+                    let response = "Great question about social media safety! ";
+                    
+                    if (message.toLowerCase().includes('friend request')) {
+                        response += "Always investigate unknown friend requests. Look for mutual connections, profile history, and be wary of requests from people claiming authority or romantic interest.";
+                    } else if (message.toLowerCase().includes('scam')) {
+                        response += "Common social media scams include romance fraud, authority impersonation, and fake profiles. Always verify identity before sharing personal information.";
+                    } else if (message.toLowerCase().includes('investigate')) {
+                        response += "Good instinct! Investigating profiles can reveal fake photos, recent account creation, or suspicious activity patterns.";
+                    } else {
+                        response += "Stanley needs to be careful about who he connects with online. What specific aspect of social media safety would you like to explore?";
+                    }
+                    
+                    addChatMessage('bot', response);
+                }, 1000);
+                
+                input.value = '';
+            }
+        }
+
+        function continueToNext() {
+            if (gameState.handledRequests.size < gameState.totalRequests) {
+                addChatMessage('system', 'Please handle all friend requests before continuing.');
+                return;
+            }
+            
+            // Save final state
+            sessionStorage.setItem('gameState', JSON.stringify(gameState));
+            
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                window.location.href = './area-3-financial-district.html';
+            }, 300);
+        }
+
+        function pauseGame() {
+            console.log('⏸️ Pausing game and returning to dashboard');
+            
+            // Save current state
+            sessionStorage.setItem('gameState', JSON.stringify(gameState));
+            
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    action: 'pause-game',
+                    character: 'stanley',
+                    currentArea: 2,
+                    gameState: gameState
+                }, '*');
+            } else {
+                window.location.href = '../../index.html#dashboard-stanley';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTrustDisplay();
+            updateEnvironmentCorruption();
+            updateProgress();
+            
+            console.log('Stanley Area 2: Social Media Maze loaded');
+            console.log('Current trust score:', gameState.trustScore);
+        });
+    </script>
+</body>
+</html>
