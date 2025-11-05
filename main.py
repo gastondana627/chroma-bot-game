@@ -144,20 +144,33 @@ def root():
     # This will be overridden by static files, but needed for health check routing
     return {"message": "Data_Bleed API is running", "version": "1.0.0"}
 
-# ✅ --- THIS IS THE FINAL, CORRECTED CORS CONFIGURATION ---
-# It uses your specific origins and explicitly allows the methods needed
-# for the browser's preflight check to succeed.
+# ✅ --- CORS CONFIGURATION WITH ENVIRONMENT DETECTION ---
+# Different origins for production vs development environments
+def get_cors_origins():
+    """Get CORS origins based on environment"""
+    # Check if running in production (Railway sets PORT environment variable)
+    is_production = os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("PORT")
+    
+    if is_production:
+        # Production-only origins for security
+        return [
+            "https://data-bleed-vsc-game.vercel.app",  # Vercel frontend production URL
+        ]
+    else:
+        # Development origins
+        return [
+            "https://data-bleed-vsc-game.vercel.app",  # Also allow production URL in dev
+            "http://127.0.0.1:8080", 
+            "http://localhost:8080",
+            "http://127.0.0.1:3001",
+            "http://localhost:3001",
+            "http://localhost:3000",
+            "null"  # For local file:// protocol testing
+        ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://127.0.0.1:8080", 
-        "http://localhost:8080",
-        "http://127.0.0.1:3001",
-        "http://localhost:3001",    # This is what's missing!
-        "http://localhost:3000",
-        "https://data-bleed-backend.up.railway.app",
-        "null"
-    ],
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"], 
     allow_headers=["*"],
@@ -173,11 +186,62 @@ class ChatRequest(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {
-        "ok": True, 
+    """Enhanced health check with detailed configuration status"""
+    
+    # Check environment variables
+    env_status = {
+        "openai_api_key_set": bool(os.getenv("OPENAI_API_KEY")),
+        "openai_api_key_length": len(os.getenv("OPENAI_API_KEY", "")),
+        "railway_environment": os.getenv("RAILWAY_ENVIRONMENT"),
+        "port": os.getenv("PORT"),
+        "environment": "production" if (os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("PORT")) else "development"
+    }
+    
+    # Check OpenAI client status
+    openai_status = {
+        "client_initialized": bool(client),
+        "api_key_valid": False
+    }
+    
+    # Test OpenAI API key validity (quick test)
+    if client:
+        try:
+            # Make a minimal request to test API key
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": "test"}],
+                max_tokens=1,
+                temperature=0
+            )
+            openai_status["api_key_valid"] = True
+        except Exception as e:
+            openai_status["api_key_valid"] = False
+            openai_status["error"] = str(e)[:100]  # Truncate error message
+    
+    # Check characters configuration
+    characters_status = {
         "characters_loaded": list(CHARACTERS.keys()),
-        "openai_configured": bool(client),
-        "status": "healthy" if client else "demo_mode"
+        "character_count": len(CHARACTERS),
+        "global_knowledge_loaded": bool(GLOBAL_KNOWLEDGE)
+    }
+    
+    # Determine overall status
+    overall_status = "healthy"
+    if not client:
+        overall_status = "demo_mode"
+    elif not openai_status["api_key_valid"]:
+        overall_status = "api_key_invalid"
+    elif not CHARACTERS:
+        overall_status = "no_characters"
+    
+    return {
+        "ok": True,
+        "status": overall_status,
+        "environment": env_status,
+        "openai": openai_status,
+        "characters": characters_status,
+        "cors_origins": get_cors_origins(),
+        "timestamp": __import__("datetime").datetime.utcnow().isoformat() + "Z"
     }
 
 @app.get("/api/characters")

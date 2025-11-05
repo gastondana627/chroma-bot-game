@@ -1,0 +1,83 @@
+{
+  "base_url": "https://data-bleed-backend.up.railway.app",
+  "timestamp": "2025-11-05 03:16:29 UTC",
+  "tests": [
+    {
+      "endpoint": "/api/health",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.694346,
+      "data": null,
+      "error": "HTTP 404: {\"status\":\"error\",\"code\":404,\"message\":\"Application not found\",\"request_id\":\"tfOefBLQTJaXqUqBg4a9AQ\"}"
+    },
+    {
+      "endpoint": "/api/characters",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.178563,
+      "data": null,
+      "error": "HTTP 404: {\"status\":\"error\",\"code\":404,\"message\":\"Application not found\",\"request_id\":\"8kcNf5o_Te6w4Hmsg4a9AQ\"}"
+    },
+    {
+      "endpoint": "/api/chat",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.149469,
+      "data": null,
+      "error": "HTTP 404: {\"status\":\"error\",\"code\":404,\"message\":\"Application not found\",\"request_id\":\"lnS3ZN6DQi6O_dMtg4a9AQ\"}",
+      "test_input": {
+        "message": "Hello, this is a test message for API validation.",
+        "character": "maya",
+        "sessionId": "api-test-1762312590"
+      }
+    },
+    {
+      "endpoint": "/api/chat",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.150765,
+      "data": null,
+      "error": "HTTP 404: {\"status\":\"error\",\"code\":404,\"message\":\"Application not found\",\"request_id\":\"0h3itiD8SA6jDLgDg4a9AQ\"}",
+      "test_input": {
+        "message": "Hello, this is a test message for API validation.",
+        "character": "eli",
+        "sessionId": "api-test-1762312590"
+      }
+    },
+    {
+      "endpoint": "/api/chat",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.106328,
+      "data": null,
+      "error": "HTTP 404: {\"status\":\"error\",\"code\":404,\"message\":\"Application not found\",\"request_id\":\"YavI9EXdQbebFKnQg4a9AQ\"}",
+      "test_input": {
+        "message": "Hello, this is a test message for API validation.",
+        "character": "stanley",
+        "sessionId": "api-test-1762312591"
+      }
+    },
+    {
+      "endpoint": "/api/reset",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.104739,
+      "data": null,
+      "error": "HTTP 404: {\"status\":\"error\",\"code\":404,\"message\":\"Application not found\",\"request_id\":\"8rnEAGy4QkuNXmL_g4a9AQ\"}"
+    },
+    {
+      "endpoint": "OPTIONS /api/chat",
+      "status_code": 404,
+      "success": false,
+      "response_time": 0.120349,
+      "cors_headers": {},
+      "error": "Missing Access-Control-Allow-Origin header"
+    }
+  ],
+  "summary": {
+    "total_tests": 7,
+    "passed": 0,
+    "failed": 7,
+    "warnings": 0
+  }
+}
