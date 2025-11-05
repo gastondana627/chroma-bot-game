@@ -1,17 +1,11 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
   "public": true,
   "buildCommand": null,
   "outputDirectory": ".",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/",
+      "destination": "/index.html"
     }
   ]
 }
