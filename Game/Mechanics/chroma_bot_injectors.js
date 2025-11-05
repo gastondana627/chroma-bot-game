@@ -134,22 +134,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function getChromaBotResponse(message) {
-        // Use the same API base logic as index.html
-        const API_BASE = window.location.hostname === "localhost"
-            ? "http://127.0.0.1:3001"
-            : "https://data-bleed-backend.up.railway.app";
+        // Use centralized API configuration if available, otherwise fallback
+        let apiUrl;
+        if (window.APIConfig) {
+            apiUrl = window.APIConfig.getApiUrl('/api/chat');
+        } else {
+            // Fallback for when APIConfig is not loaded
+            const API_BASE = window.location.hostname === "localhost"
+                ? "http://127.0.0.1:3001"
+                : "https://data-bleed-backend.up.railway.app";
+            apiUrl = `${API_BASE}/api/chat`;
+        }
         
         try {
-            const res = await fetch(`${API_BASE}/api/chat`, {
+            const res = await fetch(apiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message, character, sessionId })
             });
-            if (!res.ok) throw new Error("Server error");
+            if (!res.ok) throw new Error(`Server responded with status ${res.status}`);
             const data = await res.json();
-            return data.reply;
+            return data.reply || "⚠️ No response from AI.";
         } catch (err) {
-            return "⚠️ Connection error.";
+            console.error("Chroma Bot API error:", err);
+            return "⚠️ Connection error, try again later.";
         }
     }
 
@@ -328,9 +336,17 @@ document.addEventListener('DOMContentLoaded', () => {
      * Enhanced chat response function with 3D mode support
      */
     async function getEnhancedChromaBotResponse(message) {
-        const API_BASE = window.location.hostname === "localhost"
-            ? "http://127.0.0.1:3001"
-            : "https://data-bleed-backend.up.railway.app";
+        // Use centralized API configuration if available, otherwise fallback
+        let apiUrl;
+        if (window.APIConfig) {
+            apiUrl = window.APIConfig.getApiUrl('/api/chat');
+        } else {
+            // Fallback for when APIConfig is not loaded
+            const API_BASE = window.location.hostname === "localhost"
+                ? "http://127.0.0.1:3001"
+                : "https://data-bleed-backend.up.railway.app";
+            apiUrl = `${API_BASE}/api/chat`;
+        }
         
         // Detect current context for enhanced responses
         const context = triggerSystemReady ? window.storyTracker.detectCurrentContext() : {};
@@ -354,17 +370,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
             
-            const res = await fetch(`${API_BASE}/api/chat`, {
+            const res = await fetch(apiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestBody)
             });
             
-            if (!res.ok) throw new Error("Server error");
+            if (!res.ok) throw new Error(`Server responded with status ${res.status}`);
             const data = await res.json();
-            return data.reply;
+            return data.reply || "⚠️ No response from AI.";
         } catch (err) {
-            return "⚠️ Connection error.";
+            console.error("Enhanced Chroma Bot API error:", err);
+            return "⚠️ Connection error, try again later.";
         }
     }
     

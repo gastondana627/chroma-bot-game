@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend API Integration Test</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #0a1a2a 0%, #000810 100%);
+            font-family: 'Inter', sans-serif;
+            color: white;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .test-button {
+            padding: 10px 20px;
+            background: #00ffff;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        
+        .test-button:hover {
+            background: #00cccc;
+        }
+        
+        .test-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .test-results {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            color: #00ff00;
+        }
+        
+        .error {
+            color: #ff4444;
+        }
+        
+        .warning {
+            color: #ffaa00;
+        }
+        
+        .info {
+            color: #00ffff;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success {
+            background: #00ff00;
+        }
+        
+        .status-error {
+            background: #ff4444;
+        }
+        
+        .status-warning {
+            background: #ffaa00;
+        }
+        
+        .status-pending {
+            background: #666;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .chat-test {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .chat-input {
+            width: 70%;
+            padding: 8px;
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 4px;
+        }
+        
+        .chat-messages {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Frontend API Integration Test</h1>
+        <p>This test validates that the frontend can successfully communicate with the production API endpoints.</p>
+        
+        <!-- Environment Detection Test -->
+        <div class="test-section">
+            <h2>🌐 Environment Detection</h2>
+            <p>Testing automatic environment detection and API endpoint configuration.</p>
+            <button class="test-button" onclick="testEnvironmentDetection()">Test Environment Detection</button>
+            <div id="env-results" class="test-results"></div>
+        </div>
+        
+        <!-- API Connectivity Test -->
+        <div class="test-section">
+            <h2>🔗 API Connectivity</h2>
+            <p>Testing basic connectivity to the API endpoints.</p>
+            <button class="test-button" onclick="testApiConnectivity()">Test API Connectivity</button>
+            <button class="test-button" onclick="testHealthEndpoint()">Test Health Endpoint</button>
+            <div id="connectivity-results" class="test-results"></div>
+        </div>
+        
+        <!-- Character Chat Test -->
+        <div class="test-section">
+            <h2>💬 Character Chat Integration</h2>
+            <p>Testing end-to-end character chat functionality.</p>
+            
+            <div class="chat-test">
+                <label for="character-select">Character:</label>
+                <select id="character-select" style="padding: 5px; margin: 0 10px;">
+                    <option value="maya">Maya</option>
+                    <option value="eli">Eli</option>
+                    <option value="stanley">Stanley</option>
+                </select>
+                
+                <input type="text" id="chat-input" class="chat-input" placeholder="Type a test message..." value="Hello, can you help me understand social engineering?">
+                <button class="test-button" onclick="testCharacterChat()">Send Test Message</button>
+                
+                <div id="chat-messages" class="chat-messages"></div>
+            </div>
+            
+            <button class="test-button" onclick="testAllCharacters()">Test All Characters</button>
+            <div id="chat-results" class="test-results"></div>
+        </div>
+        
+        <!-- Error Handling Test -->
+        <div class="test-section">
+            <h2>⚠️ Error Handling</h2>
+            <p>Testing error scenarios and fallback behavior.</p>
+            <button class="test-button" onclick="testErrorHandling()">Test Invalid Endpoint</button>
+            <button class="test-button" onclick="testFallbackUrls()">Test Fallback URLs</button>
+            <div id="error-results" class="test-results"></div>
+        </div>
+        
+        <!-- Performance Test -->
+        <div class="test-section">
+            <h2>⚡ Performance Test</h2>
+            <p>Testing API response times and performance.</p>
+            <button class="test-button" onclick="testPerformance()">Run Performance Test</button>
+            <div id="performance-results" class="test-results"></div>
+        </div>
+        
+        <!-- Overall Status -->
+        <div class="test-section">
+            <h2>📊 Overall Test Status</h2>
+            <div id="overall-status" class="test-results">
+                <div><span class="status-indicator status-pending"></span>Environment Detection: Pending</div>
+                <div><span class="status-indicator status-pending"></span>API Connectivity: Pending</div>
+                <div><span class="status-indicator status-pending"></span>Character Chat: Pending</div>
+                <div><span class="status-indicator status-pending"></span>Error Handling: Pending</div>
+                <div><span class="status-indicator status-pending"></span>Performance: Pending</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load API Configuration -->
+    <script src="js/api-config.js"></script>
+    
+    <script>
+        let testResults = {
+            environment: false,
+            connectivity: false,
+            chat: false,
+            errorHandling: false,
+            performance: false
+        };
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        function updateOverallStatus() {
+            const statusElement = document.getElementById('overall-status');
+            const tests = [
+                { name: 'Environment Detection', key: 'environment' },
+                { name: 'API Connectivity', key: 'connectivity' },
+                { name: 'Character Chat', key: 'chat' },
+                { name: 'Error Handling', key: 'errorHandling' },
+                { name: 'Performance', key: 'performance' }
+            ];
+
+            let html = '';
+            tests.forEach(test => {
+                const status = testResults[test.key];
+                const statusClass = status === true ? 'status-success' : 
+                                  status === false ? 'status-error' : 'status-pending';
+                const statusText = status === true ? 'Passed' : 
+                                 status === false ? 'Failed' : 'Pending';
+                html += `<div><span class="status-indicator ${statusClass}"></span>${test.name}: ${statusText}</div>`;
+            });
+
+            statusElement.innerHTML = html;
+        }
+
+        async function testEnvironmentDetection() {
+            log('env-results', '🌐 Testing environment detection...', 'info');
+            
+            try {
+                if (!window.APIConfig) {
+                    throw new Error('APIConfig not loaded');
+                }
+
+                const envInfo = window.APIConfig.getEnvironmentInfo();
+                log('env-results', `✅ Environment: ${envInfo.environment}`, 'success');
+                log('env-results', `🌍 Hostname: ${envInfo.hostname}`, 'info');
+                log('env-results', `🔗 Protocol: ${envInfo.protocol}`, 'info');
+                log('env-results', `📡 API Base URL: ${envInfo.apiBaseUrl}`, 'info');
+                log('env-results', `🏠 Is Development: ${envInfo.isDevelopment}`, 'info');
+                log('env-results', `🚀 Is Production: ${envInfo.isProduction}`, 'info');
+
+                testResults.environment = true;
+                log('env-results', '✅ Environment detection test passed!', 'success');
+                
+            } catch (error) {
+                log('env-results', `❌ Environment detection failed: ${error.message}`, 'error');
+                testResults.environment = false;
+            }
+            
+            updateOverallStatus();
+        }
+
+        async function testApiConnectivity() {
+            log('connectivity-results', '🔗 Testing API connectivity...', 'info');
+            
+            try {
+                const isConnected = await window.APIConfig.testConnectivity();
+                
+                if (isConnected) {
+                    log('connectivity-results', '✅ API connectivity test passed!', 'success');
+                    testResults.connectivity = true;
+                } else {
+                    log('connectivity-results', '⚠️ API connectivity test failed', 'warning');
+                    testResults.connectivity = false;
+                }
+                
+            } catch (error) {
+                log('connectivity-results', `❌ Connectivity test error: ${error.message}`, 'error');
+                testResults.connectivity = false;
+            }
+            
+            updateOverallStatus();
+        }
+
+        async function testHealthEndpoint() {
+            log('connectivity-results', '🏥 Testing health endpoint...', 'info');
+            
+            try {
+                const apiUrl = window.APIConfig.getApiUrl('/api/health');
+                log('connectivity-results', `📡 Requesting: ${apiUrl}`, 'info');
+                
+                const response = await fetch(apiUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('connectivity-results', `✅ Health check passed: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    log('connectivity-results', `⚠️ Health endpoint returned status: ${response.status}`, 'warning');
+                }
+                
+            } catch (error) {
+                log('connectivity-results', `❌ Health endpoint error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCharacterChat() {
+            const character = document.getElementById('character-select').value;
+            const message = document.getElementById('chat-input').value;
+            
+            if (!message.trim()) {
+                log('chat-results', '❌ Please enter a test message', 'error');
+                return;
+            }
+
+            log('chat-results', `💬 Testing chat with ${character}...`, 'info');
+            log('chat-messages', `You: ${message}`, 'info');
+            
+            try {
+                const apiUrl = window.APIConfig.getApiUrl('/api/chat');
+                log('chat-results', `📡 Sending to: ${apiUrl}`, 'info');
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        character: character,
+                        sessionId: 'test_session'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log('chat-messages', `${character}: ${data.reply}`, 'success');
+                    log('chat-results', `✅ Chat test with ${character} passed!`, 'success');
+                    
+                    if (data.trust_score !== undefined) {
+                        log('chat-results', `📊 Trust Score: ${data.trust_score}`, 'info');
+                    }
+                    if (data.persona) {
+                        log('chat-results', `🎭 Persona: ${data.persona}`, 'info');
+                    }
+                    
+                    testResults.chat = true;
+                } else {
+                    const errorText = await response.text();
+                    log('chat-results', `❌ Chat test failed: ${response.status} - ${errorText}`, 'error');
+                    testResults.chat = false;
+                }
+                
+            } catch (error) {
+                log('chat-results', `❌ Chat test error: ${error.message}`, 'error');
+                log('chat-messages', `Error: ${error.message}`, 'error');
+                testResults.chat = false;
+            }
+            
+            updateOverallStatus();
+        }
+
+        async function testAllCharacters() {
+            const characters = ['maya', 'eli', 'stanley'];
+            const testMessage = 'Hello, this is a test message.';
+            
+            log('chat-results', '🎭 Testing all characters...', 'info');
+            
+            for (const character of characters) {
+                try {
+                    const apiUrl = window.APIConfig.getApiUrl('/api/chat');
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: testMessage,
+                            character: character,
+                            sessionId: `test_${character}`
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        log('chat-results', `✅ ${character}: Response received (${data.reply.length} chars)`, 'success');
+                    } else {
+                        log('chat-results', `❌ ${character}: Failed with status ${response.status}`, 'error');
+                    }
+                    
+                } catch (error) {
+                    log('chat-results', `❌ ${character}: Error - ${error.message}`, 'error');
+                }
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+
+        async function testErrorHandling() {
+            log('error-results', '⚠️ Testing error handling...', 'info');
+            
+            try {
+                // Test with invalid endpoint
+                const invalidUrl = window.APIConfig.getApiBaseUrl() + '/api/invalid';
+                log('error-results', `📡 Testing invalid endpoint: ${invalidUrl}`, 'info');
+                
+                const response = await fetch(invalidUrl);
+                log('error-results', `📊 Invalid endpoint returned status: ${response.status}`, 'info');
+                
+                // Test with malformed request
+                const apiUrl = window.APIConfig.getApiUrl('/api/chat');
+                const malformedResponse = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ invalid: 'data' })
+                });
+                
+                log('error-results', `📊 Malformed request returned status: ${malformedResponse.status}`, 'info');
+                log('error-results', '✅ Error handling test completed', 'success');
+                testResults.errorHandling = true;
+                
+            } catch (error) {
+                log('error-results', `✅ Expected error caught: ${error.message}`, 'success');
+                testResults.errorHandling = true;
+            }
+            
+            updateOverallStatus();
+        }
+
+        async function testFallbackUrls() {
+            log('error-results', '🔄 Testing fallback URL detection...', 'info');
+            
+            try {
+                const workingUrl = await window.APIConfig.findWorkingApiUrl();
+                
+                if (workingUrl) {
+                    log('error-results', `✅ Working URL found: ${workingUrl}`, 'success');
+                } else {
+                    log('error-results', '⚠️ No working URL found', 'warning');
+                }
+                
+            } catch (error) {
+                log('error-results', `❌ Fallback test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPerformance() {
+            log('performance-results', '⚡ Running performance test...', 'info');
+            
+            const testCount = 5;
+            const times = [];
+            
+            for (let i = 0; i < testCount; i++) {
+                try {
+                    const startTime = performance.now();
+                    
+                    const apiUrl = window.APIConfig.getApiUrl('/api/health');
+                    const response = await fetch(apiUrl);
+                    
+                    const endTime = performance.now();
+                    const responseTime = endTime - startTime;
+                    times.push(responseTime);
+                    
+                    log('performance-results', `📊 Request ${i + 1}: ${responseTime.toFixed(2)}ms (Status: ${response.status})`, 'info');
+                    
+                } catch (error) {
+                    log('performance-results', `❌ Request ${i + 1} failed: ${error.message}`, 'error');
+                }
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            if (times.length > 0) {
+                const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
+                const minTime = Math.min(...times);
+                const maxTime = Math.max(...times);
+                
+                log('performance-results', `📈 Average response time: ${avgTime.toFixed(2)}ms`, 'success');
+                log('performance-results', `⚡ Fastest response: ${minTime.toFixed(2)}ms`, 'success');
+                log('performance-results', `🐌 Slowest response: ${maxTime.toFixed(2)}ms`, 'success');
+                
+                testResults.performance = true;
+            } else {
+                log('performance-results', '❌ No successful requests for performance measurement', 'error');
+                testResults.performance = false;
+            }
+            
+            updateOverallStatus();
+        }
+
+        // Auto-run environment detection on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testEnvironmentDetection();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -6,29 +6,44 @@ function getSessionId() {
 }
 
 const sessionId = getSessionId();
-// Use the same API base logic as index.html
-const API_BASE = window.location.hostname === "localhost"
-    ? "http://127.0.0.1:3001"
-    : "https://data-bleed-backend.up.railway.app";
-const apiUrl = `${API_BASE}/api/chat`;
+
+// Get API URL using centralized configuration if available, otherwise fallback
+function getApiUrl() {
+    if (window.APIConfig) {
+        return window.APIConfig.getApiUrl('/api/chat');
+    } else {
+        // Fallback for when APIConfig is not loaded
+        const API_BASE = window.location.hostname === "localhost"
+            ? "http://127.0.0.1:3001"
+            : "https://data-bleed-backend.up.railway.app";
+        return `${API_BASE}/api/chat`;
+    }
+}
 
 async function sendChoice(message) {
     console.log("📡 Sending to API:", { message, sessionId });
     try {
+        const apiUrl = getApiUrl();
         const res = await fetch(apiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message, character: "maya", sessionId: sessionId })
         });
 
-        if (!res.ok) throw new Error("Backend response not OK: " + res.status);
+        if (!res.ok) {
+            throw new Error(`Backend response not OK: ${res.status}`);
+        }
         const data = await res.json();
         console.log("✅ Backend replied:", data);
         renderMayaReply(message, data); // Pass the whole data object
         return data;
     } catch (err) {
-        console.error("❌ Pipeline fetch error:", err);
-        renderMayaReply(message, { reply: "Connection error — Maya is silent.", persona: "Guardian", trust_score: 0 });
+        console.error("❌ Maya Pipeline fetch error:", err);
+        renderMayaReply(message, { 
+            reply: "⚠️ Connection error — Maya is silent.", 
+            persona: "Guardian", 
+            trust_score: 0 
+        });
     }
 }
 

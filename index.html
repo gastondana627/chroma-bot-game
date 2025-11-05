@@ -420,11 +420,13 @@
     <p>🕵️ Doppelganger Alerts: 2<br>📂 Fake Profiles Logged: 5</p>
   </div>
 
+  <!-- API Configuration Module -->
+  <script src="./js/api-config.js"></script>
+  
   <script>
     // --- API BASE ---
-    const API_BASE = window.location.hostname === "localhost"
-      ? "http://127.0.0.1:3001"
-      : "https://data-bleed-backend.up.railway.app";
+    // Use the centralized API configuration system
+    let API_BASE = window.APIConfig.getApiBaseUrl();
 
     // --- DOM REFERENCES ---
     const loginScreen = document.getElementById("login-screen");
@@ -861,14 +863,57 @@
       const activeCharacter = sessionStorage.getItem("character") || "maya";
       const gamertag = sessionStorage.getItem("gamertag") || "Player";
       addMessage("Bot", `<span class="typing-indicator">...</span>`);
+      
       try {
-        const response = await fetch(`${API_BASE}/api/chat`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMessage, character: activeCharacter, sessionId: gamertag })
+        // Use the centralized API configuration
+        const apiUrl = window.APIConfig.getApiUrl('/api/chat');
+        
+        const response = await fetch(apiUrl, {
+          method: "POST", 
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            message: userMessage, 
+            character: activeCharacter, 
+            sessionId: gamertag 
+          })
         });
-        if (!response.ok) throw new Error(`Server responded ${response.status}`);
-        const data = await response.json(); messages.removeChild(messages.lastChild); addMessage("Bot", data.reply);
-      } catch (err) { console.error("Fetch error:", err); messages.removeChild(messages.lastChild); addMessage("Bot", "⚠️ Connection error, try again later."); }
+        
+        if (!response.ok) {
+          // Try to get error details from response
+          let errorMessage = `Server responded with status ${response.status}`;
+          try {
+            const errorData = await response.json();
+            if (errorData.error) {
+              errorMessage += `: ${errorData.error}`;
+            }
+          } catch (e) {
+            // Ignore JSON parsing errors for error responses
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const data = await response.json(); 
+        messages.removeChild(messages.lastChild); 
+        addMessage("Bot", data.reply || "⚠️ No response received from AI.");
+        
+      } catch (err) { 
+        console.error("Chat API error:", err); 
+        messages.removeChild(messages.lastChild); 
+        
+        // Try to find a working API URL if the current one fails
+        if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+          console.log("🔄 Network error detected, trying fallback URLs...");
+          const workingUrl = await window.APIConfig.findWorkingApiUrl();
+          if (workingUrl) {
+            addMessage("Bot", "🔄 Reconnected! Please try your message again.");
+            API_BASE = workingUrl; // Update the global variable for compatibility
+          } else {
+            addMessage("Bot", "❌ Unable to connect to chat service. Please check your internet connection and try again later.");
+          }
+        } else {
+          addMessage("Bot", `⚠️ Chat error: ${err.message}`);
+        }
+      }
     }
     if (chatForm) { chatForm.addEventListener("submit", async (e) => { e.preventDefault(); const text = userInput.value.trim(); if (!text) return; const gamertag = sessionStorage.getItem("gamertag") || "You"; addMessage(gamertag, text); userInput.value = ""; await getBotResponse(text); }); }
 
