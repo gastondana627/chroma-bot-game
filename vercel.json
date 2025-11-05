@@ -1,5 +1,17 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "public": true
+  "public": true,
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
 }
