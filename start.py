@@ -14,7 +14,9 @@ if __name__ == "__main__":
     from main import app
     
     # Get port from environment or default to 8000
+    # Railway sets PORT automatically
     port = int(os.environ.get("PORT", 8000))
+    print(f"Starting server on port {port}")
     
     # Run the app
     uvicorn.run(

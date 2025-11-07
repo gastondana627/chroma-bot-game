@@ -1,0 +1,43 @@
+{
+  "timestamp": 1762335682.419592,
+  "frontend": {
+    "url": "https://data-bleed-vsc-game.vercel.app",
+    "status": {
+      "accessible": true,
+      "status_code": 200,
+      "content_type": "text/html; charset=utf-8",
+      "server": "Vercel",
+      "deployment_id": "iad1::2zthz-1762335682813-5816055ee143",
+      "contains_game_content": true
+    }
+  },
+  "backend": {
+    "url": "https://data-bleed-backend.up.railway.app",
+    "status": {
+      "accessible": true,
+      "status_code": 404,
+      "server": "railway-edge",
+      "content_type": "application/json",
+      "is_fastapi": false,
+      "health_endpoint": {
+        "accessible": false,
+        "status_code": 404
+      }
+    }
+  },
+  "integration": {
+    "cors": {
+      "working": false,
+      "headers": {
+        "access-control-allow-origin": null,
+        "access-control-allow-credentials": null
+      }
+    }
+  },
+  "overall": {
+    "frontend_healthy": true,
+    "backend_healthy": true,
+    "health_endpoint_working": false,
+    "fully_functional": false
+  }
+}
