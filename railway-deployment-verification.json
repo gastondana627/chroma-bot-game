@@ -1,0 +1,36 @@
+{
+  "timestamp": 1762514618.804254,
+  "backend_url": "https://data-bleed-backend.up.railway.app",
+  "summary": {
+    "passed": 1,
+    "total": 5,
+    "success": false
+  },
+  "results": {
+    "deployment": {
+      "status": "pass",
+      "url": "https://data-bleed-backend.up.railway.app"
+    },
+    "health": {
+      "status": "fail",
+      "error": "HTTP 404"
+    },
+    "characters": {
+      "status": "fail",
+      "error": "HTTP 404"
+    },
+    "cors": {
+      "status": "fail",
+      "error": "HTTP 404",
+      "headers": {
+        "access-control-allow-origin": null,
+        "access-control-allow-methods": null,
+        "access-control-allow-headers": null
+      }
+    },
+    "chat": {
+      "status": "fail",
+      "error": "HTTP 404"
+    }
+  }
+}

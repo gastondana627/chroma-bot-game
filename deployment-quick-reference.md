@@ -1,5 +1,21 @@
 # Deployment Quick Reference
 
+**Last Updated**: November 5, 2025  
+**Overall Status**: 🟡 PARTIAL
+
+## 📊 Current Status
+
+**Frontend (Vercel)**: ✅ WORKING
+- URL: https://chroma-bot-game.vercel.app
+- Test: `node test-vercel-frontend-deployment.js`
+
+**Backend (Railway)**: ⚠️ NEEDS ATTENTION
+- URL: https://data-bleed-backend.up.railway.app
+- Issue: API endpoints returning 404
+- Test: `python3 verify-railway-deployment.py`
+
+**Integration**: ⚠️ BLOCKED (waiting for backend fix)
+
 ## 🚀 Quick Commands
 
 ### Check Status

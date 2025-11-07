@@ -1,0 +1,94 @@
+{
+  "timestamp": "2025-11-07T11:25:48.521Z",
+  "testSession": "e2e-test-1762514737821",
+  "frontendUrl": "https://data-bleed-vsc-game.vercel.app",
+  "backendUrl": "https://data-bleed-backend.up.railway.app",
+  "results": {
+    "userFlow": {
+      "frontendLoad": {
+        "success": true,
+        "hasGameTitle": true,
+        "hasAPIConfig": true,
+        "hasGameMechanics": false,
+        "contentLength": 35752
+      },
+      "apiConfig": {
+        "success": true,
+        "hasProductionUrl": true,
+        "hasEnvironmentDetection": true
+      },
+      "error": "Backend health check failed: 404"
+    },
+    "characterInteractions": {
+      "maya": [
+        {
+          "error": "Chat failed for maya: 404",
+          "success": false
+        }
+      ],
+      "eli": [
+        {
+          "error": "Chat failed for eli: 404",
+          "success": false
+        }
+      ],
+      "stanley": [
+        {
+          "error": "Chat failed for stanley: 404",
+          "success": false
+        }
+      ]
+    },
+    "sessionManagement": {
+      "success": false,
+      "error": "Session test message 1 failed: 404"
+    },
+    "errorScenarios": {
+      "Invalid Character": {
+        "success": false,
+        "status": 404,
+        "expectedStatus": [
+          400,
+          422
+        ],
+        "error": "Unexpected status code"
+      },
+      "Missing Message": {
+        "success": false,
+        "status": 404,
+        "expectedStatus": [
+          400,
+          422
+        ],
+        "error": "Unexpected status code"
+      },
+      "Empty Message": {
+        "success": false,
+        "status": 404,
+        "expectedStatus": [
+          400,
+          422
+        ],
+        "error": "Unexpected status code"
+      },
+      "Invalid Endpoint": {
+        "success": true,
+        "status": 404,
+        "expectedStatus": [
+          404
+        ]
+      },
+      "recovery": {
+        "success": false,
+        "status": 404
+      }
+    }
+  },
+  "summary": {
+    "userFlow": true,
+    "characterInteractions": true,
+    "sessionManagement": false,
+    "errorHandling": true,
+    "overallSuccess": false
+  }
+}

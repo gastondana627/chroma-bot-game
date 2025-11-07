@@ -1,0 +1,59 @@
+{
+  "timestamp": 1762514653.50293,
+  "backend_url": "https://data-bleed-backend.up.railway.app",
+  "local_environment": {
+    "OPENAI_API_KEY": {
+      "present": false,
+      "value_length": 0
+    },
+    "PORT": {
+      "present": false,
+      "value_length": 0
+    },
+    "RAILWAY_ENVIRONMENT": {
+      "present": false,
+      "value_length": 0
+    },
+    "RAILWAY_PROJECT_ID": {
+      "present": false,
+      "value_length": 0
+    },
+    "RAILWAY_SERVICE_ID": {
+      "present": false,
+      "value_length": 0
+    }
+  },
+  "production_environment": {
+    "health_endpoint_working": false,
+    "error": "HTTP 404"
+  },
+  "railway_indicators": {
+    "server_headers": {
+      "Content-Length": "101",
+      "Content-Type": "application/json",
+      "Server": "railway-edge",
+      "X-Railway-Edge": "railway/us-east4-eqdc4a",
+      "X-Railway-Fallback": "true",
+      "X-Railway-Request-Id": "ImUQ0goFSFOnVabuPvyhXg",
+      "Date": "Fri, 07 Nov 2025 11:24:14 GMT"
+    },
+    "railway_headers": [
+      "Server: railway-edge",
+      "X-Railway-Edge: railway/us-east4-eqdc4a",
+      "X-Railway-Edge: railway/us-east4-eqdc4a",
+      "X-Railway-Fallback: true",
+      "X-Railway-Fallback: true",
+      "X-Railway-Request-Id: ImUQ0goFSFOnVabuPvyhXg",
+      "X-Railway-Request-Id: ImUQ0goFSFOnVabuPvyhXg"
+    ],
+    "railway_url_pattern": true
+  },
+  "overall_status": {
+    "healthy": false,
+    "issues": [
+      "Health endpoint not working",
+      "OpenAI API key not configured",
+      "Characters not loaded"
+    ]
+  }
+}

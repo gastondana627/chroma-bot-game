@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-11-07T11:12:09.412Z",
+  "url": "https://chroma-bot-game.vercel.app",
+  "tests": [
+    {
+      "name": "Main Page Load",
+      "passed": true,
+      "statusCode": 200
+    },
+    {
+      "name": "Content Validation",
+      "passed": true
+    },
+    {
+      "name": "API Config Present",
+      "passed": true
+    }
+  ],
+  "overall": "PASS"
+}
