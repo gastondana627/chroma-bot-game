@@ -302,7 +302,8 @@ def get_cors_origins():
     if is_production:
         # Production-only origins for security
         return [
-            "https://data-bleed-vsc-game.vercel.app",  # Vercel frontend production URL
+            "https://chroma-bot-game.vercel.app",  # Vercel frontend production URL
+            "https://data-bleed-vsc-game.vercel.app",  # Legacy URL (if still in use)
         ]
     else:
         # Development origins
