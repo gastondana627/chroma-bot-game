@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Bleed - Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00FF00;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #00FF00;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00FF00;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00FF00;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .panel h2 {
+            color: #00FFFF;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 1px solid #00FFFF;
+            padding-bottom: 5px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-healthy { background: #00FF00; }
+        .status-warning { background: #FFA500; }
+        .status-error { background: #FF0000; }
+        .status-unknown { background: #888; }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px dotted rgba(0, 255, 0, 0.3);
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: bold;
+        }
+
+        .metric-value {
+            color: #00FFFF;
+        }
+
+        .log-container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00FF00;
+            border-radius: 8px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .log-info { color: #00FFFF; }
+        .log-warn { color: #FFA500; }
+        .log-error { color: #FF0000; }
+        .log-success { color: #00FF00; }
+
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00FF00;
+            color: #00FF00;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 0, 0.4);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chart-container {
+            height: 200px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            border-radius: 4px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            opacity: 0.7;
+        }
+
+        .error-message {
+            color: #FF0000;
+            text-align: center;
+            padding: 20px;
+            border: 1px solid #FF0000;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .blinking {
+            animation: blink 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 DATA BLEED MONITORING</h1>
+        <p>Production Deployment Status & Performance Metrics</p>
+        <div id="last-update">Last Update: <span id="update-time">Loading...</span></div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="refresh-btn">🔄 Refresh</button>
+        <button class="btn" id="start-monitoring-btn">▶️ Start Monitoring</button>
+        <button class="btn" id="stop-monitoring-btn">⏹️ Stop Monitoring</button>
+        <button class="btn" id="clear-logs-btn">🗑️ Clear Logs</button>
+    </div>
+
+    <div class="dashboard">
+        <!-- System Status Panel -->
+        <div class="panel">
+            <h2>🖥️ System Status</h2>
+            <div id="system-status" class="loading">Loading system status...</div>
+        </div>
+
+        <!-- Performance Metrics Panel -->
+        <div class="panel">
+            <h2>📊 Performance Metrics</h2>
+            <div id="performance-metrics" class="loading">Loading performance data...</div>
+        </div>
+
+        <!-- API Health Panel -->
+        <div class="panel">
+            <h2>🔗 API Health</h2>
+            <div id="api-health" class="loading">Checking API endpoints...</div>
+        </div>
+
+        <!-- Error Summary Panel -->
+        <div class="panel">
+            <h2>⚠️ Error Summary</h2>
+            <div id="error-summary" class="loading">Loading error data...</div>
+        </div>
+    </div>
+
+    <!-- Response Time Chart -->
+    <div class="panel">
+        <h2>📈 Response Time Trend</h2>
+        <div class="chart-container" id="response-chart">
+            <div class="loading">Response time chart will appear here</div>
+        </div>
+    </div>
+
+    <!-- Live Logs -->
+    <div class="panel">
+        <h2>📝 Live Monitoring Logs</h2>
+        <div class="log-container" id="live-logs">
+            <div class="log-entry log-info">Monitoring dashboard initialized...</div>
+        </div>
+    </div>
+
+    <!-- Load monitoring scripts -->
+    <script src="./js/api-config.js"></script>
+    <script src="./js/error-handler.js"></script>
+    <script src="./js/performance-tracker.js"></script>
+    <script src="./js/deployment-monitor.js"></script>
+
+    <script>
+        class MonitoringDashboard {
+            constructor() {
+                this.isMonitoring = false;
+                this.updateInterval = null;
+                this.logs = [];
+                
+                this.initializeEventListeners();
+                this.startDashboard();
+            }
+
+            initializeEventListeners() {
+                document.getElementById('refresh-btn').addEventListener('click', () => {
+                    this.refreshAllData();
+                });
+
+                document.getElementById('start-monitoring-btn').addEventListener('click', () => {
+                    this.startMonitoring();
+                });
+
+                document.getElementById('stop-monitoring-btn').addEventListener('click', () => {
+                    this.stopMonitoring();
+                });
+
+                document.getElementById('clear-logs-btn').addEventListener('click', () => {
+                    this.clearLogs();
+                });
+            }
+
+            async startDashboard() {
+                this.log('info', 'Starting monitoring dashboard...');
+                
+                // Initial data load
+                await this.refreshAllData();
+                
+                // Start auto-refresh
+                this.updateInterval = setInterval(() => {
+                    this.refreshAllData();
+                }, 30000); // Update every 30 seconds
+                
+                this.log('success', 'Monitoring dashboard started');
+            }
+
+            async refreshAllData() {
+                this.updateTimestamp();
+                
+                try {
+                    await Promise.all([
+                        this.updateSystemStatus(),
+                        this.updatePerformanceMetrics(),
+                        this.updateApiHealth(),
+                        this.updateErrorSummary()
+                    ]);
+                    
+                    this.log('info', 'Dashboard data refreshed');
+                } catch (error) {
+                    this.log('error', `Failed to refresh data: ${error.message}`);
+                }
+            }
+
+            async updateSystemStatus() {
+                const container = document.getElementById('system-status');
+                
+                try {
+                    // Check if monitoring systems are available
+                    const deploymentMonitor = window.DeploymentMonitor;
+                    const performanceTracker = window.PerformanceTracker;
+                    const errorHandler = window.ErrorHandler;
+                    
+                    const systemChecks = {
+                        'Deployment Monitor': deploymentMonitor ? 'healthy' : 'error',
+                        'Performance Tracker': performanceTracker ? 'healthy' : 'error',
+                        'Error Handler': errorHandler ? 'healthy' : 'error',
+                        'API Configuration': window.APIConfig ? 'healthy' : 'error'
+                    };
+                    
+                    let html = '';
+                    for (const [system, status] of Object.entries(systemChecks)) {
+                        html += `
+                            <div class="metric">
+                                <span class="metric-label">
+                                    <span class="status-indicator status-${status}"></span>
+                                    ${system}
+                                </span>
+                                <span class="metric-value">${status.toUpperCase()}</span>
+                            </div>
+                        `;
+                    }
+                    
+                    // Add monitoring status
+                    const monitoringStatus = deploymentMonitor?.isMonitoring ? 'healthy' : 'warning';
+                    html += `
+                        <div class="metric">
+                            <span class="metric-label">
+                                <span class="status-indicator status-${monitoringStatus}"></span>
+                                Active Monitoring
+                            </span>
+                            <span class="metric-value">${deploymentMonitor?.isMonitoring ? 'ACTIVE' : 'INACTIVE'}</span>
+                        </div>
+                    `;
+                    
+                    container.innerHTML = html;
+                    
+                } catch (error) {
+                    container.innerHTML = `<div class="error-message">Error loading system status: ${error.message}</div>`;
+                }
+            }
+
+            async updatePerformanceMetrics() {
+                const container = document.getElementById('performance-metrics');
+                
+                try {
+                    const performanceTracker = window.PerformanceTracker;
+                    
+                    if (!performanceTracker) {
+                        container.innerHTML = '<div class="error-message">Performance Tracker not available</div>';
+                        return;
+                    }
+                    
+                    const metrics = performanceTracker.getMetrics();
+                    
+                    const html = `
+                        <div class="metric">
+                            <span class="metric-label">Page Load Time</span>
+                            <span class="metric-value">${Math.round(metrics.pageLoad.fullyLoaded || 0)}ms</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">API Calls Total</span>
+                            <span class="metric-value">${metrics.apiCalls.total}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">API Success Rate</span>
+                            <span class="metric-value">${metrics.apiCalls.total > 0 ? Math.round((metrics.apiCalls.successful / metrics.apiCalls.total) * 100) : 0}%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Avg Response Time</span>
+                            <span class="metric-value">${Math.round(metrics.apiCalls.averageResponseTime || 0)}ms</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">User Interactions</span>
+                            <span class="metric-value">${metrics.userInteractions.clicks + metrics.userInteractions.keystrokes}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Chat Messages</span>
+                            <span class="metric-value">${metrics.userInteractions.chatMessages}</span>
+                        </div>
+                    `;
+                    
+                    container.innerHTML = html;
+                    
+                } catch (error) {
+                    container.innerHTML = `<div class="error-message">Error loading performance metrics: ${error.message}</div>`;
+                }
+            }
+
+            async updateApiHealth() {
+                const container = document.getElementById('api-health');
+                
+                try {
+                    // Test API endpoints
+                    const apiUrl = window.APIConfig?.getApiUrl('/api/health') || 'http://localhost:8001/api/health';
+                    
+                    const startTime = Date.now();
+                    const response = await fetch(apiUrl);
+                    const responseTime = Date.now() - startTime;
+                    
+                    if (response.ok) {
+                        const healthData = await response.json();
+                        
+                        const html = `
+                            <div class="metric">
+                                <span class="metric-label">
+                                    <span class="status-indicator status-healthy"></span>
+                                    Backend Status
+                                </span>
+                                <span class="metric-value">${healthData.status?.toUpperCase() || 'HEALTHY'}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Response Time</span>
+                                <span class="metric-value">${responseTime}ms</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Environment</span>
+                                <span class="metric-value">${healthData.environment?.environment?.toUpperCase() || 'UNKNOWN'}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">OpenAI Status</span>
+                                <span class="metric-value">${healthData.openai?.api_key_valid ? 'CONNECTED' : 'DISCONNECTED'}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Characters Loaded</span>
+                                <span class="metric-value">${healthData.characters?.character_count || 0}</span>
+                            </div>
+                        `;
+                        
+                        container.innerHTML = html;
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                } catch (error) {
+                    const html = `
+                        <div class="metric">
+                            <span class="metric-label">
+                                <span class="status-indicator status-error"></span>
+                                Backend Status
+                            </span>
+                            <span class="metric-value">ERROR</span>
+                        </div>
+                        <div class="error-message">API Health Check Failed: ${error.message}</div>
+                    `;
+                    container.innerHTML = html;
+                }
+            }
+
+            async updateErrorSummary() {
+                const container = document.getElementById('error-summary');
+                
+                try {
+                    const performanceTracker = window.PerformanceTracker;
+                    const deploymentMonitor = window.DeploymentMonitor;
+                    
+                    let totalErrors = 0;
+                    let errorBreakdown = {};
+                    
+                    if (performanceTracker) {
+                        const metrics = performanceTracker.getMetrics();
+                        totalErrors += metrics.errors.javascript + metrics.errors.network + metrics.errors.api;
+                        errorBreakdown = {
+                            'JavaScript Errors': metrics.errors.javascript,
+                            'Network Errors': metrics.errors.network,
+                            'API Errors': metrics.errors.api
+                        };
+                    }
+                    
+                    let html = `
+                        <div class="metric">
+                            <span class="metric-label">Total Errors</span>
+                            <span class="metric-value ${totalErrors > 0 ? 'log-error' : 'log-success'}">${totalErrors}</span>
+                        </div>
+                    `;
+                    
+                    for (const [type, count] of Object.entries(errorBreakdown)) {
+                        html += `
+                            <div class="metric">
+                                <span class="metric-label">${type}</span>
+                                <span class="metric-value">${count}</span>
+                            </div>
+                        `;
+                    }
+                    
+                    if (deploymentMonitor) {
+                        const stats = deploymentMonitor.getStats();
+                        html += `
+                            <div class="metric">
+                                <span class="metric-label">Alerts Sent</span>
+                                <span class="metric-value">${stats.alerts.sent}</span>
+                            </div>
+                        `;
+                    }
+                    
+                    container.innerHTML = html;
+                    
+                } catch (error) {
+                    container.innerHTML = `<div class="error-message">Error loading error summary: ${error.message}</div>`;
+                }
+            }
+
+            startMonitoring() {
+                if (window.DeploymentMonitor) {
+                    window.DeploymentMonitor.startMonitoring();
+                    this.log('success', 'Deployment monitoring started');
+                } else {
+                    this.log('error', 'Deployment Monitor not available');
+                }
+            }
+
+            stopMonitoring() {
+                if (window.DeploymentMonitor) {
+                    window.DeploymentMonitor.stopMonitoring();
+                    this.log('warn', 'Deployment monitoring stopped');
+                } else {
+                    this.log('error', 'Deployment Monitor not available');
+                }
+            }
+
+            clearLogs() {
+                this.logs = [];
+                document.getElementById('live-logs').innerHTML = '';
+                this.log('info', 'Logs cleared');
+            }
+
+            log(level, message) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = {
+                    timestamp,
+                    level,
+                    message
+                };
+                
+                this.logs.push(logEntry);
+                
+                // Keep only last 100 logs
+                if (this.logs.length > 100) {
+                    this.logs.shift();
+                }
+                
+                // Add to UI
+                const logsContainer = document.getElementById('live-logs');
+                const logElement = document.createElement('div');
+                logElement.className = `log-entry log-${level}`;
+                logElement.textContent = `${timestamp} [${level.toUpperCase()}] ${message}`;
+                
+                logsContainer.appendChild(logElement);
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+            }
+
+            updateTimestamp() {
+                document.getElementById('update-time').textContent = new Date().toLocaleString();
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new MonitoringDashboard();
+        });
+    </script>
+</body>
+</html>

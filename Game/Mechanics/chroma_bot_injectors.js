@@ -134,19 +134,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function getChromaBotResponse(message) {
-        // Use centralized API configuration if available, otherwise fallback
-        let apiUrl;
-        if (window.APIConfig) {
-            apiUrl = window.APIConfig.getApiUrl('/api/chat');
-        } else {
-            // Fallback for when APIConfig is not loaded
-            const API_BASE = window.location.hostname === "localhost"
-                ? "http://127.0.0.1:3001"
-                : "https://data-bleed-backend.up.railway.app";
-            apiUrl = `${API_BASE}/api/chat`;
-        }
-        
         try {
+            // Use enhanced error handling system if available
+            if (window.ErrorHandler) {
+                const data = await window.ErrorHandler.makeAPIRequest('/api/chat', {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message, character, sessionId })
+                });
+                return data.reply || "⚠️ No response from AI.";
+            }
+
+            // Fallback to original implementation
+            let apiUrl;
+            if (window.APIConfig) {
+                apiUrl = window.APIConfig.getApiUrl('/api/chat');
+            } else {
+                const API_BASE = window.location.hostname === "localhost"
+                    ? "http://127.0.0.1:3001"
+                    : "https://data-bleed-backend.up.railway.app";
+                apiUrl = `${API_BASE}/api/chat`;
+            }
+            
             const res = await fetch(apiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -157,6 +166,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return data.reply || "⚠️ No response from AI.";
         } catch (err) {
             console.error("Chroma Bot API error:", err);
+            
+            // Enhanced error messages based on error type
+            if (window.NetworkError && err instanceof window.NetworkError) {
+                return "🌐 Network connection problem. Please check your internet connection.";
+            } else if (window.TimeoutError && err instanceof window.TimeoutError) {
+                return "⏱️ Request timed out. Please try again.";
+            } else if (window.HTTPError && err instanceof window.HTTPError) {
+                if (err.status >= 500) {
+                    return "🔧 Server error. Please try again in a few moments.";
+                } else if (err.status === 429) {
+                    return "⏳ Too many requests. Please wait before trying again.";
+                }
+                return `❌ Request failed (Error ${err.status}). Please try again.`;
+            }
+            
             return "⚠️ Connection error, try again later.";
         }
     }

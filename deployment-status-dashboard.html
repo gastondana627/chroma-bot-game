@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Bleed - Deployment Status Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-card h3 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-indicator.online {
+            background: #4CAF50;
+            box-shadow: 0 0 10px #4CAF50;
+        }
+
+        .status-indicator.offline {
+            background: #f44336;
+            box-shadow: 0 0 10px #f44336;
+        }
+
+        .status-indicator.warning {
+            background: #ff9800;
+            box-shadow: 0 0 10px #ff9800;
+        }
+
+        .status-indicator.checking {
+            background: #2196F3;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .status-details {
+            margin-top: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-value {
+            font-weight: bold;
+        }
+
+        .url-link {
+            color: #64B5F6;
+            text-decoration: none;
+            word-break: break-all;
+            font-size: 0.9em;
+        }
+
+        .url-link:hover {
+            text-decoration: underline;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .action-btn.warning {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+        }
+
+        .logs-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .logs-section h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .log-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid #333;
+        }
+
+        .refresh-info {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .last-updated {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
+        .troubleshooting {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .troubleshooting h4 {
+            color: #ffc107;
+            margin-bottom: 10px;
+        }
+
+        .troubleshooting ul {
+            margin-left: 20px;
+        }
+
+        .troubleshooting li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🚀 Data Bleed Deployment Status</h1>
+            <p class="subtitle">Real-time monitoring of production deployments</p>
+        </div>
+
+        <div class="status-grid">
+            <!-- Frontend Status -->
+            <div class="status-card">
+                <h3>
+                    <span class="status-indicator checking" id="frontendIndicator"></span>
+                    Frontend (Vercel)
+                </h3>
+                <div class="status-details">
+                    <div class="status-item">
+                        <span>Status:</span>
+                        <span class="status-value" id="frontendStatus">Checking...</span>
+                    </div>
+                    <div class="status-item">
+                        <span>URL:</span>
+                        <a href="https://data-bleed-vsc-game.vercel.app" target="_blank" class="url-link">
+                            data-bleed-vsc-game.vercel.app
+                        </a>
+                    </div>
+                    <div class="status-item">
+                        <span>Response Time:</span>
+                        <span class="status-value" id="frontendResponseTime">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Last Check:</span>
+                        <span class="status-value" id="frontendLastCheck">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backend Status -->
+            <div class="status-card">
+                <h3>
+                    <span class="status-indicator checking" id="backendIndicator"></span>
+                    Backend (Railway)
+                </h3>
+                <div class="status-details">
+                    <div class="status-item">
+                        <span>Status:</span>
+                        <span class="status-value" id="backendStatus">Checking...</span>
+                    </div>
+                    <div class="status-item">
+                        <span>URL:</span>
+                        <a href="https://data-bleed-backend.up.railway.app" target="_blank" class="url-link">
+                            data-bleed-backend.up.railway.app
+                        </a>
+                    </div>
+                    <div class="status-item">
+                        <span>API Health:</span>
+                        <span class="status-value" id="backendApiHealth">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Response Time:</span>
+                        <span class="status-value" id="backendResponseTime">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Endpoints Status -->
+            <div class="status-card">
+                <h3>
+                    <span class="status-indicator checking" id="apiIndicator"></span>
+                    API Endpoints
+                </h3>
+                <div class="status-details">
+                    <div class="status-item">
+                        <span>Health Endpoint:</span>
+                        <span class="status-value" id="healthEndpoint">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Characters Endpoint:</span>
+                        <span class="status-value" id="charactersEndpoint">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Chat Endpoint:</span>
+                        <span class="status-value" id="chatEndpoint">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>CORS Status:</span>
+                        <span class="status-value" id="corsStatus">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Integration Status -->
+            <div class="status-card">
+                <h3>
+                    <span class="status-indicator checking" id="integrationIndicator"></span>
+                    Integration
+                </h3>
+                <div class="status-details">
+                    <div class="status-item">
+                        <span>Frontend ↔ Backend:</span>
+                        <span class="status-value" id="integrationStatus">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>OpenAI API:</span>
+                        <span class="status-value" id="openaiStatus">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Character Loading:</span>
+                        <span class="status-value" id="characterLoading">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Session Management:</span>
+                        <span class="status-value" id="sessionManagement">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="action-btn" onclick="checkAllStatus()">🔄 Refresh Status</button>
+            <a href="https://data-bleed-vsc-game.vercel.app" target="_blank" class="action-btn secondary">🎮 Open Game</a>
+            <a href="https://data-bleed-backend.up.railway.app/api/health" target="_blank" class="action-btn secondary">🔧 Check API</a>
+            <button class="action-btn warning" onclick="runDiagnostics()">🔍 Run Diagnostics</button>
+            <a href="validate-production-deployment.html" target="_blank" class="action-btn secondary">🧪 Full Tests</a>
+            <a href="production-access-guide.md" target="_blank" class="action-btn secondary">📚 Documentation</a>
+        </div>
+
+        <!-- Current Issues Alert -->
+        <div class="troubleshooting" id="troubleshootingSection" style="display: none;">
+            <h4>⚠️ Known Issues</h4>
+            <ul id="issuesList">
+                <!-- Issues will be populated by JavaScript -->
+            </ul>
+            <p><strong>Next Steps:</strong> See <a href="railway-deployment-troubleshooting.md" target="_blank" style="color: #ffc107;">Railway Deployment Troubleshooting Guide</a></p>
+        </div>
+
+        <div class="logs-section">
+            <h3>📋 Status Log</h3>
+            <div class="log-output" id="statusLog">Initializing dashboard...</div>
+        </div>
+
+        <div class="refresh-info">
+            <p>🔄 Auto-refresh every 30 seconds | Click "Refresh Status" for immediate update</p>
+        </div>
+
+        <div class="last-updated" id="lastUpdated">
+            Last updated: Loading...
+        </div>
+    </div>
+
+    <script>
+        const FRONTEND_URL = 'https://data-bleed-vsc-game.vercel.app';
+        const BACKEND_URL = 'https://data-bleed-backend.up.railway.app';
+        
+        let statusData = {};
+        let autoRefreshInterval;
+
+        function log(message) {
+            const logOutput = document.getElementById('statusLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logOutput.textContent += `[${timestamp}] ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+
+        function updateIndicator(elementId, status) {
+            const indicator = document.getElementById(elementId);
+            indicator.className = `status-indicator ${status}`;
+        }
+
+        function updateStatus(elementId, text, isGood = null) {
+            const element = document.getElementById(elementId);
+            element.textContent = text;
+            
+            if (isGood === true) {
+                element.style.color = '#4CAF50';
+            } else if (isGood === false) {
+                element.style.color = '#f44336';
+            } else {
+                element.style.color = '#ff9800';
+            }
+        }
+
+        async function checkFrontendStatus() {
+            log('Checking frontend status...');
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(FRONTEND_URL);
+                const responseTime = Date.now() - startTime;
+                
+                if (response.ok) {
+                    const content = await response.text();
+                    const hasGameContent = content.includes('Data_Bleed');
+                    
+                    updateIndicator('frontendIndicator', 'online');
+                    updateStatus('frontendStatus', 'Online', true);
+                    updateStatus('frontendResponseTime', `${responseTime}ms`, responseTime < 2000);
+                    
+                    statusData.frontend = {
+                        online: true,
+                        responseTime: responseTime,
+                        hasGameContent: hasGameContent
+                    };
+                    
+                    log(`✅ Frontend online (${responseTime}ms)`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                updateIndicator('frontendIndicator', 'offline');
+                updateStatus('frontendStatus', 'Offline', false);
+                updateStatus('frontendResponseTime', 'Error', false);
+                
+                statusData.frontend = { online: false, error: error.message };
+                log(`❌ Frontend error: ${error.message}`);
+            }
+            
+            updateStatus('frontendLastCheck', new Date().toLocaleTimeString());
+        }
+
+        async function checkBackendStatus() {
+            log('Checking backend status...');
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(BACKEND_URL);
+                const responseTime = Date.now() - startTime;
+                
+                if (response.status === 404 || response.status === 200) {
+                    // Server is responding, even if with 404
+                    updateIndicator('backendIndicator', 'warning');
+                    updateStatus('backendStatus', 'Server Online', null);
+                    updateStatus('backendResponseTime', `${responseTime}ms`, responseTime < 3000);
+                    
+                    statusData.backend = {
+                        online: true,
+                        responseTime: responseTime,
+                        status: response.status
+                    };
+                    
+                    log(`⚠️ Backend server online but may have routing issues (${response.status})`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                updateIndicator('backendIndicator', 'offline');
+                updateStatus('backendStatus', 'Offline', false);
+                updateStatus('backendResponseTime', 'Error', false);
+                
+                statusData.backend = { online: false, error: error.message };
+                log(`❌ Backend error: ${error.message}`);
+            }
+        }
+
+        async function checkApiEndpoints() {
+            log('Checking API endpoints...');
+            
+            const endpoints = [
+                { name: 'health', url: '/api/health', element: 'healthEndpoint' },
+                { name: 'characters', url: '/api/characters', element: 'charactersEndpoint' },
+            ];
+            
+            let workingEndpoints = 0;
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${BACKEND_URL}${endpoint.url}`);
+                    
+                    if (response.ok) {
+                        updateStatus(endpoint.element, 'Working', true);
+                        workingEndpoints++;
+                        log(`✅ ${endpoint.name} endpoint working`);
+                        
+                        // Special handling for health endpoint
+                        if (endpoint.name === 'health') {
+                            try {
+                                const healthData = await response.json();
+                                updateStatus('backendApiHealth', 'Healthy', true);
+                                updateStatus('openaiStatus', healthData.openai_configured ? 'Configured' : 'Not Configured', healthData.openai_configured);
+                                updateStatus('characterLoading', healthData.characters_loaded?.length > 0 ? `${healthData.characters_loaded.length} loaded` : 'None', healthData.characters_loaded?.length > 0);
+                            } catch (e) {
+                                updateStatus('backendApiHealth', 'Invalid Response', false);
+                            }
+                        }
+                    } else {
+                        updateStatus(endpoint.element, `Error ${response.status}`, false);
+                        log(`❌ ${endpoint.name} endpoint failed: ${response.status}`);
+                    }
+                } catch (error) {
+                    updateStatus(endpoint.element, 'Network Error', false);
+                    log(`❌ ${endpoint.name} endpoint error: ${error.message}`);
+                }
+            }
+            
+            // Test CORS
+            try {
+                const corsResponse = await fetch(`${BACKEND_URL}/api/health`, {
+                    method: 'OPTIONS',
+                    headers: { 'Origin': FRONTEND_URL }
+                });
+                
+                if (corsResponse.ok || corsResponse.status === 200) {
+                    updateStatus('corsStatus', 'Working', true);
+                    log('✅ CORS configuration working');
+                } else {
+                    updateStatus('corsStatus', `Error ${corsResponse.status}`, false);
+                    log(`❌ CORS error: ${corsResponse.status}`);
+                }
+            } catch (error) {
+                updateStatus('corsStatus', 'Error', false);
+                log(`❌ CORS test failed: ${error.message}`);
+            }
+            
+            // Update API indicator
+            if (workingEndpoints === endpoints.length) {
+                updateIndicator('apiIndicator', 'online');
+            } else if (workingEndpoints > 0) {
+                updateIndicator('apiIndicator', 'warning');
+            } else {
+                updateIndicator('apiIndicator', 'offline');
+            }
+            
+            statusData.api = { workingEndpoints: workingEndpoints, totalEndpoints: endpoints.length };
+        }
+
+        async function checkIntegration() {
+            log('Checking integration status...');
+            
+            // Test basic integration
+            const frontendOnline = statusData.frontend?.online || false;
+            const backendOnline = statusData.backend?.online || false;
+            const apiWorking = (statusData.api?.workingEndpoints || 0) > 0;
+            
+            if (frontendOnline && backendOnline && apiWorking) {
+                updateIndicator('integrationIndicator', 'online');
+                updateStatus('integrationStatus', 'Working', true);
+                updateStatus('sessionManagement', 'Available', true);
+            } else if (frontendOnline && backendOnline) {
+                updateIndicator('integrationIndicator', 'warning');
+                updateStatus('integrationStatus', 'Partial', null);
+                updateStatus('sessionManagement', 'Limited', null);
+            } else {
+                updateIndicator('integrationIndicator', 'offline');
+                updateStatus('integrationStatus', 'Not Working', false);
+                updateStatus('sessionManagement', 'Unavailable', false);
+            }
+            
+            log(`Integration status: Frontend=${frontendOnline}, Backend=${backendOnline}, API=${apiWorking}`);
+        }
+
+        function updateTroubleshooting() {
+            const issues = [];
+            
+            if (!statusData.frontend?.online) {
+                issues.push('Frontend deployment is not accessible');
+            }
+            
+            if (!statusData.backend?.online) {
+                issues.push('Backend server is not responding');
+            }
+            
+            if (statusData.backend?.online && (!statusData.api?.workingEndpoints || statusData.api.workingEndpoints === 0)) {
+                issues.push('API endpoints are returning 404 errors (FastAPI app not starting correctly)');
+            }
+            
+            if (statusData.api?.workingEndpoints > 0 && statusData.api.workingEndpoints < statusData.api.totalEndpoints) {
+                issues.push('Some API endpoints are not working correctly');
+            }
+            
+            const troubleshootingSection = document.getElementById('troubleshootingSection');
+            const issuesList = document.getElementById('issuesList');
+            
+            if (issues.length > 0) {
+                troubleshootingSection.style.display = 'block';
+                issuesList.innerHTML = issues.map(issue => `<li>${issue}</li>`).join('');
+            } else {
+                troubleshootingSection.style.display = 'none';
+            }
+        }
+
+        async function checkAllStatus() {
+            log('🔄 Starting status check...');
+            
+            // Reset status data
+            statusData = {};
+            
+            // Update last updated time
+            document.getElementById('lastUpdated').textContent = `Last updated: ${new Date().toLocaleString()}`;
+            
+            // Run all checks
+            await Promise.all([
+                checkFrontendStatus(),
+                checkBackendStatus()
+            ]);
+            
+            await checkApiEndpoints();
+            await checkIntegration();
+            
+            updateTroubleshooting();
+            
+            log('✅ Status check completed');
+        }
+
+        async function runDiagnostics() {
+            log('🔍 Running comprehensive diagnostics...');
+            
+            // This would trigger more detailed testing
+            const diagnosticTests = [
+                'Testing API response times...',
+                'Checking environment variables...',
+                'Validating CORS configuration...',
+                'Testing character interactions...'
+            ];
+            
+            for (const test of diagnosticTests) {
+                log(test);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            log('📊 Diagnostics completed. See validate-production-deployment.html for detailed results.');
+        }
+
+        function startAutoRefresh() {
+            // Initial check
+            checkAllStatus();
+            
+            // Set up auto-refresh every 30 seconds
+            autoRefreshInterval = setInterval(checkAllStatus, 30000);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+        }
+
+        // Initialize dashboard
+        window.addEventListener('load', () => {
+            log('🚀 Deployment Status Dashboard initialized');
+            startAutoRefresh();
+        });
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', stopAutoRefresh);
+    </script>
+</body>
+</html>

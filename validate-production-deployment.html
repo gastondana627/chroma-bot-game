@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Deployment Validation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .test-section.error {
+            border-left-color: #f44336;
+        }
+
+        .test-section.warning {
+            border-left-color: #ff9800;
+        }
+
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-item:last-child {
+            border-bottom: none;
+        }
+
+        .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .status.pass {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status.fail {
+            background: #f44336;
+            color: white;
+        }
+
+        .status.pending {
+            background: #ff9800;
+            color: white;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .button.secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .log-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+            white-space: pre-wrap;
+        }
+
+        .urls-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .url-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .url-card h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+
+        .url-card a {
+            color: #64B5F6;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .url-card a:hover {
+            text-decoration: underline;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Production Deployment Validation</h1>
+        
+        <div class="test-section">
+            <h2>📊 Test Progress</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <p id="progressText">Ready to start testing...</p>
+        </div>
+
+        <div class="test-section" id="backendSection">
+            <h2>🔧 Backend Tests (Railway)</h2>
+            <div class="test-item">
+                <span>Health Check Endpoint</span>
+                <span class="status pending" id="healthStatus">PENDING</span>
+            </div>
+            <div class="test-item">
+                <span>Characters API</span>
+                <span class="status pending" id="charactersStatus">PENDING</span>
+            </div>
+            <div class="test-item">
+                <span>CORS Configuration</span>
+                <span class="status pending" id="corsStatus">PENDING</span>
+            </div>
+            <div class="test-item">
+                <span>Environment Variables</span>
+                <span class="status pending" id="envStatus">PENDING</span>
+            </div>
+        </div>
+
+        <div class="test-section" id="frontendSection">
+            <h2>🎨 Frontend Tests (Vercel)</h2>
+            <div class="test-item">
+                <span>Main Page Load</span>
+                <span class="status pending" id="frontendStatus">PENDING</span>
+            </div>
+            <div class="test-item">
+                <span>API Configuration</span>
+                <span class="status pending" id="apiConfigStatus">PENDING</span>
+            </div>
+            <div class="test-item">
+                <span>Static Assets</span>
+                <span class="status pending" id="assetsStatus">PENDING</span>
+            </div>
+        </div>
+
+        <div class="test-section" id="integrationSection">
+            <h2>🔗 Integration Tests</h2>
+            <div class="test-item">
+                <span>Frontend → Backend Communication</span>
+                <span class="status pending" id="communicationStatus">PENDING</span>
+            </div>
+            <div class="test-item">
+                <span>Character Chat Functionality</span>
+                <span class="status pending" id="chatStatus">PENDING</span>
+            </div>
+            <div class="test-item">
+                <span>Session Management</span>
+                <span class="status pending" id="sessionStatus">PENDING</span>
+            </div>
+            <div class="test-item">
+                <span>Error Handling</span>
+                <span class="status pending" id="errorStatus">PENDING</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎮 Actions</h2>
+            <button class="button" onclick="runAllTests()">Run All Tests</button>
+            <button class="button secondary" onclick="testBackendOnly()">Test Backend Only</button>
+            <button class="button secondary" onclick="testFrontendOnly()">Test Frontend Only</button>
+            <button class="button secondary" onclick="clearResults()">Clear Results</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Test Output</h2>
+            <div class="log-output" id="logOutput">Waiting for tests to start...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>🌐 Production URLs</h2>
+            <div class="urls-section">
+                <div class="url-card">
+                    <h3>Frontend (Vercel)</h3>
+                    <a href="https://data-bleed-vsc-game.vercel.app" target="_blank">
+                        https://data-bleed-vsc-game.vercel.app
+                    </a>
+                </div>
+                <div class="url-card">
+                    <h3>Backend (Railway)</h3>
+                    <a href="https://data-bleed-backend.up.railway.app" target="_blank">
+                        https://data-bleed-backend.up.railway.app
+                    </a>
+                </div>
+                <div class="url-card">
+                    <h3>Health Check</h3>
+                    <a href="https://data-bleed-backend.up.railway.app/api/health" target="_blank">
+                        https://data-bleed-backend.up.railway.app/api/health
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const FRONTEND_URL = 'https://data-bleed-vsc-game.vercel.app';
+        const BACKEND_URL = 'https://data-bleed-backend.up.railway.app';
+        
+        let testResults = {};
+        let totalTests = 11;
+        let completedTests = 0;
+
+        function log(message) {
+            const logOutput = document.getElementById('logOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            logOutput.textContent += `[${timestamp}] ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+
+        function updateStatus(elementId, status, message = '') {
+            const element = document.getElementById(elementId);
+            element.className = `status ${status}`;
+            element.textContent = status.toUpperCase();
+            if (message) {
+                element.title = message;
+            }
+            
+            if (status !== 'pending') {
+                completedTests++;
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const percentage = (completedTests / totalTests) * 100;
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            document.getElementById('progressText').textContent = 
+                `${completedTests}/${totalTests} tests completed (${Math.round(percentage)}%)`;
+        }
+
+        async function testBackend() {
+            log('🔧 Starting backend tests...');
+            
+            try {
+                // Test health endpoint
+                log('Testing health endpoint...');
+                const healthResponse = await fetch(`${BACKEND_URL}/api/health`);
+                if (healthResponse.ok) {
+                    const healthData = await healthResponse.json();
+                    updateStatus('healthStatus', 'pass');
+                    log('✅ Health check passed');
+                    
+                    // Check environment variables from health response
+                    if (healthData.openai_configured) {
+                        updateStatus('envStatus', 'pass');
+                        log('✅ Environment variables configured');
+                    } else {
+                        updateStatus('envStatus', 'fail', 'OpenAI not configured');
+                        log('❌ OpenAI API key not configured');
+                    }
+                } else {
+                    updateStatus('healthStatus', 'fail', `Status: ${healthResponse.status}`);
+                    updateStatus('envStatus', 'fail', 'Cannot verify - health check failed');
+                    log(`❌ Health check failed: ${healthResponse.status}`);
+                }
+
+                // Test characters endpoint
+                log('Testing characters endpoint...');
+                const charactersResponse = await fetch(`${BACKEND_URL}/api/characters`);
+                if (charactersResponse.ok) {
+                    updateStatus('charactersStatus', 'pass');
+                    log('✅ Characters endpoint working');
+                } else {
+                    updateStatus('charactersStatus', 'fail', `Status: ${charactersResponse.status}`);
+                    log(`❌ Characters endpoint failed: ${charactersResponse.status}`);
+                }
+
+                // Test CORS
+                log('Testing CORS configuration...');
+                const corsResponse = await fetch(`${BACKEND_URL}/api/health`, {
+                    method: 'OPTIONS'
+                });
+                if (corsResponse.ok || corsResponse.status === 200) {
+                    updateStatus('corsStatus', 'pass');
+                    log('✅ CORS configuration working');
+                } else {
+                    updateStatus('corsStatus', 'fail', `Status: ${corsResponse.status}`);
+                    log(`❌ CORS configuration failed: ${corsResponse.status}`);
+                }
+
+            } catch (error) {
+                log(`❌ Backend tests failed: ${error.message}`);
+                updateStatus('healthStatus', 'fail', error.message);
+                updateStatus('charactersStatus', 'fail', error.message);
+                updateStatus('corsStatus', 'fail', error.message);
+                updateStatus('envStatus', 'fail', error.message);
+            }
+        }
+
+        async function testFrontend() {
+            log('🎨 Starting frontend tests...');
+            
+            try {
+                // Test main page
+                log('Testing main page load...');
+                const frontendResponse = await fetch(FRONTEND_URL);
+                if (frontendResponse.ok) {
+                    updateStatus('frontendStatus', 'pass');
+                    log('✅ Frontend loads successfully');
+                } else {
+                    updateStatus('frontendStatus', 'fail', `Status: ${frontendResponse.status}`);
+                    log(`❌ Frontend failed: ${frontendResponse.status}`);
+                }
+
+                // Test API config
+                log('Testing API configuration...');
+                const apiConfigResponse = await fetch(`${FRONTEND_URL}/js/api-config.js`);
+                if (apiConfigResponse.ok) {
+                    updateStatus('apiConfigStatus', 'pass');
+                    log('✅ API configuration available');
+                } else {
+                    updateStatus('apiConfigStatus', 'fail', `Status: ${apiConfigResponse.status}`);
+                    log(`❌ API configuration failed: ${apiConfigResponse.status}`);
+                }
+
+                // Test static assets
+                log('Testing static assets...');
+                const assetsToTest = ['/style.css', '/js/error-handler.js'];
+                let assetsPassed = 0;
+                
+                for (const asset of assetsToTest) {
+                    try {
+                        const assetResponse = await fetch(`${FRONTEND_URL}${asset}`);
+                        if (assetResponse.ok) {
+                            assetsPassed++;
+                        }
+                    } catch (error) {
+                        log(`⚠️ Asset ${asset} failed to load`);
+                    }
+                }
+                
+                if (assetsPassed === assetsToTest.length) {
+                    updateStatus('assetsStatus', 'pass');
+                    log('✅ All static assets loaded');
+                } else {
+                    updateStatus('assetsStatus', 'fail', `${assetsPassed}/${assetsToTest.length} assets loaded`);
+                    log(`⚠️ Only ${assetsPassed}/${assetsToTest.length} assets loaded`);
+                }
+
+            } catch (error) {
+                log(`❌ Frontend tests failed: ${error.message}`);
+                updateStatus('frontendStatus', 'fail', error.message);
+                updateStatus('apiConfigStatus', 'fail', error.message);
+                updateStatus('assetsStatus', 'fail', error.message);
+            }
+        }
+
+        async function testIntegration() {
+            log('🔗 Starting integration tests...');
+            
+            try {
+                // Test basic communication
+                log('Testing frontend-backend communication...');
+                const commResponse = await fetch(`${BACKEND_URL}/api/health`, {
+                    headers: {
+                        'Origin': FRONTEND_URL
+                    }
+                });
+                
+                if (commResponse.ok) {
+                    updateStatus('communicationStatus', 'pass');
+                    log('✅ Frontend-backend communication working');
+                } else {
+                    updateStatus('communicationStatus', 'fail', `Status: ${commResponse.status}`);
+                    log(`❌ Communication failed: ${commResponse.status}`);
+                }
+
+                // Test chat functionality
+                log('Testing chat functionality...');
+                const chatData = {
+                    message: "Hello, this is a test message",
+                    character: "maya",
+                    sessionId: "test-session-" + Date.now()
+                };
+
+                const chatResponse = await fetch(`${BACKEND_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': FRONTEND_URL
+                    },
+                    body: JSON.stringify(chatData)
+                });
+
+                if (chatResponse.ok) {
+                    const chatResult = await chatResponse.json();
+                    updateStatus('chatStatus', 'pass');
+                    log('✅ Chat functionality working');
+                    
+                    // Test session management
+                    if (chatResult.sessionId || chatResult.trust_score !== undefined) {
+                        updateStatus('sessionStatus', 'pass');
+                        log('✅ Session management working');
+                    } else {
+                        updateStatus('sessionStatus', 'fail', 'No session data returned');
+                        log('⚠️ Session management may not be working properly');
+                    }
+                } else {
+                    updateStatus('chatStatus', 'fail', `Status: ${chatResponse.status}`);
+                    updateStatus('sessionStatus', 'fail', 'Chat failed');
+                    log(`❌ Chat functionality failed: ${chatResponse.status}`);
+                }
+
+                // Test error handling
+                log('Testing error handling...');
+                const errorResponse = await fetch(`${BACKEND_URL}/api/nonexistent`);
+                if (errorResponse.status === 404) {
+                    updateStatus('errorStatus', 'pass');
+                    log('✅ Error handling working (404 for invalid endpoint)');
+                } else {
+                    updateStatus('errorStatus', 'fail', `Unexpected status: ${errorResponse.status}`);
+                    log(`⚠️ Unexpected error response: ${errorResponse.status}`);
+                }
+
+            } catch (error) {
+                log(`❌ Integration tests failed: ${error.message}`);
+                updateStatus('communicationStatus', 'fail', error.message);
+                updateStatus('chatStatus', 'fail', error.message);
+                updateStatus('sessionStatus', 'fail', error.message);
+                updateStatus('errorStatus', 'fail', error.message);
+            }
+        }
+
+        async function runAllTests() {
+            log('🚀 Starting comprehensive production deployment tests...');
+            clearResults();
+            
+            await testBackend();
+            await testFrontend();
+            await testIntegration();
+            
+            log('🎉 All tests completed!');
+            
+            // Generate summary
+            const passedTests = document.querySelectorAll('.status.pass').length;
+            const failedTests = document.querySelectorAll('.status.fail').length;
+            
+            log(`\n📊 Test Summary:`);
+            log(`✅ Passed: ${passedTests}`);
+            log(`❌ Failed: ${failedTests}`);
+            
+            if (failedTests === 0) {
+                log('🎉 Production deployment is fully functional!');
+            } else {
+                log('⚠️ Some tests failed. Please check the issues above.');
+            }
+        }
+
+        async function testBackendOnly() {
+            log('🔧 Testing backend only...');
+            clearResults();
+            await testBackend();
+            log('Backend tests completed.');
+        }
+
+        async function testFrontendOnly() {
+            log('🎨 Testing frontend only...');
+            clearResults();
+            await testFrontend();
+            log('Frontend tests completed.');
+        }
+
+        function clearResults() {
+            completedTests = 0;
+            updateProgress();
+            document.getElementById('logOutput').textContent = '';
+            
+            // Reset all status indicators
+            const statusElements = document.querySelectorAll('.status');
+            statusElements.forEach(element => {
+                element.className = 'status pending';
+                element.textContent = 'PENDING';
+                element.title = '';
+            });
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            log('Production deployment validation tool loaded.');
+            log('Click "Run All Tests" to start validation.');
+        });
+    </script>
+</body>
+</html>

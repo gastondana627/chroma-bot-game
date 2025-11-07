@@ -24,13 +24,26 @@ if (typeof window !== 'undefined' && !window.APIConfig) {
 
 async function getAIResponse(userMessage, character = "maya", sessionId = "chroma_bot_session") {
   try {
-    // Use the centralized API configuration
+    // Use the enhanced error handling system if available
+    if (window.ErrorHandler) {
+      const data = await window.ErrorHandler.makeAPIRequest('/api/chat', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          message: userMessage, 
+          character: character,
+          sessionId: sessionId 
+        })
+      });
+      return data.reply || "⚠️ No response from AI.";
+    }
+
+    // Fallback to original implementation if ErrorHandler not available
     const apiUrl = window.APIConfig.getApiUrl('/api/chat');
     
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      // The request body now matches what the FastAPI server expects
       body: JSON.stringify({ 
         message: userMessage, 
         character: character,
@@ -39,7 +52,6 @@ async function getAIResponse(userMessage, character = "maya", sessionId = "chrom
     });
 
     if (!response.ok) {
-      // Enhanced error handling with more details
       let errorMessage = `Server responded with status: ${response.status}`;
       try {
         const errorData = await response.json();
@@ -61,7 +73,7 @@ async function getAIResponse(userMessage, character = "maya", sessionId = "chrom
     // Enhanced error handling with fallback URL detection
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
       console.log("🔄 Network error in Chroma Bot, attempting fallback...");
-      if (window.APIConfig.findWorkingApiUrl) {
+      if (window.APIConfig && window.APIConfig.findWorkingApiUrl) {
         const workingUrl = await window.APIConfig.findWorkingApiUrl();
         if (workingUrl) {
           console.log("✅ Chroma Bot reconnected to:", workingUrl);
@@ -71,7 +83,20 @@ async function getAIResponse(userMessage, character = "maya", sessionId = "chrom
       return "❌ Unable to connect to chat service. Please check your connection.";
     }
     
-    // Return user-friendly error message
-    return `⚠️ Chat error: ${error.message}`;
+    // Return user-friendly error message based on error type
+    if (window.NetworkError && error instanceof window.NetworkError) {
+      return "🌐 Network connection problem. Please check your internet connection.";
+    } else if (window.TimeoutError && error instanceof window.TimeoutError) {
+      return "⏱️ Request timed out. The server may be busy, please try again.";
+    } else if (window.HTTPError && error instanceof window.HTTPError) {
+      if (error.status >= 500) {
+        return "🔧 Server error. Please try again in a few moments.";
+      } else if (error.status === 429) {
+        return "⏳ Too many requests. Please wait a moment before trying again.";
+      }
+      return `❌ Request failed (Error ${error.status}). Please try again.`;
+    }
+    
+    return `⚠️ Chat temporarily unavailable: ${error.message}`;
   }
 }

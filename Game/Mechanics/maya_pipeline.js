@@ -23,6 +23,19 @@ function getApiUrl() {
 async function sendChoice(message) {
     console.log("📡 Sending to API:", { message, sessionId });
     try {
+        // Use enhanced error handling system if available
+        if (window.ErrorHandler) {
+            const data = await window.ErrorHandler.makeAPIRequest('/api/chat', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message, character: "maya", sessionId: sessionId })
+            });
+            console.log("✅ Backend replied:", data);
+            renderMayaReply(message, data);
+            return data;
+        }
+
+        // Fallback to original implementation
         const apiUrl = getApiUrl();
         const res = await fetch(apiUrl, {
             method: "POST",
@@ -35,12 +48,28 @@ async function sendChoice(message) {
         }
         const data = await res.json();
         console.log("✅ Backend replied:", data);
-        renderMayaReply(message, data); // Pass the whole data object
+        renderMayaReply(message, data);
         return data;
     } catch (err) {
         console.error("❌ Maya Pipeline fetch error:", err);
+        
+        // Enhanced error handling with specific error types
+        let errorMessage = "⚠️ Connection error — Maya is silent.";
+        
+        if (window.NetworkError && err instanceof window.NetworkError) {
+            errorMessage = "🌐 Network connection lost — Maya can't respond right now.";
+        } else if (window.TimeoutError && err instanceof window.TimeoutError) {
+            errorMessage = "⏱️ Maya is taking too long to respond — please try again.";
+        } else if (window.HTTPError && err instanceof window.HTTPError) {
+            if (err.status >= 500) {
+                errorMessage = "🔧 Server error — Maya's systems are down temporarily.";
+            } else if (err.status === 429) {
+                errorMessage = "⏳ Too many messages — give Maya a moment to catch up.";
+            }
+        }
+        
         renderMayaReply(message, { 
-            reply: "⚠️ Connection error — Maya is silent.", 
+            reply: errorMessage, 
             persona: "Guardian", 
             trust_score: 0 
         });
