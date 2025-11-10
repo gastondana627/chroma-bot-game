@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA_BLEED - Responsive Design Test</title>
+    <link rel="stylesheet" href="./css/responsive-design.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ffff;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        .device-info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-section h2 {
+            color: #00ff88;
+            margin-bottom: 15px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .test-item {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .test-button {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            color: #00ff88;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+        }
+        
+        .test-button:hover {
+            background: rgba(0, 255, 136, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .test-button:active {
+            transform: scale(0.95);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-pass {
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+        }
+        
+        .status-warn {
+            background: #ffd700;
+            box-shadow: 0 0 10px #ffd700;
+        }
+        
+        .status-fail {
+            background: #ff0040;
+            box-shadow: 0 0 10px #ff0040;
+        }
+        
+        .video-test {
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+        
+        .touch-test-area {
+            width: 100%;
+            height: 200px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px dashed #00ffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .touch-test-area:active {
+            background: rgba(0, 255, 255, 0.3);
+        }
+        
+        .recommendations {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 4px solid #ffd700;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        
+        .recommendations h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        
+        .recommendations ul {
+            list-style-position: inside;
+            color: #ccc;
+        }
+        
+        .recommendations li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>📱 DATA_BLEED Responsive Design Test</h1>
+        
+        <!-- Device Information -->
+        <div class="device-info">
+            <h2>Device Information</h2>
+            <div class="info-row">
+                <span class="info-label">Screen Size:</span>
+                <span id="screen-size">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Viewport Size:</span>
+                <span id="viewport-size">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Device Type:</span>
+                <span id="device-type">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Orientation:</span>
+                <span id="orientation">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Touch Support:</span>
+                <span id="touch-support">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Pixel Ratio:</span>
+                <span id="pixel-ratio">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">User Agent:</span>
+                <span id="user-agent" style="font-size: 0.8em;">-</span>
+            </div>
+        </div>
+        
+        <!-- Responsive Tests -->
+        <div class="test-section">
+            <h2>Responsive Breakpoint Tests</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <span class="status-indicator" id="status-mobile"></span>
+                    <strong>Mobile (≤480px)</strong>
+                    <p id="test-mobile">-</p>
+                </div>
+                <div class="test-item">
+                    <span class="status-indicator" id="status-tablet"></span>
+                    <strong>Tablet (768-1024px)</strong>
+                    <p id="test-tablet">-</p>
+                </div>
+                <div class="test-item">
+                    <span class="status-indicator" id="status-desktop"></span>
+                    <strong>Desktop (≥1367px)</strong>
+                    <p id="test-desktop">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Touch Test -->
+        <div class="test-section">
+            <h2>Touch Interaction Test</h2>
+            <div class="touch-test-area" id="touch-test">
+                <span id="touch-message">Tap or click here to test touch response</span>
+            </div>
+            <p style="text-align: center; color: #888;">
+                Touch count: <span id="touch-count" style="color: #00ffff; font-weight: bold;">0</span>
+            </p>
+        </div>
+        
+        <!-- Button Tests -->
+        <div class="test-section">
+            <h2>Interactive Element Tests</h2>
+            <button class="test-button" onclick="testButtonClick(this)">
+                Test Button Click Response
+            </button>
+            <button class="test-button" onclick="testButtonClick(this)">
+                Test Another Button
+            </button>
+            <p style="text-align: center; margin-top: 15px; color: #888;">
+                Buttons should be easily tappable (min 44x44px on mobile)
+            </p>
+        </div>
+        
+        <!-- Video Test -->
+        <div class="test-section">
+            <h2>Video Container Test</h2>
+            <div class="video-test">
+                <span>Video would display here<br>(16:9 aspect ratio maintained)</span>
+            </div>
+            <p style="text-align: center; color: #888;">
+                Video should fill container while maintaining aspect ratio
+            </p>
+        </div>
+        
+        <!-- Performance Tests -->
+        <div class="test-section">
+            <h2>Performance Indicators</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <span class="status-indicator" id="status-gpu"></span>
+                    <strong>GPU Acceleration</strong>
+                    <p id="test-gpu">-</p>
+                </div>
+                <div class="test-item">
+                    <span class="status-indicator" id="status-animations"></span>
+                    <strong>Animations</strong>
+                    <p id="test-animations">-</p>
+                </div>
+                <div class="test-item">
+                    <span class="status-indicator" id="status-safe-area"></span>
+                    <strong>Safe Area Support</strong>
+                    <p id="test-safe-area">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Tests -->
+        <div class="test-section">
+            <h2>Navigation Flow Tests</h2>
+            <button class="test-button" onclick="window.location.href='./Start_Here_Screen/Start_Button.html'">
+                🎮 Test Start Screen
+            </button>
+            <button class="test-button" onclick="window.location.href='./Enhanced_Login_System/enhanced-character-selector.html'">
+                👤 Test Character Selector
+            </button>
+            <button class="test-button" onclick="window.location.href='./videos/eli/eli-flexible-player.html'">
+                🎬 Test Video Player (Eli's Story)
+            </button>
+        </div>
+        
+        <!-- Recommendations -->
+        <div class="recommendations">
+            <h3>💡 Testing Recommendations</h3>
+            <ul>
+                <li>Test on actual devices (phone, tablet, desktop) for best results</li>
+                <li>Try both portrait and landscape orientations</li>
+                <li>Test touch interactions on mobile devices</li>
+                <li>Verify video playback works smoothly</li>
+                <li>Check that all buttons are easily tappable</li>
+                <li>Ensure text is readable without zooming</li>
+                <li>Test with different browsers (Chrome, Safari, Firefox)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Device Detection
+        function updateDeviceInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const screenWidth = window.screen.width;
+            const screenHeight = window.screen.height;
+            const pixelRatio = window.devicePixelRatio || 1;
+            const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const orientation = width > height ? 'Landscape' : 'Portrait';
+            
+            // Determine device type
+            let deviceType = 'Desktop';
+            if (width <= 480) deviceType = 'Mobile (Portrait)';
+            else if (width <= 767) deviceType = 'Mobile (Landscape)';
+            else if (width <= 1024) deviceType = 'Tablet';
+            else if (width <= 1366) deviceType = 'Tablet (Landscape)';
+            
+            // Update display
+            document.getElementById('screen-size').textContent = `${screenWidth} x ${screenHeight}px`;
+            document.getElementById('viewport-size').textContent = `${width} x ${height}px`;
+            document.getElementById('device-type').textContent = deviceType;
+            document.getElementById('orientation').textContent = orientation;
+            document.getElementById('touch-support').textContent = isTouch ? 'Yes ✓' : 'No (Mouse)';
+            document.getElementById('pixel-ratio').textContent = `${pixelRatio}x`;
+            document.getElementById('user-agent').textContent = navigator.userAgent;
+            
+            // Test breakpoints
+            testBreakpoint('mobile', width <= 480, 'status-mobile', 'test-mobile');
+            testBreakpoint('tablet', width >= 768 && width <= 1024, 'status-tablet', 'test-tablet');
+            testBreakpoint('desktop', width >= 1367, 'status-desktop', 'test-desktop');
+            
+            // Test features
+            testFeature('gpu', 'transform' in document.body.style, 'status-gpu', 'test-gpu', 'Supported', 'Not Supported');
+            testFeature('animations', 'animation' in document.body.style, 'status-animations', 'test-animations', 'Supported', 'Not Supported');
+            testFeature('safe-area', CSS.supports('padding', 'env(safe-area-inset-top)'), 'status-safe-area', 'test-safe-area', 'Supported', 'Not Supported');
+        }
+        
+        function testBreakpoint(name, isActive, statusId, testId) {
+            const statusEl = document.getElementById(statusId);
+            const testEl = document.getElementById(testId);
+            
+            if (isActive) {
+                statusEl.className = 'status-indicator status-pass';
+                testEl.textContent = 'Active ✓';
+                testEl.style.color = '#00ff88';
+            } else {
+                statusEl.className = 'status-indicator';
+                testEl.textContent = 'Inactive';
+                testEl.style.color = '#666';
+            }
+        }
+        
+        function testFeature(name, isSupported, statusId, testId, passText, failText) {
+            const statusEl = document.getElementById(statusId);
+            const testEl = document.getElementById(testId);
+            
+            if (isSupported) {
+                statusEl.className = 'status-indicator status-pass';
+                testEl.textContent = passText;
+                testEl.style.color = '#00ff88';
+            } else {
+                statusEl.className = 'status-indicator status-fail';
+                testEl.textContent = failText;
+                testEl.style.color = '#ff0040';
+            }
+        }
+        
+        // Touch Test
+        let touchCount = 0;
+        const touchTest = document.getElementById('touch-test');
+        const touchMessage = document.getElementById('touch-message');
+        const touchCountEl = document.getElementById('touch-count');
+        
+        touchTest.addEventListener('click', () => {
+            touchCount++;
+            touchCountEl.textContent = touchCount;
+            touchMessage.textContent = 'Touch registered! ✓';
+            touchMessage.style.color = '#00ff88';
+            
+            setTimeout(() => {
+                touchMessage.textContent = 'Tap or click here to test touch response';
+                touchMessage.style.color = '#00ffff';
+            }, 1000);
+        });
+        
+        // Button Test
+        function testButtonClick(button) {
+            const originalText = button.textContent;
+            button.textContent = '✓ Button Clicked Successfully!';
+            button.style.background = 'rgba(0, 255, 136, 0.4)';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = 'rgba(0, 255, 136, 0.2)';
+            }, 1500);
+        }
+        
+        // Update on load and resize
+        updateDeviceInfo();
+        window.addEventListener('resize', updateDeviceInfo);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateDeviceInfo, 100);
+        });
+        
+        // Log test results
+        console.log('📱 Responsive Design Test Initialized');
+        console.log('Device Info:', {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            pixelRatio: window.devicePixelRatio,
+            touch: 'ontouchstart' in window
+        });
+    </script>
+</body>
+</html>

@@ -3,12 +3,16 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data_Bleed</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Inter:wght@400;700&display=swap"
     rel="stylesheet">
+  
+  <!-- Responsive Design System -->
+  <link rel="stylesheet" href="./css/responsive-design.css">
 
   <style>
     /* --- Base Styles --- */
@@ -48,15 +52,20 @@
     /* --- Animation Container --- */
     #intro-video {
       display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100vh;
       background: black;
+      z-index: 9998;
     }
 
     #intro-video video {
       width: 100%;
       height: 100%;
       object-fit: contain;
+      display: block;
     }
 
     /* --- Login Screen --- */
@@ -297,6 +306,7 @@
   <div id="intro-video">
     <video id="logo-animation" playsinline>
       <source src="./Main_Animations/DataBleed_Logo_Animation_Adobe_Take_10.mp4" type="video/mp4">
+      Your browser does not support the video tag.
     </video>
   </div>
 
@@ -326,7 +336,7 @@
 
   <!-- Background Audio -->
   <audio id="start-audio" src="./Start_Here_Screen/The_Corrupted_Lullaby.mp3" loop></audio>
-  <audio id="intro-audio" src="./Main_Animations/intro_theme.mp3"></audio>
+  <!-- Intro audio removed - using start audio throughout intro for continuity -->
   <audio id="eli-audio" src="./Main_Login_Audio/Eli_Rage_Glitch.mp3" loop></audio>
   <audio id="maya-audio" src="./Main_Login_Audio/Maya_The_Connection_Trap.mp3" loop></audio>
   <audio id="stanley-audio" src="./Main_Login_Audio/Stanely_The Digital Doppelganger.mp3" loop></audio>
@@ -476,7 +486,6 @@
 
     // --- AUDIO ---
     const startAudio = document.getElementById("start-audio");
-    const introAudio = document.getElementById("intro-audio");
     const eliAudio = document.getElementById("eli-audio");
     const mayaAudio = document.getElementById("maya-audio");
     const stanleyAudio = document.getElementById("stanley-audio");
@@ -494,14 +503,45 @@
     const startFrame = document.getElementById("start-frame");
     window.addEventListener("message", (event) => {
       if (event.data === "start-clicked") {
-        startAudio.pause(); startAudio.currentTime = 0;
-        introScreen.style.display = "none"; introVideo.style.display = "block"; logoAnimation.play();
-        introAudio.play().catch(err => console.warn("Intro audio blocked:", err));
+        console.log("🎬 Start button clicked - beginning intro sequence");
+        
+        // STOP the initialize button music immediately
+        startAudio.pause();
+        startAudio.currentTime = 0;
+        console.log("🔇 Initialize button music stopped");
+        
+        // Hide intro screen
+        introScreen.style.display = "none"; 
+        
+        // Show and play logo animation
+        introVideo.style.display = "block";
+        console.log("📺 Showing intro video container");
+        
+        // Play video WITH audio (not muted) - video has embedded "Data Bleed" audio
+        logoAnimation.muted = false; // Allow video audio to play
+        logoAnimation.volume = 1.0; // Full volume for video audio
+        logoAnimation.play()
+          .then(() => {
+            console.log("▶️ Logo animation playing with embedded audio");
+          })
+          .catch(err => {
+            console.error("❌ Logo animation play failed:", err);
+            // If video fails, skip to character selector after a delay
+            setTimeout(() => {
+              console.log("⏭️ Skipping to character selector due to video error");
+              window.location.href = './Enhanced_Login_System/enhanced-character-selector.html';
+            }, 2000);
+          });
+        
+        // Listen for video end
         logoAnimation.addEventListener("ended", () => {
+          console.log("✅ Logo animation completed");
           introVideo.style.display = "none";
-          loginScreen.style.display = "flex";
-          // Don't auto-select any character - let user choose
-        });
+          
+          // Navigate to enhanced character selector
+          console.log("🎯 Navigating to character selector");
+          window.location.href = './Enhanced_Login_System/enhanced-character-selector.html';
+        }, { once: true }); // Use once: true to prevent multiple listeners
       }
     });
 
@@ -532,8 +572,7 @@
 
     // --- THEME SWITCHER ---
     function switchTheme(character) {
-      [eliAudio, mayaAudio, stanleyAudio].forEach(a => { a.pause(); a.currentTime = 0; });
-      introAudio.pause();
+      [eliAudio, mayaAudio, stanleyAudio, startAudio].forEach(a => { a.pause(); a.currentTime = 0; });
       if (character === "eli") eliAudio.play().catch(() => { });
       if (character === "maya") mayaAudio.play().catch(() => { });
       if (character === "stanley") stanleyAudio.play().catch(() => { });
@@ -935,7 +974,13 @@
       sessionStorage.setItem('gameplayArea', '1');
       sessionStorage.setItem('gameplayMode', 'true');
       
-      // Navigate to first area
+      // For Eli, use the complete story system
+      if (character === 'eli') {
+        window.location.href = './videos/eli/eli-flexible-player.html';
+        return;
+      }
+      
+      // Navigate to first area for other characters
       const areaPath = `./gameplay-areas/${character}/area-1-${getAreaName(character, 1)}.html`;
       window.location.href = areaPath;
     }
@@ -965,6 +1010,12 @@
   
   <!-- 3D Scene Manager -->
   <script src="./js/three-scene-manager.js"></script>
+  
+  <!-- Mobile 3D Support (must load before 3d-integration) -->
+  <script src="./js/mobile-3d-support.js"></script>
+  
+  <!-- Character 3D System (must load before 3d-integration) -->
+  <script src="./js/character-3d-system.js"></script>
   
   <!-- 3D Integration Module -->
   <script src="./js/3d-integration.js"></script>

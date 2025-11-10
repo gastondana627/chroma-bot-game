@@ -1,0 +1,581 @@
+/**
+ * DATA_BLEED - Comprehensive Responsive Design System
+ * Ensures consistent experience across mobile, tablet, and desktop
+ */
+
+/* ============================================
+   BASE RESPONSIVE SETUP
+   ============================================ */
+
+/* Ensure proper viewport behavior */
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    touch-action: manipulation;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent horizontal scroll on mobile */
+body, html {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+/* ============================================
+   MOBILE FIRST - BASE STYLES (320px+)
+   ============================================ */
+
+/* Video containers */
+.horror-video-container,
+#intro-video,
+#story-video {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+}
+
+/* Ensure videos fill screen properly on mobile */
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Touch-friendly buttons */
+button,
+.choice-btn,
+.start-button,
+.character-card,
+.character-node {
+    min-height: 44px; /* iOS minimum touch target */
+    min-width: 44px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================
+   MOBILE PORTRAIT (320px - 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+    /* Start Screen */
+    .logo-text {
+        font-size: 2rem !important;
+        letter-spacing: 3px !important;
+    }
+    
+    .subtitle {
+        font-size: 0.8rem !important;
+        letter-spacing: 2px !important;
+    }
+    
+    .start-button {
+        font-size: 1rem !important;
+        padding: 15px 30px !important;
+        letter-spacing: 2px !important;
+    }
+    
+    .hex-logo {
+        width: 150px !important;
+        height: 150px !important;
+    }
+    
+    .hex-layer-1 { width: 140px !important; height: 140px !important; }
+    .hex-layer-2 { width: 120px !important; height: 120px !important; }
+    .hex-layer-3 { width: 100px !important; height: 100px !important; }
+    .hex-layer-4 { width: 80px !important; height: 80px !important; }
+    
+    /* Character Selector */
+    .main-title h1 {
+        font-size: 2rem !important;
+        letter-spacing: 4px !important;
+    }
+    
+    .main-title p {
+        font-size: 0.8rem !important;
+        letter-spacing: 2px !important;
+    }
+    
+    .nodes-container {
+        flex-direction: column !important;
+        gap: 60px !important;
+        padding: 20px !important;
+    }
+    
+    .character-node {
+        width: 200px !important;
+        height: 200px !important;
+    }
+    
+    .face-orb {
+        width: 140px !important;
+        height: 140px !important;
+    }
+    
+    .orbit-ring {
+        width: 160px !important;
+        height: 160px !important;
+    }
+    
+    .character-name {
+        font-size: 1.3rem !important;
+    }
+    
+    .character-specialty {
+        font-size: 0.75rem !important;
+    }
+    
+    .coming-soon-badge {
+        font-size: 0.65rem !important;
+        padding: 6px 15px !important;
+    }
+    
+    .lock-badge {
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 2rem !important;
+    }
+    
+    /* HUD Elements */
+    .hud-overlay {
+        flex-direction: column !important;
+        gap: 10px !important;
+        padding: 10px !important;
+    }
+    
+    .scene-info,
+    .trust-score-hud,
+    .horror-intensity-hud {
+        padding: 10px 15px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .scene-title {
+        font-size: 1rem !important;
+    }
+    
+    .trust-value,
+    .intensity-value {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Decision Overlay */
+    .decision-content {
+        padding: 20px !important;
+        width: 95% !important;
+    }
+    
+    .decision-question {
+        font-size: 1.2rem !important;
+    }
+    
+    .decision-context {
+        font-size: 0.85rem !important;
+    }
+    
+    .decision-buttons {
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
+    
+    .choice-btn {
+        padding: 15px !important;
+        font-size: 0.95rem !important;
+    }
+    
+    .choice-icon {
+        font-size: 1.5rem !important;
+    }
+    
+    .educational-tip {
+        padding: 12px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    /* Chat Box */
+    #chat-box {
+        width: calc(100vw - 40px) !important;
+        height: 60vh !important;
+        bottom: 100px !important;
+        right: 20px !important;
+        left: 20px !important;
+    }
+    
+    #video-container {
+        width: 60px !important;
+        height: 60px !important;
+        bottom: 15px !important;
+        right: 15px !important;
+    }
+    
+    /* Results Screen */
+    .results-title {
+        font-size: 2rem !important;
+    }
+    
+    .results-score {
+        font-size: 3rem !important;
+    }
+    
+    .results-message {
+        font-size: 1rem !important;
+    }
+    
+    .results-stats {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem !important;
+    }
+    
+    .results-actions {
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
+    
+    .results-btn {
+        width: 100% !important;
+        padding: 12px 20px !important;
+        font-size: 0.95rem !important;
+    }
+    
+    /* Pause Button */
+    #pause-game-btn {
+        padding: 8px 15px !important;
+        font-size: 0.85rem !important;
+        top: 10px !important;
+        left: 10px !important;
+    }
+    
+    /* Dashboard Buttons */
+    button[id$="-enter-gameplay"] {
+        top: 60px !important;
+        left: 10px !important;
+        padding: 10px 20px !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+/* ============================================
+   MOBILE LANDSCAPE (481px - 767px)
+   ============================================ */
+
+@media (min-width: 481px) and (max-width: 767px) {
+    .logo-text {
+        font-size: 2.5rem !important;
+        letter-spacing: 4px !important;
+    }
+    
+    .main-title h1 {
+        font-size: 2.5rem !important;
+    }
+    
+    .nodes-container {
+        flex-direction: row !important;
+        gap: 40px !important;
+    }
+    
+    .character-node {
+        width: 180px !important;
+        height: 180px !important;
+    }
+    
+    .face-orb {
+        width: 130px !important;
+        height: 130px !important;
+    }
+    
+    .decision-buttons {
+        flex-direction: row !important;
+    }
+    
+    #chat-box {
+        width: 320px !important;
+        height: 400px !important;
+    }
+}
+
+/* ============================================
+   TABLET PORTRAIT (768px - 1024px)
+   ============================================ */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .logo-text {
+        font-size: 3rem !important;
+        letter-spacing: 6px !important;
+    }
+    
+    .main-title h1 {
+        font-size: 3rem !important;
+    }
+    
+    .nodes-container {
+        gap: 60px !important;
+    }
+    
+    .character-node {
+        width: 220px !important;
+        height: 220px !important;
+    }
+    
+    .face-orb {
+        width: 160px !important;
+        height: 160px !important;
+    }
+    
+    .orbit-ring {
+        width: 200px !important;
+        height: 200px !important;
+    }
+    
+    .decision-content {
+        padding: 30px !important;
+        width: 90% !important;
+    }
+    
+    .decision-question {
+        font-size: 1.5rem !important;
+    }
+    
+    .results-stats {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+/* ============================================
+   TABLET LANDSCAPE (1025px - 1366px)
+   ============================================ */
+
+@media (min-width: 1025px) and (max-width: 1366px) {
+    .nodes-container {
+        gap: 80px !important;
+    }
+    
+    .character-node {
+        width: 240px !important;
+        height: 240px !important;
+    }
+    
+    .face-orb {
+        width: 180px !important;
+        height: 180px !important;
+    }
+}
+
+/* ============================================
+   DESKTOP (1367px+)
+   ============================================ */
+
+@media (min-width: 1367px) {
+    /* Default desktop styles - no overrides needed */
+    /* Original design is optimized for desktop */
+}
+
+/* ============================================
+   ORIENTATION SPECIFIC
+   ============================================ */
+
+/* Portrait orientation adjustments */
+@media (orientation: portrait) {
+    .nodes-container {
+        flex-direction: column !important;
+    }
+    
+    .hud-overlay {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+    .main-title {
+        top: 20px !important;
+    }
+    
+    .main-title h1 {
+        font-size: 2rem !important;
+    }
+    
+    .main-title p {
+        font-size: 0.8rem !important;
+    }
+    
+    .character-node {
+        width: 150px !important;
+        height: 150px !important;
+    }
+    
+    .face-orb {
+        width: 110px !important;
+        height: 110px !important;
+    }
+    
+    .instructions {
+        bottom: 20px !important;
+        font-size: 0.75rem !important;
+    }
+}
+
+/* ============================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    /* Remove hover effects on touch devices */
+    .character-node:hover {
+        transform: scale(1) !important;
+    }
+    
+    .choice-btn:hover {
+        transform: translateY(0) !important;
+    }
+    
+    .start-button:hover {
+        transform: translateY(0) scale(1) !important;
+    }
+    
+    /* Add active states for touch feedback */
+    .character-node:active {
+        transform: scale(0.95) !important;
+        transition: transform 0.1s ease !important;
+    }
+    
+    .choice-btn:active {
+        transform: scale(0.95) !important;
+        transition: transform 0.1s ease !important;
+    }
+    
+    .start-button:active {
+        transform: scale(0.95) !important;
+        transition: transform 0.1s ease !important;
+    }
+    
+    /* Increase touch targets */
+    button, .choice-btn, .character-node {
+        min-height: 48px !important;
+        min-width: 48px !important;
+    }
+}
+
+/* ============================================
+   HIGH DPI DISPLAYS (Retina, etc.)
+   ============================================ */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Sharper text rendering */
+    body {
+        -webkit-font-smoothing: subpixel-antialiased;
+    }
+    
+    /* Optimize canvas rendering */
+    canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================ */
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .character-node,
+    .choice-btn,
+    .start-button {
+        border-width: 3px !important;
+    }
+    
+    .decision-content,
+    .scene-info,
+    .trust-score-hud {
+        border-width: 3px !important;
+    }
+}
+
+/* ============================================
+   SAFE AREA INSETS (iPhone X+, etc.)
+   ============================================ */
+
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+        padding-top: max(0px, env(safe-area-inset-top));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+    
+    .hud-overlay {
+        padding-top: max(20px, env(safe-area-inset-top));
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+    }
+    
+    #chat-box {
+        bottom: max(120px, calc(120px + env(safe-area-inset-bottom)));
+    }
+    
+    #video-container {
+        bottom: max(20px, calc(20px + env(safe-area-inset-bottom)));
+        right: max(20px, calc(20px + env(safe-area-inset-right)));
+    }
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* GPU acceleration for animations */
+.character-node,
+.face-orb,
+.orbit-ring,
+.hex-layer,
+.choice-btn,
+.start-button {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Optimize video rendering */
+video {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* ============================================
+   PRINT STYLES (for documentation)
+   ============================================ */
+
+@media print {
+    .hud-overlay,
+    #chat-box,
+    #video-container,
+    .decision-overlay,
+    button {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        color: black !important;
+    }
+}

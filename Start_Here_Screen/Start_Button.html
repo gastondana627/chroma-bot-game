@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DATA_BLEED - Game Intro</title>
+    
+    <!-- Responsive Design System -->
+    <link rel="stylesheet" href="../css/responsive-design.css">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=IBM+Plex+Mono:wght@400;700&display=swap');
 
@@ -463,9 +467,9 @@
                     container.style.opacity = '0';
                     container.style.transform = 'scale(0.8)';
                     
-                    // Notify parent (index.html) instead of redirecting
+                    // Signal parent to show logo animation
                     setTimeout(() => {
-                        window.parent.postMessage("start-clicked", "*");
+                        window.parent.postMessage('start-clicked', '*');
                     }, 1000);
                 }, 500);
             }, 3000);
@@ -494,14 +498,14 @@
         function stopStartMusic() {
             startMusic.pause();
             startMusic.currentTime = 0;
+            console.log("🔇 Initialize button music stopped");
         }
 
         // Hook into your existing startGame()
         const originalStartGame = startGame;
         startGame = function() {
-            stopStartMusic();
+            stopStartMusic(); // Stop music immediately when button is clicked
             originalStartGame();
-            window.parent.postMessage("start-clicked", "*");
         };
     </script>
 </body>

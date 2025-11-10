@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eli's Story - Flexible Video Player</title>
+    
+    <link rel="stylesheet" href="../../css/interactive-video-styles.css">
+    <link rel="stylesheet" href="../../css/horror-video-effects.css">
+    <link rel="stylesheet" href="../../css/horror-animations-base.css">
+    <link rel="stylesheet" href="../../css/chromabot-corruption.css">
+    
+    <!-- Responsive Design System -->
+    <link rel="stylesheet" href="../../css/responsive-design.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            overflow: hidden;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+        }
+        
+        #story-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* HUD */
+        .hud {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .trust-display {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border: 2px solid #00ff88;
+            border-radius: 5px;
+            text-align: right;
+        }
+        
+        .trust-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .trust-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff88;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        /* Decision Overlay */
+        .decision-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .decision-overlay.active {
+            display: flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .decision-box {
+            max-width: 700px;
+            width: 90%;
+            background: rgba(10, 10, 10, 0.95);
+            border: 3px solid #00ffff;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+            opacity: 1 !important;
+            visibility: visible !important;
+            z-index: 10001;
+        }
+        
+        .decision-question {
+            font-size: 1.8rem;
+            color: #00ffff;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+        
+        .choices {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .choice {
+            flex: 1;
+            padding: 20px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            color: #00ff88;
+            font-size: 1.1rem;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+        }
+        
+        .choice:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .choice.risky {
+            background: rgba(255, 0, 64, 0.1);
+            border-color: #ff0040;
+            color: #ff6b6b;
+        }
+        
+        .choice.risky:hover {
+            background: rgba(255, 0, 64, 0.2);
+            box-shadow: 0 5px 20px rgba(255, 0, 64, 0.3);
+        }
+        
+        /* Feedback */
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00ff88;
+            border-radius: 10px;
+            padding: 30px;
+            z-index: 10001;
+            opacity: 0;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 400px;
+        }
+        
+        .feedback.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .feedback.negative {
+            border-color: #ff0040;
+        }
+        
+        .feedback-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        
+        .feedback-text {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .feedback-score {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .feedback.positive .feedback-score {
+            color: #00ff88;
+        }
+        
+        .feedback.negative .feedback-score {
+            color: #ff0040;
+        }
+        
+        /* Scene Navigation */
+        .scene-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border: 2px solid #00ffff;
+            border-radius: 5px;
+            z-index: 9999;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .scene-nav button {
+            padding: 10px 20px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .scene-nav button:hover {
+            background: rgba(0, 255, 255, 0.3);
+        }
+        
+        .scene-nav button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .scene-nav button.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: rgba(255, 0, 64, 0.2);
+            border-color: #ff0040;
+            position: relative;
+        }
+
+        .scene-nav button.locked::before {
+            content: '🔒 ';
+        }
+
+        /* Observer Briefing Overlay */
+        .observer-briefing {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.98);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .observer-briefing.show {
+            opacity: 1;
+        }
+
+        .briefing-content {
+            max-width: 700px;
+            width: 90%;
+            background: linear-gradient(135deg, rgba(10, 20, 30, 0.95), rgba(5, 10, 15, 0.95));
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3), inset 0 0 30px rgba(0, 255, 255, 0.05);
+            animation: briefingSlideIn 0.6s ease-out;
+        }
+
+        @keyframes briefingSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .briefing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .classified-tag {
+            background: #ff0040;
+            color: #fff;
+            padding: 5px 15px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border-radius: 3px;
+        }
+
+        .case-id {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .scene-marker {
+            color: #00ffff;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .briefing-title {
+            font-size: 1.8rem;
+            color: #00ffff;
+            margin-bottom: 25px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .briefing-body {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .briefing-body p {
+            margin-bottom: 15px;
+        }
+
+        .briefing-body strong {
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .warning-text {
+            color: #ffd700;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 4px solid #ffd700;
+            border-radius: 5px;
+        }
+
+        .briefing-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            color: #00ffff;
+            font-size: 1.1rem;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .briefing-btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .scene-info {
+            color: #00ffff;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <video id="story-video" preload="auto">
+            <!-- Source set dynamically -->
+        </video>
+    </div>
+    
+    <!-- HUD -->
+    <div class="hud">
+        <div class="trust-display">
+            <span class="trust-label">TRUST SCORE</span>
+            <span class="trust-value" id="trust-value">100</span>
+        </div>
+    </div>
+    
+    <!-- Decision Overlay -->
+    <div class="decision-overlay" id="decision-overlay">
+        <div class="decision-box">
+            <h2 class="decision-question" id="decision-question"></h2>
+            <div class="choices" id="choices"></div>
+        </div>
+    </div>
+    
+    <!-- Scene Navigation -->
+    <div class="scene-nav">
+        <button id="prev-btn" onclick="previousScene()">← Previous</button>
+        <span class="scene-info">
+            Scene <span id="current-scene">1</span> / <span id="total-scenes">6</span>
+        </span>
+        <button id="next-btn" class="locked" onclick="tryNextScene()" title="Make a decision first">Next →</button>
+    </div>
+    
+    <!-- Core Scripts -->
+    <script src="../../Game/Mechanics/bayesian-trust-engine.js"></script>
+    <script src="../../Game/Mechanics/horror-atmosphere-engine.js"></script>
+    <script src="../../Game/Mechanics/horror-video-integration.js"></script>
+    
+    <!-- ChromaBot Integration -->
+    <script src="../../Game/Mechanics/chroma-bot-adaptive-integration.js"></script>
+    <script src="chromabot-corruption-animator.js"></script>
+    <script src="chromabot-response-corruptor.js"></script>
+    <script src="chromabot-video-config.js"></script>
+    
+    <!-- Trust Decay & Pause Menu Dashboard (MUST load before scenes config) -->
+    <script src="trust-decay-system.js"></script>
+    <script src="chromabot-scene-training.js"></script>
+    <script src="pause-menu-dashboard.js"></script>
+    
+    <!-- Completion Screen -->
+    <script src="completion-screen.js"></script>
+    
+    <!-- Scene Configuration (loads last, uses systems above) -->
+    <script src="eli-scenes-config.js"></script>
+</body>
+</html>

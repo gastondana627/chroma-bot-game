@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eli's Story - Complete Interactive Experience</title>
+    
+    <link rel="stylesheet" href="../../css/interactive-video-styles.css">
+    <link rel="stylesheet" href="../../css/horror-video-effects.css">
+    <link rel="stylesheet" href="../../css/horror-animations-base.css">
+    
+    <!-- Horror Decision Overlay System -->
+    <link rel="stylesheet" href="../../css/chromabot-corruption.css">
+    <link rel="stylesheet" href="../../css/decision-overlay-horror.css">
+    
+    <!-- Responsive Design System -->
+    <link rel="stylesheet" href="../../css/responsive-design.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            overflow: hidden;
+        }
+        
+        /* Mark this as a story page for scoped CSS */
+        body.story-page {
+            /* Cyber enhancements will apply here */
+        }
+        
+        .horror-video-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #story-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* HUD Overlay */
+        .hud-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            z-index: 9999;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .scene-info {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 20px;
+            border: 2px solid #00ffff;
+            border-radius: 5px;
+        }
+        
+        .scene-number {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+        
+        .scene-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00ffff;
+        }
+        
+        .trust-score-hud {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border: 2px solid #00ff88;
+            border-radius: 5px;
+            text-align: right;
+        }
+        
+        .trust-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .trust-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .horror-intensity-hud {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border: 2px solid #ff0040;
+            border-radius: 5px;
+            text-align: right;
+            margin-top: 10px;
+        }
+        
+        .intensity-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .intensity-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff0040;
+        }
+        
+        /* Decision Overlay */
+        .decision-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .decision-overlay.visible {
+            display: flex;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .decision-content {
+            max-width: 800px;
+            width: 90%;
+            background: rgba(10, 10, 10, 0.95);
+            border: 3px solid #00ffff;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+        }
+        
+        .decision-title {
+            font-size: 1rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .decision-question {
+            font-size: 1.8rem;
+            color: #00ffff;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .decision-context {
+            font-size: 1rem;
+            color: #888;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .decision-buttons {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .choice-btn {
+            flex: 1;
+            padding: 20px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            color: #00ff88;
+            font-size: 1.1rem;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .choice-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .choice-btn.risky {
+            background: rgba(255, 0, 64, 0.1);
+            border-color: #ff0040;
+            color: #ff6b6b;
+        }
+        
+        .choice-btn.risky:hover {
+            background: rgba(255, 0, 64, 0.2);
+            box-shadow: 0 5px 20px rgba(255, 0, 64, 0.3);
+        }
+        
+        .choice-icon {
+            font-size: 2rem;
+        }
+        
+        .choice-text {
+            font-size: 1rem;
+            text-align: center;
+        }
+        
+        .educational-tip {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 4px solid #ffd700;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        
+        .tip-title {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .tip-content {
+            color: #ccc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* Feedback Popup */
+        .feedback-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00ff88;
+            border-radius: 10px;
+            padding: 30px;
+            z-index: 10001;
+            opacity: 0;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 400px;
+        }
+        
+        .feedback-popup.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .feedback-popup.negative {
+            border-color: #ff0040;
+        }
+        
+        .feedback-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        
+        .feedback-text {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .feedback-score {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .feedback-popup.positive .feedback-score {
+            color: #00ff88;
+        }
+        
+        .feedback-popup.negative .feedback-score {
+            color: #ff0040;
+        }
+        
+        /* Scene Transition */
+        .scene-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .scene-transition.active {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .transition-text {
+            font-size: 2rem;
+            color: #00ffff;
+            text-align: center;
+        }
+        
+        .loading-bar {
+            width: 300px;
+            height: 4px;
+            background: rgba(0, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            background: #00ffff;
+            width: 0%;
+            animation: loadProgress 1s ease-out forwards;
+        }
+        
+        @keyframes loadProgress {
+            to { width: 100%; }
+        }
+        
+        /* Final Results Screen */
+        .results-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10002;
+            padding: 40px;
+        }
+        
+        .results-screen.active {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .results-content {
+            max-width: 800px;
+            text-align: center;
+        }
+        
+        .results-title {
+            font-size: 3rem;
+            color: #00ffff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        .results-score {
+            font-size: 5rem;
+            font-weight: bold;
+            margin: 30px 0;
+        }
+        
+        .results-message {
+            font-size: 1.5rem;
+            color: #ccc;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+        
+        .results-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-box {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ffff;
+        }
+        
+        .results-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .results-btn {
+            padding: 15px 40px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            color: #00ff88;
+            font-size: 1.1rem;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .results-btn:hover {
+            background: rgba(0, 255, 136, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Horror overlays */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15) 0px,
+                transparent 1px,
+                transparent 2px,
+                rgba(0, 0, 0, 0.15) 3px
+            );
+            pointer-events: none;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Video Container -->
+    <div class="horror-video-container">
+        <video id="story-video" preload="auto">
+            <!-- Video source will be set dynamically -->
+        </video>
+        <div class="scanlines"></div>
+    </div>
+    
+    <!-- HUD Overlay -->
+    <div class="hud-overlay">
+        <div class="scene-info">
+            <div class="scene-number">SCENE <span id="current-scene">1</span> / 6</div>
+            <div class="scene-title" id="scene-title">Suspicious Mod Offer</div>
+        </div>
+        
+        <div>
+            <div class="trust-score-hud">
+                <span class="trust-label">TRUST SCORE</span>
+                <div class="trust-value" id="trust-value">100</div>
+            </div>
+            <div class="horror-intensity-hud">
+                <span class="intensity-label">HORROR</span>
+                <div class="intensity-value" id="intensity-value">0</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Decision Overlay -->
+    <div class="decision-overlay" id="decision-overlay">
+        <div class="decision-content">
+            <div class="decision-title" id="decision-title">DECISION POINT</div>
+            <h2 class="decision-question" id="decision-question"></h2>
+            <p class="decision-context" id="decision-context"></p>
+            
+            <div class="decision-buttons">
+                <button class="choice-btn" id="choice-safe" data-choice="safe">
+                    <span class="choice-icon">✓</span>
+                    <span class="choice-text" id="safe-text"></span>
+                </button>
+                <button class="choice-btn risky" id="choice-risky" data-choice="risky">
+                    <span class="choice-icon">⚠</span>
+                    <span class="choice-text" id="risky-text"></span>
+                </button>
+            </div>
+            
+            <div class="educational-tip">
+                <div class="tip-title">💡 Security Tip</div>
+                <div class="tip-content" id="tip-content"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scene Transition -->
+    <div class="scene-transition" id="scene-transition">
+        <div class="transition-text" id="transition-text">Loading next scene...</div>
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+    </div>
+    
+    <!-- Results Screen -->
+    <div class="results-screen" id="results-screen">
+        <div class="results-content">
+            <h1 class="results-title">STORY COMPLETE</h1>
+            <div class="results-score" id="final-score">100</div>
+            <p class="results-message" id="results-message"></p>
+            
+            <div class="results-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Good Decisions</div>
+                    <div class="stat-value" id="good-count">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Risky Decisions</div>
+                    <div class="stat-value" id="risky-count">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Final Horror</div>
+                    <div class="stat-value" id="final-horror">0</div>
+                </div>
+            </div>
+            
+            <div class="results-actions">
+                <button class="results-btn" onclick="location.reload()">Play Again</button>
+                <button class="results-btn" onclick="window.location.href='../../Main_Dashboards/Eli_Dashboard_V2.html'">Return to Dashboard</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Core Scripts -->
+    <script src="../../Game/Mechanics/bayesian-trust-engine.js"></script>
+    <script src="../../Game/Mechanics/horror-atmosphere-engine.js"></script>
+    <script src="../../Game/Mechanics/horror-video-integration.js"></script>
+    
+    <!-- Required Systems -->
+    <script src="trust-decay-system.js"></script>
+    <script src="pause-menu.js"></script>
+    <script src="chromabot-video-config.js"></script>
+    <script src="pause-menu-dashboard.js"></script>
+    
+    <!-- Horror Decision Overlay System - MUST LOAD BEFORE eli-scenes-config.js -->
+    <script src="chromabot-corruption-animator.js"></script>
+    <script src="decision-overlay-horror.js"></script>
+    
+    <!-- Story Configuration - MUST LOAD LAST -->
+    <script src="eli-scenes-config.js"></script>
+</body>
+</html>
