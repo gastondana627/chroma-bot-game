@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Login - No Images Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: radial-gradient(ellipse at center, #0a1a2a 0%, #000810 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            perspective: 1500px;
+        }
+
+        /* Data Stream Background */
+        .data-stream-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .data-particle {
+            position: absolute;
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+            animation: floatData 15s linear infinite;
+            text-shadow: 0 0 5px currentColor;
+        }
+
+        .data-particle.maya-data { color: rgba(255, 20, 147, 0.6); }
+        .data-particle.eli-data { color: rgba(0, 255, 255, 0.6); }
+        .data-particle.stanley-data { color: rgba(156, 163, 175, 0.6); }
+
+        @keyframes floatData {
+            0% { 
+                transform: translateY(100vh) translateX(0) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+            90% { 
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(-100px) translateX(100px) scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Main Container */
+        .selection-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* Title */
+        .main-title {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 15;
+        }
+
+        .main-title h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5em;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00ffff, #ff1493, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 8px;
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+
+        .main-title p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1em;
+            margin-top: 15px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { 
+                filter: drop-shadow(0 0 40px rgba(0, 255, 255, 0.5));
+            }
+            50% { 
+                filter: drop-shadow(0 0 60px rgba(255, 20, 147, 0.8));
+            }
+        }
+
+        /* Character Nodes Container */
+        .nodes-container {
+            display: flex;
+            gap: 120px;
+            align-items: center;
+            justify-content: center;
+            transform-style: preserve-3d;
+        }
+
+        /* Individual Character Node */
+        .character-node {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .character-node:hover {
+            transform: scale(1.15) translateZ(50px);
+        }
+
+        /* 3D Face Orb - Using Gradients Instead of Images */
+        .face-orb {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 3px solid;
+            box-shadow: 0 0 40px currentColor, inset 0 0 40px currentColor;
+            animation: orbFloat 4s ease-in-out infinite;
+            transform-style: preserve-3d;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Character Initial/Icon */
+        .character-initial {
+            font-family: 'Orbitron', monospace;
+            font-size: 5em;
+            font-weight: 900;
+            text-shadow: 0 0 20px currentColor;
+            animation: initialPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes initialPulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% { 
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        .character-node.maya .face-orb {
+            border-color: #ff1493;
+            background: radial-gradient(circle at 30% 30%, 
+                        rgba(255, 20, 147, 0.3), 
+                        rgba(139, 0, 139, 0.2) 50%,
+                        transparent 70%);
+            box-shadow: 0 0 40px #ff1493, inset 0 0 40px rgba(255, 20, 147, 0.3);
+        }
+
+        .character-node.maya .character-initial {
+            color: #ff1493;
+        }
+
+        .character-node.eli .face-orb {
+            border-color: #00ffff;
+            background: radial-gradient(circle at 30% 30%, 
+                        rgba(0, 255, 255, 0.3), 
+                        rgba(0, 100, 150, 0.2) 50%,
+                        transparent 70%);
+            box-shadow: 0 0 40px #00ffff, inset 0 0 40px rgba(0, 255, 255, 0.3);
+        }
+
+        .character-node.eli .character-initial {
+            color: #00ffff;
+        }
+
+        .character-node.stanley .face-orb {
+            border-color: #9ca3af;
+            background: radial-gradient(circle at 30% 30%, 
+                        rgba(156, 163, 175, 0.3), 
+                        rgba(75, 85, 99, 0.2) 50%,
+                        transparent 70%);
+            box-shadow: 0 0 40px #9ca3af, inset 0 0 40px rgba(156, 163, 175, 0.3);
+        }
+
+        .character-node.stanley .character-initial {
+            color: #9ca3af;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { 
+                transform: translate(-50%, -50%) translateY(0px) rotateY(0deg);
+            }
+            50% { 
+                transform: translate(-50%, -50%) translateY(-15px) rotateY(180deg);
+            }
+        }
+
+        /* Rotating Ring Effect */
+        .orbit-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(75deg);
+            width: 240px;
+            height: 240px;
+            border: 2px solid;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: ringRotate 8s linear infinite;
+        }
+
+        .character-node.maya .orbit-ring {
+            border-color: #ff1493;
+        }
+
+        .character-node.eli .orbit-ring {
+            border-color: #00ffff;
+        }
+
+        .character-node.stanley .orbit-ring {
+            border-color: #9ca3af;
+        }
+
+        @keyframes ringRotate {
+            0% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg); }
+            100% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg); }
+        }
+
+        /* Character Info Card */
+        .character-info {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            opacity: 0;
+            transition: all 0.4s ease;
+            pointer-events: none;
+        }
+
+        .character-node:hover .character-info {
+            opacity: 1;
+            bottom: -100px;
+        }
+
+        .character-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .character-node.maya .character-name {
+            color: #ff1493;
+        }
+
+        .character-node.eli .character-name {
+            color: #00ffff;
+        }
+
+        .character-node.stanley .character-name {
+            color: #9ca3af;
+        }
+
+        .character-specialty {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        /* Case File Preview */
+        .case-preview {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.8);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 12px 20px;
+            opacity: 0;
+            transition: all 0.4s ease;
+            pointer-events: none;
+            white-space: nowrap;
+            backdrop-filter: blur(10px);
+        }
+
+        .character-node:hover .case-preview {
+            opacity: 1;
+            top: -80px;
+            transform: translateX(-50%) scale(1);
+        }
+
+        .character-node.maya .case-preview {
+            border-color: #ff1493;
+        }
+
+        .character-node.eli .case-preview {
+            border-color: #00ffff;
+        }
+
+        .character-node.stanley .case-preview {
+            border-color: #9ca3af;
+        }
+
+        .case-preview-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Particle effects around nodes */
+        .node-particles {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            pointer-events: none;
+        }
+
+        .node-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.6;
+            animation: particleOrbit 6s linear infinite;
+        }
+
+        @keyframes particleOrbit {
+            0% { 
+                transform: rotate(0deg) translateX(120px) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { 
+                transform: rotate(360deg) translateX(120px) rotate(-360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Instructions */
+        .instructions {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9em;
+            letter-spacing: 2px;
+            animation: instructionPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes instructionPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Demo Notice */
+        .demo-notice {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 165, 0, 0.2);
+            border: 2px solid #ffa500;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: #ffa500;
+            font-size: 0.9em;
+            text-align: center;
+            z-index: 20;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 1200px) {
+            .nodes-container {
+                gap: 80px;
+            }
+            
+            .character-node {
+                width: 220px;
+                height: 220px;
+            }
+            
+            .face-orb {
+                width: 160px;
+                height: 160px;
+            }
+            
+            .character-initial {
+                font-size: 4em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nodes-container {
+                flex-direction: column;
+                gap: 100px;
+            }
+            
+            .main-title h1 {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Notice -->
+    <div class="demo-notice">
+        ⚠️ Demo Mode: No Images Required - Using Gradient Placeholders
+    </div>
+
+    <!-- Data Stream Background -->
+    <div class="data-stream-container" id="dataStream"></div>
+
+    <!-- Main Selection Container -->
+    <div class="selection-container">
+        <!-- Title -->
+        <div class="main-title">
+            <h1>DATA_BLEED</h1>
+            <p>Select Your Investigation</p>
+        </div>
+
+        <!-- Character Nodes -->
+        <div class="nodes-container">
+            <!-- Maya Node -->
+            <div class="character-node maya" onclick="alert('Maya selected! In full version, this opens the case file dossier.')">
+                <div class="case-preview">
+                    <span class="case-preview-text">📁 Case File: Romance Scams</span>
+                </div>
+                
+                <div class="orbit-ring"></div>
+                
+                <div class="face-orb">
+                    <div class="character-initial">M</div>
+                </div>
+                
+                <div class="node-particles">
+                    <div class="node-particle" style="color: #ff1493; animation-delay: 0s;"></div>
+                    <div class="node-particle" style="color: #ff1493; animation-delay: 1s;"></div>
+                    <div class="node-particle" style="color: #ff1493; animation-delay: 2s;"></div>
+                    <div class="node-particle" style="color: #ff1493; animation-delay: 3s;"></div>
+                </div>
+                
+                <div class="character-info">
+                    <div class="character-name">MAYA</div>
+                    <div class="character-specialty">Cyber-Security Expert<br>Dating App Warnings</div>
+                </div>
+            </div>
+
+            <!-- Eli Node -->
+            <div class="character-node eli" onclick="alert('Eli selected! In full version, this opens the case file dossier.')">
+                <div class="case-preview">
+                    <span class="case-preview-text">📁 Case File: Gaming Exploitation</span>
+                </div>
+                
+                <div class="orbit-ring"></div>
+                
+                <div class="face-orb">
+                    <div class="character-initial">E</div>
+                </div>
+                
+                <div class="node-particles">
+                    <div class="node-particle" style="color: #00ffff; animation-delay: 0s;"></div>
+                    <div class="node-particle" style="color: #00ffff; animation-delay: 1s;"></div>
+                    <div class="node-particle" style="color: #00ffff; animation-delay: 2s;"></div>
+                    <div class="node-particle" style="color: #00ffff; animation-delay: 3s;"></div>
+                </div>
+                
+                <div class="character-info">
+                    <div class="character-name">ELI</div>
+                    <div class="character-specialty">Gaming Security<br>Peer Pressure Analysis</div>
+                </div>
+            </div>
+
+            <!-- Stanley Node -->
+            <div class="character-node stanley" onclick="alert('Stanley selected! In full version, this opens the case file dossier.')">
+                <div class="case-preview">
+                    <span class="case-preview-text">📁 Case File: Identity Theft</span>
+                </div>
+                
+                <div class="orbit-ring"></div>
+                
+                <div class="face-orb">
+                    <div class="character-initial">S</div>
+                </div>
+                
+                <div class="node-particles">
+                    <div class="node-particle" style="color: #9ca3af; animation-delay: 0s;"></div>
+                    <div class="node-particle" style="color: #9ca3af; animation-delay: 1s;"></div>
+                    <div class="node-particle" style="color: #9ca3af; animation-delay: 2s;"></div>
+                    <div class="node-particle" style="color: #9ca3af; animation-delay: 3s;"></div>
+                </div>
+                
+                <div class="character-info">
+                    <div class="character-name">STANLEY</div>
+                    <div class="character-specialty">Identity Protection<br>Catfishing Investigation</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            CLICK TO ACCESS CASE FILE
+        </div>
+    </div>
+
+    <script>
+        // Generate data stream particles
+        function createDataParticles() {
+            const dataStream = document.getElementById('dataStream');
+            const particleTypes = [
+                { class: 'maya-data', chars: ['♥', '💔', '📱', '⚠️', 'SCAM', 'FAKE'] },
+                { class: 'eli-data', chars: ['🎮', '💰', '🎲', '⚡', 'LOOT', 'TRAP'] },
+                { class: 'stanley-data', chars: ['🔒', '👤', '🕵️', '⚠️', 'FAKE', 'ID'] }
+            ];
+
+            setInterval(() => {
+                const type = particleTypes[Math.floor(Math.random() * particleTypes.length)];
+                const particle = document.createElement('div');
+                particle.className = `data-particle ${type.class}`;
+                particle.textContent = type.chars[Math.floor(Math.random() * type.chars.length)];
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                particle.style.fontSize = (Math.random() * 8 + 8) + 'px';
+                
+                dataStream.appendChild(particle);
+
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 15000);
+            }, 500);
+        }
+
+        createDataParticles();
+
+        // 3D mouse tracking effect
+        let mouseX = 0, mouseY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - window.innerWidth / 2) / 50;
+            mouseY = (e.clientY - window.innerHeight / 2) / 50;
+        });
+
+        function animate() {
+            const nodes = document.querySelectorAll('.character-node');
+            nodes.forEach((node, index) => {
+                const offsetX = (index - 1) * 0.5;
+                node.style.transform = `
+                    translateX(${mouseX * offsetX}px) 
+                    translateY(${mouseY * 0.5}px) 
+                    rotateY(${mouseX * 0.5}deg) 
+                    rotateX(${-mouseY * 0.5}deg)
+                `;
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+
+        console.log('%c🎮 Enhanced Login System - No Images Demo', 'color: #00ffff; font-size: 20px; font-weight: bold;');
+        console.log('%cThis demo shows the system works perfectly without character images!', 'color: #00ff00; font-size: 14px;');
+        console.log('%cGradient orbs with character initials provide visual interest.', 'color: #ffffff; font-size: 12px;');
+    </script>
+</body>
+</html>

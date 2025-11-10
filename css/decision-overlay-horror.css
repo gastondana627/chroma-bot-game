@@ -1,0 +1,368 @@
+/**
+ * Horror-Themed Decision Overlay Styles
+ * Glitch aesthetic with dramatic presentation
+ */
+
+.horror-decision-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    transition: opacity 0.3s ease;
+}
+
+.horror-decision-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Glitch Container */
+.glitch-container {
+    position: relative;
+    width: 90%;
+    max-width: 700px;
+}
+
+/* Decision Box */
+.decision-box {
+    position: relative;
+    background: #0a0a0a;
+    border: 3px solid #ff0000;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 
+        0 0 20px rgba(255, 0, 0, 0.5),
+        0 0 40px rgba(255, 0, 0, 0.3),
+        inset 0 0 20px rgba(255, 0, 0, 0.1);
+    animation: boxPulse 2s ease-in-out infinite;
+}
+
+@keyframes boxPulse {
+    0%, 100% {
+        box-shadow: 
+            0 0 20px rgba(255, 0, 0, 0.5),
+            0 0 40px rgba(255, 0, 0, 0.3),
+            inset 0 0 20px rgba(255, 0, 0, 0.1);
+    }
+    50% {
+        box-shadow: 
+            0 0 30px rgba(255, 0, 0, 0.7),
+            0 0 60px rgba(255, 0, 0, 0.5),
+            inset 0 0 30px rgba(255, 0, 0, 0.2);
+    }
+}
+
+/* Header */
+.decision-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #ff0000;
+}
+
+.warning-icon {
+    font-size: 24px;
+    animation: warningPulse 1s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+.header-text {
+    font-family: 'Courier New', monospace;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff0000;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+/* Context */
+.decision-context {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 0, 0, 0.05);
+    border-left: 4px solid #ff0000;
+    border-radius: 4px;
+}
+
+.decision-context p {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #ffffff;
+    margin: 0;
+}
+
+/* Choices Container */
+.choices-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Choice Button Base */
+.choice-btn {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: #1a1a1a;
+    border: 2px solid #333;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Courier New', monospace;
+    text-align: left;
+}
+
+.choice-btn:hover {
+    transform: translateX(10px);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.choice-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Choice Types */
+.choice-btn.choice-good {
+    border-color: #00ff00;
+}
+
+.choice-btn.choice-good:hover {
+    background: rgba(0, 255, 0, 0.1);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.choice-btn.choice-neutral {
+    border-color: #ffaa00;
+}
+
+.choice-btn.choice-neutral:hover {
+    background: rgba(255, 170, 0, 0.1);
+    box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
+}
+
+.choice-btn.choice-bad {
+    border-color: #ff0000;
+}
+
+.choice-btn.choice-bad:hover {
+    background: rgba(255, 0, 0, 0.1);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+}
+
+/* Choice States */
+.choice-btn.choice-selected {
+    transform: scale(1.05);
+    animation: selectedPulse 0.5s ease-in-out;
+}
+
+@keyframes selectedPulse {
+    0%, 100% { transform: scale(1.05); }
+    50% { transform: scale(1.1); }
+}
+
+.choice-btn.choice-dimmed {
+    opacity: 0.3;
+    transform: scale(0.95);
+}
+
+/* Choice Icon */
+.choice-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+/* Choice Content */
+.choice-content {
+    flex: 1;
+}
+
+.choice-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.choice-description {
+    font-size: 14px;
+    color: #cccccc;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.choice-consequences {
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+}
+
+.trust-impact {
+    color: #00aaff;
+    font-weight: bold;
+}
+
+.safety-level {
+    color: #ffaa00;
+    font-weight: bold;
+}
+
+/* ChromaBot Indicator Container */
+.chromabot-indicator-container {
+    position: absolute;
+    bottom: -60px;
+    right: -60px;
+    width: 120px;
+    height: 120px;
+    pointer-events: none;
+}
+
+/* Glitch Effect Layers */
+.glitch-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0;
+}
+
+/* Glitch In Animation */
+.horror-decision-overlay.glitch-in .glitch-layer-1 {
+    animation: glitchLayer1In 0.8s ease-out;
+}
+
+.horror-decision-overlay.glitch-in .glitch-layer-2 {
+    animation: glitchLayer2In 0.8s ease-out 0.1s;
+}
+
+.horror-decision-overlay.glitch-in .glitch-layer-3 {
+    animation: glitchLayer3In 0.8s ease-out 0.2s;
+}
+
+@keyframes glitchLayer1In {
+    0% {
+        opacity: 1;
+        transform: translate(-10px, 0) scale(1.1);
+        filter: hue-rotate(90deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+@keyframes glitchLayer2In {
+    0% {
+        opacity: 1;
+        transform: translate(10px, 0) scale(0.9);
+        filter: hue-rotate(-90deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+@keyframes glitchLayer3In {
+    0% {
+        opacity: 1;
+        transform: translate(0, -10px) scale(1.05);
+        filter: brightness(2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+/* Glitch Out Animation */
+.horror-decision-overlay.glitch-out .decision-box {
+    animation: glitchOut 0.6s ease-in forwards;
+}
+
+@keyframes glitchOut {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    20% {
+        transform: scale(1.05) translate(-5px, 0);
+    }
+    40% {
+        transform: scale(0.95) translate(5px, 0);
+    }
+    60% {
+        transform: scale(1.02) translate(0, -5px);
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.8) translate(0, 10px);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .decision-box {
+        padding: 20px;
+    }
+    
+    .header-text {
+        font-size: 16px;
+    }
+    
+    .choice-btn {
+        padding: 15px;
+    }
+    
+    .choice-title {
+        font-size: 16px;
+    }
+    
+    .choice-description {
+        font-size: 13px;
+    }
+    
+    .chromabot-indicator-container {
+        bottom: -40px;
+        right: -40px;
+        width: 80px;
+        height: 80px;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .horror-decision-overlay,
+    .choice-btn,
+    .decision-box {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    .choice-btn:hover {
+        transform: none;
+    }
+}

@@ -1,0 +1,295 @@
+<!-- Eli Dashboard Pause Screen - Connected to Live Game Data -->
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+  
+  .pause-dashboard {
+    font-family: 'JetBrains Mono', monospace;
+    background: #000;
+  }
+
+  .breathing-bg {
+    animation: breathe 4s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.02); opacity: 1; }
+  }
+
+  .glitch { animation: glitch 0.3s infinite; }
+  @keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+  }
+
+  .slide-in-right { animation: slideInRight 0.5s ease-out; }
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .progress-bar { transition: width 1s ease-in-out; }
+  .chat-message { transition: all 0.3s ease; }
+  .chat-message:hover { transform: translateX(5px); }
+  .action-button { transition: all 0.3s ease; }
+  .action-button:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+
+  #pauseBackgroundGradient {
+    background: radial-gradient(ellipse at center, rgba(139, 69, 19, 0.15), rgba(75, 0, 130, 0.25), rgba(0,0,0,0.9));
+  }
+
+  #pauseGlitchOverlay {
+    background: repeating-linear-gradient(90deg, transparent, rgba(255,0,100,0.2) 2px, transparent 4px);
+  }
+</style>
+
+<div class="pause-dashboard min-h-screen relative overflow-hidden">
+  <!-- Dynamic Background -->
+  <div id="pauseBackgroundGradient" class="absolute inset-0 breathing-bg"></div>
+
+  <!-- Glitch Overlay -->
+  <div id="pauseGlitchOverlay" class="absolute inset-0 pointer-events-none mix-blend-difference opacity-0"></div>
+
+  <!-- Header -->
+  <div class="relative z-10 p-6 border-b border-purple-500/20">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-white mb-1 flex items-center">
+          <span class="text-purple-400 mr-2">◉</span>
+          eli's space - PAUSED
+          <span class="text-xs ml-3 text-gray-500">taking a break</span>
+        </h1>
+        <div class="text-sm text-gray-400">
+          🎵 <span id="pauseCurrentTrack">lo-fi beats to cry to</span> • press SPACE to resume
+        </div>
+      </div>
+
+      <div class="text-right">
+        <div id="pauseCurrentTime" class="text-sm text-gray-400">3:47 AM</div>
+        <div class="text-xs text-purple-400">scene <span id="pauseCurrentScene">1</span>/6</div>
+        <div class="flex items-center justify-end mt-1 text-xs">
+          <span class="text-green-400">● game paused</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="relative z-10 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Main Dashboard -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Vibe Check -->
+      <div class="bg-gray-900/80 border border-gray-700 rounded-xl p-6 backdrop-blur-md">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center">
+            <span id="pauseVibeEmoji" class="text-3xl mr-3">😐</span>
+            <div>
+              <h2 class="text-xl font-bold text-white">current vibe</h2>
+              <p id="pauseVibeText" class="text-lg font-semibold text-yellow-400">TAKING A BREAK</p>
+            </div>
+          </div>
+          <div class="text-right text-sm text-gray-400">
+            <div>trust score: <span id="pauseTrustScore" class="text-green-400 font-bold">100</span></div>
+            <div>decisions made: <span id="pauseDecisionsMade">0</span></div>
+          </div>
+        </div>
+
+        <!-- Trust Score Bar -->
+        <div class="mb-6">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-purple-300">trust level</span>
+            <span id="pauseTrustPercent" class="text-white font-bold">100%</span>
+          </div>
+          <div class="relative h-6 bg-gray-800 rounded-full overflow-hidden">
+            <div id="pauseTrustBar" class="h-full progress-bar bg-green-500 shadow-green-500/50 shadow-lg" style="width: 100%"></div>
+            <div id="pauseStressSpike" class="absolute inset-0 bg-red-400/30 opacity-0"></div>
+          </div>
+          <div class="flex justify-between text-xs mt-1 text-gray-500">
+            <span>😊 trusted</span>
+            <span>😐 uncertain</span>
+            <span>😰 vulnerable</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="grid grid-cols-3 gap-4">
+          <button id="pauseResumeBtn" class="action-button bg-green-600/80 hover:bg-green-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            ▶ RESUME
+          </button>
+          <button id="pauseRestartBtn" class="action-button bg-yellow-600/80 hover:bg-yellow-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            🔄 RESTART
+          </button>
+          <button id="pauseExitBtn" class="action-button bg-red-600/80 hover:bg-red-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            ❌ EXIT
+          </button>
+        </div>
+      </div>
+
+      <!-- Scene Progress -->
+      <div class="bg-gray-900/80 border border-gray-700 rounded-xl p-6 backdrop-blur-md">
+        <h3 class="font-bold text-white mb-4">story progress</h3>
+        <div class="space-y-3" id="pauseSceneProgress">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="space-y-6">
+
+      <!-- Game Stats -->
+      <div class="bg-gray-900/80 border border-gray-700 rounded-xl p-5 backdrop-blur-md">
+        <h3 class="font-bold text-white mb-4">game stats</h3>
+        <div class="space-y-4">
+          <div class="flex justify-between">
+            <span class="text-gray-400 text-sm">scenes completed</span>
+            <span id="pauseScenesCompleted" class="text-green-400 font-bold">0/6</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400 text-sm">good decisions</span>
+            <span id="pauseGoodDecisions" class="text-green-400 font-bold">0</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400 text-sm">risky choices</span>
+            <span id="pauseRiskyChoices" class="text-red-400 font-bold">0</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400 text-sm">trust lost</span>
+            <span id="pauseTrustLost" class="text-orange-400 font-bold">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Decisions -->
+      <div class="bg-gray-900/80 border border-gray-700 rounded-xl p-5 backdrop-blur-md">
+        <div class="flex items-center mb-4">
+          <svg class="w-5 h-5 text-purple-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M9 2a1 1 0 0 0-1 1v2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2V3a1 1 0 1 0-2 0v2H10V3a1 1 0 0 0-1-1z"/>
+          </svg>
+          <h3 class="font-bold text-white">recent decisions</h3>
+        </div>
+        <div id="pauseDecisionHistory" class="space-y-3 max-h-80 overflow-y-auto">
+          <div class="text-sm text-gray-400 text-center py-4">No decisions yet</div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="bg-gray-900/80 border border-gray-700 rounded-xl p-5 backdrop-blur-md">
+        <h3 class="font-bold text-white mb-4">eli's notes</h3>
+        <div class="space-y-2 text-sm text-gray-300">
+          <div>💭 "trust score = how safe i am online"</div>
+          <div>🎮 "bad choices = more vulnerable"</div>
+          <div>🛡️ "good choices = stay protected"</div>
+          <div class="text-xs text-gray-500 mt-3">press SPACE to continue</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// This script will be called by pause-menu.js to update the dashboard with live game data
+window.updatePauseDashboard = function(gameData) {
+  // Update trust score
+  const trustScore = gameData.trustScore || 100;
+  document.getElementById('pauseTrustScore').textContent = Math.floor(trustScore);
+  document.getElementById('pauseTrustPercent').textContent = Math.floor(trustScore) + '%';
+  document.getElementById('pauseTrustBar').style.width = trustScore + '%';
+  
+  // Update trust bar color
+  const trustBar = document.getElementById('pauseTrustBar');
+  if (trustScore < 30) {
+    trustBar.className = 'h-full progress-bar bg-red-500 shadow-red-500/50 shadow-lg';
+  } else if (trustScore < 60) {
+    trustBar.className = 'h-full progress-bar bg-yellow-500 shadow-yellow-500/50 shadow-lg';
+  } else {
+    trustBar.className = 'h-full progress-bar bg-green-500 shadow-green-500/50 shadow-lg';
+  }
+  
+  // Update vibe based on trust score
+  const vibeEmoji = document.getElementById('pauseVibeEmoji');
+  const vibeText = document.getElementById('pauseVibeText');
+  if (trustScore < 30) {
+    vibeEmoji.textContent = '😰';
+    vibeText.textContent = 'VULNERABLE';
+    vibeText.className = 'text-lg font-semibold text-red-400';
+  } else if (trustScore < 60) {
+    vibeEmoji.textContent = '😐';
+    vibeText.textContent = 'UNCERTAIN';
+    vibeText.className = 'text-lg font-semibold text-yellow-400';
+  } else {
+    vibeEmoji.textContent = '😊';
+    vibeText.textContent = 'PROTECTED';
+    vibeText.className = 'text-lg font-semibold text-green-400';
+  }
+  
+  // Update scene info
+  document.getElementById('pauseCurrentScene').textContent = gameData.currentScene || 1;
+  document.getElementById('pauseScenesCompleted').textContent = `${(gameData.currentScene || 1) - 1}/6`;
+  
+  // Update decisions
+  document.getElementById('pauseDecisionsMade').textContent = gameData.decisionsMade || 0;
+  document.getElementById('pauseGoodDecisions').textContent = gameData.goodDecisions || 0;
+  document.getElementById('pauseRiskyChoices').textContent = gameData.riskyChoices || 0;
+  document.getElementById('pauseTrustLost').textContent = Math.max(0, 100 - trustScore);
+  
+  // Update time
+  document.getElementById('pauseCurrentTime').textContent = new Date().toLocaleTimeString('en-US', { 
+    hour12: false, 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+  
+  // Update scene progress
+  const sceneProgress = document.getElementById('pauseSceneProgress');
+  sceneProgress.innerHTML = '';
+  for (let i = 1; i <= 6; i++) {
+    const sceneDiv = document.createElement('div');
+    const isCompleted = i < (gameData.currentScene || 1);
+    const isCurrent = i === (gameData.currentScene || 1);
+    sceneDiv.className = `flex items-center justify-between p-3 rounded-lg ${
+      isCurrent ? 'bg-purple-900/30 border border-purple-500/30' :
+      isCompleted ? 'bg-green-900/20 border border-green-500/20' :
+      'bg-gray-800/30 border border-gray-700/20'
+    }`;
+    sceneDiv.innerHTML = `
+      <span class="text-sm ${isCurrent ? 'text-purple-400' : isCompleted ? 'text-green-400' : 'text-gray-500'}">
+        ${isCompleted ? '✓' : isCurrent ? '▶' : '○'} Scene ${i}
+      </span>
+      <span class="text-xs ${isCurrent ? 'text-purple-300' : isCompleted ? 'text-green-300' : 'text-gray-600'}">
+        ${isCompleted ? 'completed' : isCurrent ? 'in progress' : 'locked'}
+      </span>
+    `;
+    sceneProgress.appendChild(sceneDiv);
+  }
+  
+  // Update decision history
+  if (gameData.decisionHistory && gameData.decisionHistory.length > 0) {
+    const historyDiv = document.getElementById('pauseDecisionHistory');
+    historyDiv.innerHTML = '';
+    gameData.decisionHistory.slice(-5).reverse().forEach(decision => {
+      const decisionDiv = document.createElement('div');
+      decisionDiv.className = `p-3 rounded-lg ${
+        decision.type === 'risky' ? 'bg-red-900/30 border border-red-500/20' :
+        'bg-green-900/30 border border-green-500/20'
+      }`;
+      decisionDiv.innerHTML = `
+        <div class="flex justify-between text-xs mb-1">
+          <span class="font-semibold ${decision.type === 'risky' ? 'text-red-400' : 'text-green-400'}">
+            Scene ${decision.scene}
+          </span>
+          <span class="text-gray-500">${decision.type === 'risky' ? '⚠️ risky' : '✓ safe'}</span>
+        </div>
+        <div class="text-sm text-gray-300">${decision.trustDelta > 0 ? '+' : ''}${decision.trustDelta} trust</div>
+      `;
+      historyDiv.appendChild(decisionDiv);
+    });
+  }
+};
+</script>

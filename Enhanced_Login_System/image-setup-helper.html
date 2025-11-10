@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Setup Helper - DATA_BLEED</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #00ff00;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 20, 0, 0.9);
+            border: 3px solid #00ff00;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .status-section {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #ffff00;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .status-section h2 {
+            color: #ffff00;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .character-card {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .character-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px currentColor;
+        }
+
+        .character-card.maya {
+            border-color: #ff1493;
+        }
+
+        .character-card.eli {
+            border-color: #00ffff;
+        }
+
+        .character-card.stanley {
+            border-color: #9ca3af;
+        }
+
+        .character-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .character-card.maya h3 {
+            color: #ff1493;
+        }
+
+        .character-card.eli h3 {
+            color: #00ffff;
+        }
+
+        .character-card.stanley h3 {
+            color: #9ca3af;
+        }
+
+        .image-slot {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .image-preview {
+            width: 150px;
+            height: 150px;
+            margin: 15px auto;
+            border: 2px solid currentColor;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview.empty::before {
+            content: '?';
+            font-size: 4em;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .image-preview.found {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .image-preview.missing {
+            border-color: #ff0000;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-found {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .status-missing {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .file-path {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #00ffff;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .instructions {
+            background: rgba(0, 100, 200, 0.2);
+            border: 2px solid #0066ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .instructions h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            margin-left: 25px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .test-button {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            margin: 30px auto;
+            padding: 15px;
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .spec-table td {
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .spec-table td:first-child {
+            font-weight: bold;
+            color: #00ffff;
+            width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 Image Setup Helper</h1>
+        <p class="subtitle">Visual guide for placing your character images</p>
+
+        <!-- Status Section -->
+        <div class="status-section">
+            <h2>📊 Current Status</h2>
+            <p>Checking for images in: <code>chroma-bot/assets/img/</code></p>
+            <p style="margin-top: 15px; color: rgba(255, 255, 255, 0.7);">
+                <strong>Folders Created:</strong> ✓ maya, eli, stanley<br>
+                <strong>Images Found:</strong> <span id="imageCount">Checking...</span>
+            </p>
+        </div>
+
+        <!-- Character Cards -->
+        <div class="character-grid">
+            <!-- Maya Card -->
+            <div class="character-card maya">
+                <h3>MAYA</h3>
+                
+                <div class="image-slot">
+                    <strong>Face Image</strong>
+                    <span class="status-badge status-missing" id="maya-face-status">Missing</span>
+                    <div class="image-preview empty" id="maya-face-preview">
+                        <img id="maya-face-img" style="display: none;">
+                    </div>
+                    <div class="file-path">chroma-bot/assets/img/maya/maya_face.png</div>
+                    <table class="spec-table">
+                        <tr><td>Size:</td><td>200x200px min</td></tr>
+                        <tr><td>Format:</td><td>PNG (transparent)</td></tr>
+                        <tr><td>Use:</td><td>3D node orb</td></tr>
+                    </table>
+                </div>
+
+                <div class="image-slot">
+                    <strong>Profile Image</strong>
+                    <span class="status-badge status-missing" id="maya-profile-status">Missing</span>
+                    <div class="image-preview empty" id="maya-profile-preview">
+                        <img id="maya-profile-img" style="display: none;">
+                    </div>
+                    <div class="file-path">chroma-bot/assets/img/maya/maya_profile.png</div>
+                    <table class="spec-table">
+                        <tr><td>Size:</td><td>500x500px min</td></tr>
+                        <tr><td>Format:</td><td>PNG or JPG</td></tr>
+                        <tr><td>Use:</td><td>Case file dossier</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Eli Card -->
+            <div class="character-card eli">
+                <h3>ELI</h3>
+                
+                <div class="image-slot">
+                    <strong>Face Image</strong>
+                    <span class="status-badge status-missing" id="eli-face-status">Missing</span>
+                    <div class="image-preview empty" id="eli-face-preview">
+                        <img id="eli-face-img" style="display: none;">
+                    </div>
+                    <div class="file-path">chroma-bot/assets/img/eli/eli_face.png</div>
+                    <table class="spec-table">
+                        <tr><td>Size:</td><td>200x200px min</td></tr>
+                        <tr><td>Format:</td><td>PNG (transparent)</td></tr>
+                        <tr><td>Use:</td><td>3D node orb</td></tr>
+                    </table>
+                </div>
+
+                <div class="image-slot">
+                    <strong>Profile Image</strong>
+                    <span class="status-badge status-missing" id="eli-profile-status">Missing</span>
+                    <div class="image-preview empty" id="eli-profile-preview">
+                        <img id="eli-profile-img" style="display: none;">
+                    </div>
+                    <div class="file-path">chroma-bot/assets/img/eli/eli_profile.png</div>
+                    <table class="spec-table">
+                        <tr><td>Size:</td><td>500x500px min</td></tr>
+                        <tr><td>Format:</td><td>PNG or JPG</td></tr>
+                        <tr><td>Use:</td><td>Case file dossier</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Stanley Card -->
+            <div class="character-card stanley">
+                <h3>STANLEY</h3>
+                
+                <div class="image-slot">
+                    <strong>Face Image</strong>
+                    <span class="status-badge status-missing" id="stanley-face-status">Missing</span>
+                    <div class="image-preview empty" id="stanley-face-preview">
+                        <img id="stanley-face-img" style="display: none;">
+                    </div>
+                    <div class="file-path">chroma-bot/assets/img/stanley/stanley_face.png</div>
+                    <table class="spec-table">
+                        <tr><td>Size:</td><td>200x200px min</td></tr>
+                        <tr><td>Format:</td><td>PNG (transparent)</td></tr>
+                        <tr><td>Use:</td><td>3D node orb</td></tr>
+                    </table>
+                </div>
+
+                <div class="image-slot">
+                    <strong>Profile Image</strong>
+                    <span class="status-badge status-missing" id="stanley-profile-status">Missing</span>
+                    <div class="image-preview empty" id="stanley-profile-preview">
+                        <img id="stanley-profile-img" style="display: none;">
+                    </div>
+                    <div class="file-path">chroma-bot/assets/img/stanley/stanley_profile.png</div>
+                    <table class="spec-table">
+                        <tr><td>Size:</td><td>500x500px min</td></tr>
+                        <tr><td>Format:</td><td>PNG or JPG</td></tr>
+                        <tr><td>Use:</td><td>Case file dossier</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3>📝 How to Add Your Images</h3>
+            <ol>
+                <li>Prepare 6 images total (2 per character: face + profile)</li>
+                <li>Make sure images are square (1:1 aspect ratio)</li>
+                <li>Resize face images to at least 200x200px</li>
+                <li>Resize profile images to at least 500x500px</li>
+                <li>Name them exactly as shown in the file paths above</li>
+                <li>Place them in the corresponding folders</li>
+                <li>Refresh this page to see if they're detected</li>
+                <li>Click "Test Enhanced Login" below to see them in action!</li>
+            </ol>
+        </div>
+
+        <button class="test-button" onclick="testLogin()">
+            🚀 Test Enhanced Login System
+        </button>
+
+        <button class="test-button" onclick="location.reload()" style="background: linear-gradient(135deg, #00ffff 0%, #0099cc 100%);">
+            🔄 Refresh to Check Images
+        </button>
+    </div>
+
+    <script>
+        // Check for images
+        const characters = ['maya', 'eli', 'stanley'];
+        const imageTypes = ['face', 'profile'];
+        let foundCount = 0;
+
+        characters.forEach(char => {
+            imageTypes.forEach(type => {
+                const imgPath = `../chroma-bot/assets/img/${char}/${char}_${type}.png`;
+                const img = document.getElementById(`${char}-${type}-img`);
+                const preview = document.getElementById(`${char}-${type}-preview`);
+                const status = document.getElementById(`${char}-${type}-status`);
+
+                // Try to load image
+                const testImg = new Image();
+                testImg.onload = function() {
+                    // Image found!
+                    img.src = imgPath;
+                    img.style.display = 'block';
+                    preview.classList.remove('empty', 'missing');
+                    preview.classList.add('found');
+                    status.textContent = 'Found ✓';
+                    status.classList.remove('status-missing');
+                    status.classList.add('status-found');
+                    foundCount++;
+                    updateCount();
+                };
+                testImg.onerror = function() {
+                    // Image not found
+                    preview.classList.add('missing');
+                };
+                testImg.src = imgPath;
+            });
+        });
+
+        function updateCount() {
+            document.getElementById('imageCount').textContent = `${foundCount} of 6 images`;
+            if (foundCount === 6) {
+                document.getElementById('imageCount').style.color = '#00ff00';
+                document.getElementById('imageCount').textContent += ' - All images ready! 🎉';
+            }
+        }
+
+        function testLogin() {
+            window.open('./test-enhanced-login.html', '_blank');
+        }
+
+        // Initial count update
+        setTimeout(updateCount, 1000);
+
+        console.log('%c📁 Image Setup Helper', 'color: #00ffff; font-size: 20px; font-weight: bold;');
+        console.log('%cChecking for images in: chroma-bot/assets/img/', 'color: #00ff00; font-size: 14px;');
+    </script>
+</body>
+</html>

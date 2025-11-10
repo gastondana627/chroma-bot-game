@@ -1,0 +1,35 @@
+{
+  "themes": {
+    "default": {
+      "name": "ChromaBot Default",
+      "logo": "../chroma-bot/assets/vid/Chroma_Vid.mp4",
+      "primaryColor": "#00ffff",
+      "secondaryColor": "#ff1493",
+      "glitchColor": "#ff0040",
+      "borderColor": "#00ffff",
+      "shadowColor": "rgba(0, 255, 255, 0.5)",
+      "trainingContext": "cybersecurity assessment AI"
+    },
+    "hackathon_2024": {
+      "name": "Hackathon 2024 Edition",
+      "logo": "../chroma-bot/assets/events/hackathon_2024.mp4",
+      "primaryColor": "#00ff00",
+      "secondaryColor": "#ffff00",
+      "glitchColor": "#ff6600",
+      "borderColor": "#00ff00",
+      "shadowColor": "rgba(0, 255, 0, 0.5)",
+      "trainingContext": "hackathon security challenge AI"
+    },
+    "cybersec_summit": {
+      "name": "CyberSec Summit",
+      "logo": "../chroma-bot/assets/events/cybersec_summit.mp4",
+      "primaryColor": "#0099ff",
+      "secondaryColor": "#9933ff",
+      "glitchColor": "#ff0099",
+      "borderColor": "#0099ff",
+      "shadowColor": "rgba(0, 153, 255, 0.5)",
+      "trainingContext": "enterprise security summit AI"
+    }
+  },
+  "activeTheme": "default"
+}

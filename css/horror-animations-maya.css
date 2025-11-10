@@ -1,0 +1,463 @@
+/**
+ * Maya Character Horror Animations
+ * 
+ * Mobile/Dating App aesthetic with smooth morphing glitches
+ * Requirements: 2.1, 10.1, 10.2, 10.3, 10.4, 10.5
+ */
+
+/* ===== INTENSITY 1: SUBTLE EFFECTS ===== */
+
+/* Subtle flicker - barely noticeable */
+@keyframes maya-subtle-flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.98; }
+}
+
+.maya-subtle-flicker {
+    animation: maya-subtle-flicker 0.2s ease-in-out;
+}
+
+/* Text double - slight text shadow effect */
+@keyframes maya-text-double {
+    0%, 100% { 
+        text-shadow: 0 0 0 transparent;
+    }
+    50% { 
+        text-shadow: 1px 0 0 rgba(139, 0, 139, 0.3);
+    }
+}
+
+.maya-text-double {
+    animation: maya-text-double 0.2s ease-in-out;
+}
+
+/* ===== INTENSITY 2: MODERATE EFFECTS ===== */
+
+/* Face morph - smooth distortion */
+@keyframes maya-face-morph {
+    0%, 100% { 
+        transform: scale(1);
+        filter: hue-rotate(0deg);
+    }
+    25% { 
+        transform: scale(1.02, 0.98);
+        filter: hue-rotate(5deg);
+    }
+    50% { 
+        transform: scale(0.98, 1.02);
+        filter: hue-rotate(-5deg);
+    }
+    75% { 
+        transform: scale(1.01, 0.99);
+        filter: hue-rotate(3deg);
+    }
+}
+
+.maya-face-morph {
+    animation: maya-face-morph 0.5s ease-in-out;
+    will-change: transform, filter;
+}
+
+/* Color shift - hue rotation */
+@keyframes maya-color-shift {
+    0%, 100% { 
+        filter: hue-rotate(0deg) saturate(1);
+    }
+    50% { 
+        filter: hue-rotate(10deg) saturate(1.3);
+    }
+}
+
+.maya-color-shift {
+    animation: maya-color-shift 0.5s ease-in-out;
+    will-change: filter;
+}
+
+/* UI drift - subtle position shift */
+@keyframes maya-ui-drift {
+    0%, 100% { 
+        transform: translate(0, 0);
+    }
+    25% { 
+        transform: translate(2px, -1px);
+    }
+    50% { 
+        transform: translate(-1px, 2px);
+    }
+    75% { 
+        transform: translate(1px, -2px);
+    }
+}
+
+.maya-ui-drift {
+    animation: maya-ui-drift 0.5s ease-in-out;
+    will-change: transform;
+}
+
+/* ===== INTENSITY 3: HEAVY EFFECTS ===== */
+
+/* Reality tear - screen tear effect */
+@keyframes maya-reality-tear {
+    0%, 100% { 
+        transform: translateX(0);
+        clip-path: inset(0 0 0 0);
+    }
+    10% { 
+        transform: translateX(5px);
+        clip-path: inset(20% 0 0 0);
+    }
+    20% { 
+        transform: translateX(-3px);
+        clip-path: inset(0 0 30% 0);
+    }
+    30% { 
+        transform: translateX(4px);
+        clip-path: inset(40% 0 0 0);
+    }
+    40% { 
+        transform: translateX(-2px);
+        clip-path: inset(0 0 50% 0);
+    }
+    50% { 
+        transform: translateX(0);
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+.maya-reality-tear {
+    animation: maya-reality-tear 1s ease-in-out;
+    will-change: transform, clip-path;
+}
+
+/* Deep glitch - multiple effects combined */
+@keyframes maya-deep-glitch {
+    0%, 100% { 
+        transform: translate(0, 0) scale(1);
+        filter: hue-rotate(0deg) saturate(1);
+        opacity: 1;
+    }
+    10% { 
+        transform: translate(-3px, 2px) scale(1.02);
+        filter: hue-rotate(15deg) saturate(1.5);
+        opacity: 0.95;
+    }
+    20% { 
+        transform: translate(2px, -3px) scale(0.98);
+        filter: hue-rotate(-10deg) saturate(0.7);
+        opacity: 0.9;
+    }
+    30% { 
+        transform: translate(-2px, -2px) scale(1.01);
+        filter: hue-rotate(20deg) saturate(1.8);
+        opacity: 0.85;
+    }
+    40% { 
+        transform: translate(3px, 3px) scale(0.99);
+        filter: hue-rotate(-15deg) saturate(0.5);
+        opacity: 0.9;
+    }
+    50% { 
+        transform: translate(0, 0) scale(1);
+        filter: hue-rotate(0deg) saturate(1);
+        opacity: 1;
+    }
+}
+
+.maya-deep-glitch {
+    animation: maya-deep-glitch 1s ease-in-out;
+    will-change: transform, filter, opacity;
+}
+
+/* Photo corruption - image distortion */
+@keyframes maya-photo-corruption {
+    0%, 100% { 
+        filter: contrast(1) brightness(1) saturate(1);
+    }
+    20% { 
+        filter: contrast(1.5) brightness(0.8) saturate(1.5);
+    }
+    40% { 
+        filter: contrast(0.5) brightness(1.2) saturate(0.5);
+    }
+    60% { 
+        filter: contrast(2) brightness(0.6) saturate(2);
+    }
+    80% { 
+        filter: contrast(0.8) brightness(1.1) saturate(0.8);
+    }
+}
+
+.maya-photo-corruption {
+    animation: maya-photo-corruption 1s ease-in-out;
+    will-change: filter;
+}
+
+/* ===== INTENSITY 4: EXTREME EFFECTS ===== */
+
+/* Nightmare mode - intense distortion */
+@keyframes maya-nightmare-mode {
+    0%, 100% { 
+        transform: translate(0, 0) scale(1) rotate(0deg);
+        filter: invert(0) saturate(1) contrast(1) hue-rotate(0deg);
+    }
+    10% { 
+        transform: translate(-5px, 3px) scale(1.05) rotate(-2deg);
+        filter: invert(0.2) saturate(2) contrast(1.5) hue-rotate(30deg);
+    }
+    20% { 
+        transform: translate(4px, -4px) scale(0.95) rotate(2deg);
+        filter: invert(0.4) saturate(0.5) contrast(2) hue-rotate(-20deg);
+    }
+    30% { 
+        transform: translate(-3px, -5px) scale(1.03) rotate(-1deg);
+        filter: invert(0.3) saturate(2.5) contrast(1.8) hue-rotate(40deg);
+    }
+    40% { 
+        transform: translate(5px, 4px) scale(0.97) rotate(1deg);
+        filter: invert(0.5) saturate(0.3) contrast(2.2) hue-rotate(-30deg);
+    }
+    50% { 
+        transform: translate(-4px, 2px) scale(1.02) rotate(-2deg);
+        filter: invert(0.6) saturate(3) contrast(2.5) hue-rotate(50deg);
+    }
+    60% { 
+        transform: translate(3px, -3px) scale(0.98) rotate(2deg);
+        filter: invert(0.4) saturate(0.4) contrast(2) hue-rotate(-40deg);
+    }
+    70% { 
+        transform: translate(-2px, 5px) scale(1.04) rotate(-1deg);
+        filter: invert(0.3) saturate(2.2) contrast(1.7) hue-rotate(35deg);
+    }
+    80% { 
+        transform: translate(4px, -2px) scale(0.96) rotate(1deg);
+        filter: invert(0.5) saturate(0.6) contrast(2.3) hue-rotate(-25deg);
+    }
+    90% { 
+        transform: translate(-3px, 3px) scale(1.01) rotate(-2deg);
+        filter: invert(0.2) saturate(1.8) contrast(1.6) hue-rotate(20deg);
+    }
+}
+
+.maya-nightmare-mode {
+    animation: maya-nightmare-mode 2s ease-in-out;
+    will-change: transform, filter;
+}
+
+/* Face distortion - extreme morphing */
+@keyframes maya-face-distortion {
+    0%, 100% { 
+        transform: scale(1, 1);
+        filter: blur(0px);
+    }
+    10% { 
+        transform: scale(1.1, 0.9);
+        filter: blur(1px);
+    }
+    20% { 
+        transform: scale(0.9, 1.1);
+        filter: blur(2px);
+    }
+    30% { 
+        transform: scale(1.15, 0.85);
+        filter: blur(1.5px);
+    }
+    40% { 
+        transform: scale(0.85, 1.15);
+        filter: blur(2.5px);
+    }
+    50% { 
+        transform: scale(1.2, 0.8);
+        filter: blur(3px);
+    }
+    60% { 
+        transform: scale(0.8, 1.2);
+        filter: blur(2.5px);
+    }
+    70% { 
+        transform: scale(1.1, 0.9);
+        filter: blur(1.5px);
+    }
+    80% { 
+        transform: scale(0.9, 1.1);
+        filter: blur(1px);
+    }
+    90% { 
+        transform: scale(1.05, 0.95);
+        filter: blur(0.5px);
+    }
+}
+
+.maya-face-distortion {
+    animation: maya-face-distortion 2s ease-in-out;
+    will-change: transform, filter;
+}
+
+/* Reality collapse - complete breakdown */
+@keyframes maya-reality-collapse {
+    0%, 100% { 
+        transform: translate(0, 0) scale(1);
+        filter: invert(0) saturate(1) contrast(1) blur(0px);
+        opacity: 1;
+    }
+    5% { 
+        transform: translate(-10px, 5px) scale(1.1);
+        filter: invert(0.3) saturate(2) contrast(1.5) blur(2px);
+        opacity: 0.9;
+    }
+    10% { 
+        transform: translate(8px, -8px) scale(0.9);
+        filter: invert(0.6) saturate(0.5) contrast(2) blur(4px);
+        opacity: 0.7;
+    }
+    15% { 
+        transform: translate(-6px, -10px) scale(1.15);
+        filter: invert(0.4) saturate(2.5) contrast(1.8) blur(3px);
+        opacity: 0.8;
+    }
+    20% { 
+        transform: translate(10px, 8px) scale(0.85);
+        filter: invert(0.7) saturate(0.3) contrast(2.2) blur(5px);
+        opacity: 0.6;
+    }
+    25% { 
+        transform: translate(-8px, 4px) scale(1.2);
+        filter: invert(0.5) saturate(3) contrast(2.5) blur(4px);
+        opacity: 0.75;
+    }
+    30% { 
+        transform: translate(6px, -6px) scale(0.8);
+        filter: invert(0.8) saturate(0.4) contrast(2) blur(6px);
+        opacity: 0.5;
+    }
+    50% { 
+        transform: translate(0, 0) scale(1);
+        filter: invert(0.5) saturate(1.5) contrast(1.5) blur(2px);
+        opacity: 0.8;
+    }
+}
+
+.maya-reality-collapse {
+    animation: maya-reality-collapse 2s ease-in-out;
+    will-change: transform, filter, opacity;
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Smooth morphing base */
+.maya-smooth-morph {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+    /* Reduce complexity on mobile */
+    .maya-nightmare-mode,
+    .maya-reality-collapse {
+        animation-duration: 1.5s;
+    }
+    
+    .maya-deep-glitch {
+        animation-duration: 0.8s;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .maya-subtle-flicker,
+    .maya-text-double,
+    .maya-face-morph,
+    .maya-color-shift,
+    .maya-ui-drift,
+    .maya-reality-tear,
+    .maya-deep-glitch,
+    .maya-photo-corruption,
+    .maya-nightmare-mode,
+    .maya-face-distortion,
+    .maya-reality-collapse {
+        animation: none;
+        transition: opacity 0.3s ease;
+    }
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* GPU acceleration for all animated elements */
+.maya-face-morph,
+.maya-ui-drift,
+.maya-reality-tear,
+.maya-deep-glitch,
+.maya-nightmare-mode,
+.maya-face-distortion,
+.maya-reality-collapse {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Will-change hints for browser optimization */
+.maya-subtle-flicker {
+    will-change: opacity;
+}
+
+.maya-text-double {
+    will-change: text-shadow;
+}
+
+.maya-face-morph {
+    will-change: transform, filter;
+}
+
+.maya-color-shift {
+    will-change: filter;
+}
+
+.maya-ui-drift {
+    will-change: transform;
+}
+
+.maya-reality-tear {
+    will-change: transform, clip-path;
+}
+
+.maya-deep-glitch {
+    will-change: transform, filter, opacity;
+}
+
+.maya-photo-corruption {
+    will-change: filter;
+}
+
+.maya-nightmare-mode {
+    will-change: transform, filter;
+}
+
+.maya-face-distortion {
+    will-change: transform, filter;
+}
+
+.maya-reality-collapse {
+    will-change: transform, filter, opacity;
+}
+
+/* Animation cleanup - remove will-change after animation completes */
+.maya-animation-complete {
+    will-change: auto;
+    animation: none;
+}
+
+/* Force hardware acceleration */
+.maya-hardware-accelerated {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+}
+
+/* Optimize for compositing */
+.maya-composite-layer {
+    isolation: isolate;
+    contain: layout style paint;
+}
+
+/* Prevent layout thrashing */
+.maya-no-layout-shift {
+    contain: layout;
+}

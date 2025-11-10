@@ -553,6 +553,32 @@ class TrustScoreUI {
         
         // Update UI corruption based on trust level
         this.updateUICorruption(newScore);
+
+        // Dispatch trust score update event for Horror Atmosphere Engine
+        this.dispatchTrustScoreEvent(oldScore, newScore, delta);
+    }
+
+    /**
+     * Dispatch trust score update event
+     * @param {number} oldScore - Previous trust score
+     * @param {number} newScore - New trust score
+     * @param {number} delta - Change amount
+     */
+    dispatchTrustScoreEvent(oldScore, newScore, delta) {
+        const event = new CustomEvent('trustScoreUpdated', {
+            detail: {
+                oldScore: oldScore,
+                newScore: newScore,
+                trustScore: newScore,
+                delta: delta,
+                character: this.currentCharacter,
+                timestamp: Date.now()
+            },
+            bubbles: true,
+            cancelable: false
+        });
+
+        window.dispatchEvent(event);
     }
 
     /**

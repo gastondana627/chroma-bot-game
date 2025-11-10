@@ -1,0 +1,184 @@
+<!-- 
+  ENHANCED LOGIN SYSTEM - INTEGRATION SNIPPET
+  
+  Replace your current login screen section in index.html with this code
+  to integrate the enhanced login system.
+-->
+
+<!-- OPTION 1: Full Replacement (Recommended) -->
+<!-- Replace the entire #login-screen div with this: -->
+
+<div id="login-screen" style="display: none;">
+    <iframe 
+        id="enhanced-login-frame" 
+        src="./Enhanced_Login_System/enhanced-character-selector.html"
+        style="width: 100%; height: 100vh; border: none; display: block;">
+    </iframe>
+</div>
+
+<!-- 
+  The existing postMessage handlers in your index.html will continue to work.
+  No changes needed to handleExternalConnect() or other functions.
+-->
+
+<!-- ============================================== -->
+
+<!-- OPTION 2: Toggle Between Classic and Enhanced -->
+<!-- Use this if you want to keep both systems: -->
+
+<div id="login-screen" style="display: none;">
+    <!-- Mode Toggle -->
+    <div id="login-mode-toggle" style="position: absolute; top: 20px; right: 20px; z-index: 1000;">
+        <button onclick="switchLoginMode('enhanced')" 
+                style="padding: 10px 20px; margin: 5px; background: #00ffff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+            Enhanced Experience
+        </button>
+        <button onclick="switchLoginMode('classic')" 
+                style="padding: 10px 20px; margin: 5px; background: #ff1493; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+            Classic Login
+        </button>
+    </div>
+
+    <!-- Enhanced Login (New System) -->
+    <div id="enhanced-login-container" style="display: block; width: 100%; height: 100vh;">
+        <iframe 
+            id="enhanced-login-frame" 
+            src="./Enhanced_Login_System/enhanced-character-selector.html"
+            style="width: 100%; height: 100%; border: none;">
+        </iframe>
+    </div>
+
+    <!-- Classic Login (Current System) -->
+    <div id="classic-login-container" style="display: none;">
+        <!-- Your existing character selector code -->
+        <div id="character-selector">
+            <div class="character-card maya" data-character="maya">
+                <h2>Maya</h2>
+                <p>Cyber-security / Dating App Warnings</p>
+            </div>
+            <div class="character-card eli" data-character="eli">
+                <h2>Eli</h2>
+                <p>Gaming Exploitation / Peer Pressure</p>
+            </div>
+            <div class="character-card stanley" data-character="stanley">
+                <h2>Stanley</h2>
+                <p>Identity Theft / Catfishing</p>
+            </div>
+        </div>
+        
+        <!-- Your existing login iframes -->
+        <div id="eli-login" class="character-login hidden">
+            <iframe class="login-frame" src="./Log_in_formats/Eli.html"></iframe>
+        </div>
+        <div id="maya-login" class="character-login hidden">
+            <iframe class="login-frame" src="./Log_in_formats/Maya.html"></iframe>
+        </div>
+        <div id="stanley-login" class="character-login hidden">
+            <iframe class="login-frame" src="./Log_in_formats/Stanley.html"></iframe>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add this function to your existing JavaScript in index.html
+
+function switchLoginMode(mode) {
+    const enhancedContainer = document.getElementById('enhanced-login-container');
+    const classicContainer = document.getElementById('classic-login-container');
+    
+    if (mode === 'enhanced') {
+        enhancedContainer.style.display = 'block';
+        classicContainer.style.display = 'none';
+        localStorage.setItem('loginMode', 'enhanced');
+    } else {
+        enhancedContainer.style.display = 'none';
+        classicContainer.style.display = 'block';
+        localStorage.setItem('loginMode', 'classic');
+    }
+}
+
+// Auto-load preferred mode on page load
+window.addEventListener('load', () => {
+    const preferredMode = localStorage.getItem('loginMode') || 'enhanced';
+    switchLoginMode(preferredMode);
+});
+</script>
+
+<!-- ============================================== -->
+
+<!-- OPTION 3: Gradual Rollout (A/B Testing) -->
+<!-- Use this to show enhanced version to 50% of users: -->
+
+<div id="login-screen" style="display: none;">
+    <div id="login-container"></div>
+</div>
+
+<script>
+// Add this to your existing JavaScript in index.html
+
+function initializeLogin() {
+    const loginContainer = document.getElementById('login-container');
+    
+    // 50/50 split between enhanced and classic
+    const useEnhanced = Math.random() > 0.5;
+    
+    // Or force enhanced for testing:
+    // const useEnhanced = true;
+    
+    if (useEnhanced) {
+        // Load enhanced system
+        loginContainer.innerHTML = `
+            <iframe 
+                src="./Enhanced_Login_System/enhanced-character-selector.html"
+                style="width: 100%; height: 100vh; border: none;">
+            </iframe>
+        `;
+        console.log('🎮 Enhanced login system loaded');
+    } else {
+        // Load classic system
+        loginContainer.innerHTML = `
+            <!-- Your existing character selector HTML -->
+        `;
+        console.log('📋 Classic login system loaded');
+    }
+}
+
+// Call on page load
+window.addEventListener('load', initializeLogin);
+</script>
+
+<!-- ============================================== -->
+
+<!-- NOTES FOR INTEGRATION -->
+
+<!--
+1. NO CHANGES NEEDED to your existing login forms (Maya.html, Eli.html, Stanley.html)
+   - They work exactly as before
+   - PostMessage communication is preserved
+   - All functionality maintained
+
+2. NO CHANGES NEEDED to your message handlers:
+   - handleExternalConnect() works as-is
+   - All character-connected events work
+   - Session storage integration intact
+
+3. ASSET REQUIREMENTS:
+   - Add character face images to: chroma-bot/assets/img/[character]/[character]_face.png
+   - Add profile images to: chroma-bot/assets/img/[character]/[character]_profile.png
+   - Images will gracefully hide if not found (no errors)
+
+4. TESTING:
+   - Open Enhanced_Login_System/test-enhanced-login.html
+   - Test each component individually
+   - Verify full flow works end-to-end
+
+5. CUSTOMIZATION:
+   - Edit characterData in case-file-dossier.html
+   - Modify colors in CSS :root variables
+   - Adjust animations in @keyframes
+
+6. PERFORMANCE:
+   - Reduce particle count if needed (see README.md)
+   - Images lazy load automatically
+   - Animations use CSS transforms (GPU accelerated)
+-->

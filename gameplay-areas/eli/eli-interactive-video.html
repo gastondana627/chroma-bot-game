@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eli's Story - Gaming Exploitation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/interactive-video-styles.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      overflow: hidden;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Video Container */
+    #video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+    }
+
+    #story-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Trust Score HUD */
+    #trust-score-hud {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #00ffff;
+      border-radius: 10px;
+      padding: 15px 25px;
+      z-index: 100;
+      font-family: 'Orbitron', monospace;
+    }
+
+    #trust-score-hud .label {
+      color: #00ffff;
+      font-size: 0.9em;
+      margin-bottom: 5px;
+    }
+
+    #trust-score-hud .score {
+      color: #ffffff;
+      font-size: 2em;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+
+    /* Loading Screen */
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      transition: opacity 0.5s ease;
+    }
+
+    #loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-text {
+      color: #00ffff;
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5em;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loading-text">Loading Eli's Story...</div>
+  </div>
+
+  <!-- Video Container -->
+  <div id="video-container">
+    <video id="story-video" playsinline>
+      <source src="../../assets/cinematics/eli_complete_story.mp4" type="video/mp4">
+      Your browser does not support video playback.
+    </video>
+  </div>
+
+  <!-- Trust Score HUD -->
+  <div id="trust-score-hud">
+    <div class="label">Trust Score</div>
+    <div class="score" id="trust-score-value">100</div>
+  </div>
+
+  <!-- Interactive Video Player Script -->
+  <script src="../../Game/Mechanics/interactive-video-player.js"></script>
+  
+  <script>
+    // Configuration for Eli's story
+    const eliStoryConfig = {
+      effectStyle: 'both', // 'blur', 'grayscale', or 'both'
+      
+      decisions: [
+        // Decision 1: Loot Box Temptation (at 5 seconds)
+        {
+          timestamp: 5.0,
+          question: 'Buy the loot box for $9.99?',
+          yesText: 'Yes - Quick Reward',
+          noText: 'No - Save Money',
+          yesOutcome: {
+            trustDelta: -15,
+            reason: 'Impulsive spending on random chance'
+          },
+          noOutcome: {
+            trustDelta: +10,
+            reason: 'Resisted gambling temptation'
+          },
+          timeLimit: 10, // 10 seconds to decide
+          defaultChoice: 'no'
+        },
+        
+        // Decision 2: Peer Pressure (at 10 seconds)
+        {
+          timestamp: 10.0,
+          question: 'Your friend says you NEED the $20 skin to fit in.',
+          yesText: 'Buy It - Fit In',
+          noText: 'Ignore - Stay Strong',
+          yesOutcome: {
+            trustDelta: -20,
+            reason: 'Gave in to peer pressure'
+          },
+          noOutcome: {
+            trustDelta: +15,
+            reason: 'Stood up to social manipulation'
+          },
+          timeLimit: 10,
+          defaultChoice: 'no'
+        },
+        
+        // Decision 3: Daily Streak (at 15 seconds)
+        {
+          timestamp: 15.0,
+          question: 'It\'s midnight. Log in to keep your 47-day streak?',
+          yesText: 'Log In - Keep Streak',
+          noText: 'Skip - Do Homework',
+          yesOutcome: {
+            trustDelta: -10,
+            reason: 'Prioritized game over real life'
+          },
+          noOutcome: {
+            trustDelta: +15,
+            reason: 'Healthy priority management'
+          },
+          timeLimit: 10,
+          defaultChoice: 'no'
+        },
+        
+        // Decision 4: Investment Scam (at 20 seconds)
+        {
+          timestamp: 20.0,
+          question: 'Spend $50 on items you might resell for profit?',
+          yesText: 'Invest - Could Make Money',
+          noText: 'Decline - Too Risky',
+          yesOutcome: {
+            trustDelta: -25,
+            reason: 'Fell for gambling disguised as investment'
+          },
+          noOutcome: {
+            trustDelta: +20,
+            reason: 'Recognized the scam'
+          },
+          timeLimit: 10,
+          defaultChoice: 'no'
+        },
+        
+        // Decision 5: Realization (at 25 seconds)
+        {
+          timestamp: 25.0,
+          question: 'You\'ve spent $200 this month. What now?',
+          yesText: 'Set Budget - $10/month',
+          noText: 'Keep Playing - It\'s Fine',
+          yesOutcome: {
+            trustDelta: +35,
+            reason: 'Took control with healthy limits'
+          },
+          noOutcome: {
+            trustDelta: -30,
+            reason: 'Denial of the problem'
+          },
+          timeLimit: 10,
+          defaultChoice: 'yes'
+        },
+        
+        // Decision 6: Final Test (at 28 seconds)
+        {
+          timestamp: 28.0,
+          question: 'New legendary loot box, $15. Your budget allows it.',
+          yesText: 'Buy - Within Budget',
+          noText: 'Save - Better Use',
+          yesOutcome: {
+            trustDelta: +5,
+            reason: 'Within budget, but still spending'
+          },
+          noOutcome: {
+            trustDelta: +25,
+            reason: 'True self-control demonstrated'
+          },
+          timeLimit: 10,
+          defaultChoice: 'no'
+        }
+      ],
+      
+      onComplete: (results) => {
+        console.log('Story Complete!', results);
+        
+        // Save to session storage
+        sessionStorage.setItem('eli_final_score', results.finalScore);
+        sessionStorage.setItem('eli_ending', results.ending);
+        sessionStorage.setItem('eli_decisions', JSON.stringify(results.decisions));
+        
+        // Show ending screen
+        showEndingScreen(results);
+      }
+    };
+
+    // Initialize player when video is loaded
+    const video = document.getElementById('story-video');
+    const loadingScreen = document.getElementById('loading-screen');
+    const trustScoreDisplay = document.getElementById('trust-score-value');
+    
+    let player;
+
+    video.addEventListener('loadeddata', () => {
+      // Hide loading screen
+      loadingScreen.classList.add('hidden');
+      
+      // Initialize interactive player
+      player = new InteractiveVideoPlayer(video, eliStoryConfig);
+      
+      // Update trust score display
+      const originalHandleChoice = player.handleChoice.bind(player);
+      player.handleChoice = function(choice) {
+        originalHandleChoice(choice);
+        trustScoreDisplay.textContent = this.trustScore;
+        
+        // Flash effect
+        trustScoreDisplay.style.color = this.trustScore > 100 ? '#00ff00' : '#ff0000';
+        setTimeout(() => {
+          trustScoreDisplay.style.color = '#ffffff';
+        }, 500);
+      };
+      
+      // Start playing
+      player.play();
+    });
+
+    // Show ending screen
+    function showEndingScreen(results) {
+      const endingScreen = document.createElement('div');
+      endingScreen.style.cssText = `
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10001;
+        color: white;
+        font-family: 'Orbitron', monospace;
+        text-align: center;
+        padding: 40px;
+      `;
+      
+      const endings = {
+        excellent: {
+          title: '🏆 Healthy Gamer',
+          message: 'You demonstrated excellent self-control and critical thinking. You can enjoy gaming without being exploited.',
+          color: '#00ff00'
+        },
+        good: {
+          title: '✓ Aware Player',
+          message: 'You made mostly good choices and recognized manipulation tactics. Keep staying vigilant.',
+          color: '#00ffff'
+        },
+        learning: {
+          title: '⚠️ Learning Journey',
+          message: 'You fell for some tactics but learned from them. Remember these lessons in real gaming.',
+          color: '#ffff00'
+        },
+        needs_help: {
+          title: '🆘 Needs Support',
+          message: 'Gaming exploitation can be hard to resist. Talk to someone you trust about healthy gaming habits.',
+          color: '#ff0000'
+        }
+      };
+      
+      const ending = endings[results.ending];
+      
+      endingScreen.innerHTML = `
+        <h1 style="font-size: 3em; color: ${ending.color}; margin-bottom: 20px;">${ending.title}</h1>
+        <p style="font-size: 1.3em; max-width: 600px; margin-bottom: 30px; line-height: 1.6;">${ending.message}</p>
+        <div style="font-size: 2em; margin-bottom: 40px;">
+          Final Score: <span style="color: ${ending.color};">${results.finalScore}</span>
+        </div>
+        <button onclick="returnToDashboard()" style="
+          padding: 15px 40px;
+          background: ${ending.color};
+          color: #000;
+          border: none;
+          border-radius: 10px;
+          font-family: 'Orbitron', monospace;
+          font-size: 1.2em;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        ">Return to Dashboard</button>
+      `;
+      
+      document.body.appendChild(endingScreen);
+    }
+
+    function returnToDashboard() {
+      window.location.href = '../../Main_Dashboards/Eli_Dashboard_V2.html';
+    }
+
+    // Handle video errors
+    video.addEventListener('error', (e) => {
+      console.error('Video loading error:', e);
+      loadingScreen.querySelector('.loading-text').textContent = 
+        'Video not found. Please add eli_complete_story.mp4 to assets/cinematics/';
+    });
+  </script>
+</body>
+</html>

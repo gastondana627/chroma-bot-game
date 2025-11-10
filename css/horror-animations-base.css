@@ -1,0 +1,325 @@
+/**
+ * Horror Atmosphere Engine - Base Animation Utilities
+ * 
+ * Shared animation utilities for all characters
+ * Requirements: 4.1, 4.2
+ */
+
+/* ===== FADE TRANSITIONS ===== */
+
+/* Fade in animation */
+@keyframes horror-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.horror-fade-in {
+    animation: horror-fade-in 1s ease-in-out;
+}
+
+.horror-fade-in-fast {
+    animation: horror-fade-in 0.5s ease-in-out;
+}
+
+.horror-fade-in-slow {
+    animation: horror-fade-in 2s ease-in-out;
+}
+
+/* Fade out animation */
+@keyframes horror-fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.horror-fade-out {
+    animation: horror-fade-out 1s ease-in-out;
+}
+
+.horror-fade-out-fast {
+    animation: horror-fade-out 0.5s ease-in-out;
+}
+
+.horror-fade-out-slow {
+    animation: horror-fade-out 2s ease-in-out;
+}
+
+/* ===== TRANSITION HELPER CLASSES ===== */
+
+/* Smooth transition base */
+.horror-transition-smooth {
+    transition: all 0.3s ease-in-out;
+}
+
+.horror-transition-smooth-fast {
+    transition: all 0.15s ease-in-out;
+}
+
+.horror-transition-smooth-slow {
+    transition: all 0.6s ease-in-out;
+}
+
+/* Opacity transitions */
+.horror-transition-opacity {
+    transition: opacity 1s ease-in-out;
+}
+
+.horror-transition-opacity-fast {
+    transition: opacity 0.5s ease-in-out;
+}
+
+.horror-transition-opacity-slow {
+    transition: opacity 2s ease-in-out;
+}
+
+/* Transform transitions */
+.horror-transition-transform {
+    transition: transform 1s ease-in-out;
+}
+
+.horror-transition-transform-fast {
+    transition: transform 0.5s ease-in-out;
+}
+
+.horror-transition-transform-slow {
+    transition: transform 2s ease-in-out;
+}
+
+/* Filter transitions */
+.horror-transition-filter {
+    transition: filter 1s ease-in-out;
+}
+
+.horror-transition-filter-fast {
+    transition: filter 0.5s ease-in-out;
+}
+
+.horror-transition-filter-slow {
+    transition: filter 2s ease-in-out;
+}
+
+/* Combined transitions */
+.horror-transition-all {
+    transition: opacity 1s ease-in-out,
+                transform 1s ease-in-out,
+                filter 1s ease-in-out;
+}
+
+/* ===== ANIMATION TIMING FUNCTIONS ===== */
+
+/* Easing functions for horror effects */
+.horror-ease-in-out {
+    animation-timing-function: ease-in-out;
+}
+
+.horror-ease-in {
+    animation-timing-function: ease-in;
+}
+
+.horror-ease-out {
+    animation-timing-function: ease-out;
+}
+
+/* Custom cubic bezier for smooth horror transitions */
+.horror-ease-smooth {
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sharp horror effect */
+.horror-ease-sharp {
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+/* Dramatic horror effect */
+.horror-ease-dramatic {
+    animation-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Subtle horror effect */
+.horror-ease-subtle {
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* ===== INTENSITY TRANSITION EFFECTS ===== */
+
+/* Dramatic transition (intensity spike) */
+@keyframes horror-dramatic-transition {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    25% {
+        opacity: 0.3;
+        transform: scale(1.1);
+        filter: brightness(2);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(0.95);
+        filter: brightness(0.5);
+    }
+    75% {
+        opacity: 0.7;
+        transform: scale(1.05);
+        filter: brightness(1.5);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: brightness(1);
+    }
+}
+
+.horror-dramatic-transition {
+    animation: horror-dramatic-transition 0.8s ease-in-out;
+}
+
+/* Relief transition (intensity decrease) */
+@keyframes horror-relief-transition {
+    0% {
+        opacity: 1;
+        filter: saturate(1) brightness(1);
+    }
+    50% {
+        opacity: 0.9;
+        filter: saturate(1.2) brightness(1.1);
+    }
+    100% {
+        opacity: 1;
+        filter: saturate(1) brightness(1);
+    }
+}
+
+.horror-relief-transition {
+    animation: horror-relief-transition 1.5s ease-out;
+}
+
+/* Threshold crossing transition */
+@keyframes horror-threshold-transition {
+    0%, 100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.05);
+        filter: brightness(1.3);
+    }
+}
+
+.horror-threshold-transition {
+    animation: horror-threshold-transition 0.6s ease-in-out;
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Hidden state */
+.horror-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Visible state */
+.horror-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Animation paused */
+.horror-animation-paused {
+    animation-play-state: paused;
+}
+
+/* Animation running */
+.horror-animation-running {
+    animation-play-state: running;
+}
+
+/* Prevent animation */
+.horror-no-animation {
+    animation: none !important;
+}
+
+/* Prevent transition */
+.horror-no-transition {
+    transition: none !important;
+}
+
+/* ===== ACCESSIBILITY SUPPORT ===== */
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .horror-fade-in,
+    .horror-fade-in-fast,
+    .horror-fade-in-slow,
+    .horror-fade-out,
+    .horror-fade-out-fast,
+    .horror-fade-out-slow,
+    .horror-dramatic-transition,
+    .horror-relief-transition,
+    .horror-threshold-transition {
+        animation-duration: 0.01s;
+    }
+    
+    .horror-transition-smooth,
+    .horror-transition-smooth-fast,
+    .horror-transition-smooth-slow,
+    .horror-transition-opacity,
+    .horror-transition-opacity-fast,
+    .horror-transition-opacity-slow,
+    .horror-transition-transform,
+    .horror-transition-transform-fast,
+    .horror-transition-transform-slow,
+    .horror-transition-filter,
+    .horror-transition-filter-fast,
+    .horror-transition-filter-slow,
+    .horror-transition-all {
+        transition-duration: 0.01s;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .horror-fade-in,
+    .horror-fade-out {
+        animation: none;
+    }
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* GPU acceleration hint */
+.horror-gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Will-change optimization */
+.horror-will-change-opacity {
+    will-change: opacity;
+}
+
+.horror-will-change-transform {
+    will-change: transform;
+}
+
+.horror-will-change-filter {
+    will-change: filter;
+}
+
+.horror-will-change-all {
+    will-change: opacity, transform, filter;
+}
+
+/* Remove will-change after animation */
+.horror-will-change-auto {
+    will-change: auto;
+}
