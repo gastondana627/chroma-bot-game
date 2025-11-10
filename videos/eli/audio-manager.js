@@ -3,6 +3,8 @@
  * Handles narration, ambience, and SFX
  */
 
+console.log('📦 Loading audio-manager.js...');
+
 class AudioManager {
     constructor() {
         // Separate audio elements for simultaneous playback
@@ -61,37 +63,90 @@ class AudioManager {
     }
     
     /**
-     * Play narration for a specific scene
+     * Play transition narration between scenes
+     * @param {number} fromScene - Scene transitioning from (1-6)
+     * @param {number} toScene - Scene transitioning to (2-6)
+     * @param {string} path - Narration path: 'success', 'moderate', or 'failure'
      */
-    playNarration(sceneNumber, ending = null) {
+    playTransitionNarration(fromScene, toScene, path = 'moderate') {
         if (this.isMuted) {
-            console.log('🔇 Audio muted, skipping narration');
+            console.log('🔇 Audio muted, skipping transition narration');
             if (this.onNarrationEnd) {
                 this.onNarrationEnd();
             }
             return;
         }
         
-        // Determine file name
-        let fileName = `scene_${sceneNumber}_narration.mp3`;
-        if (sceneNumber === 6 && ending) {
-            fileName = `scene_6_narration_${ending}.mp3`;
-        }
+        const fileName = `scene_${fromScene}_to_${toScene}_${path}.mp3`;
+        const filePath = this.getAudioPath(`audio/narration/${fileName}`);
         
-        const path = this.getAudioPath(`audio/narration/${fileName}`);
+        console.log(`🎙️ Playing transition narration: ${fileName}`);
         
-        console.log(`🎙️ Playing narration: ${fileName}`);
-        
-        this.narrationAudio.src = path;
+        this.narrationAudio.src = filePath;
         this.isNarrationPlaying = true;
         
         this.narrationAudio.play().catch(err => {
-            console.error('❌ Failed to play narration:', err);
+            console.error('❌ Failed to play transition narration:', err);
+            console.warn(`   File: ${fileName}`);
             this.isNarrationPlaying = false;
             if (this.onNarrationEnd) {
                 this.onNarrationEnd();
             }
         });
+    }
+    
+    /**
+     * Play ending narration
+     * @param {string} endingType - 'success', 'moderate', or 'failure'
+     */
+    playEndingNarration(endingType = 'moderate') {
+        if (this.isMuted) {
+            console.log('🔇 Audio muted, skipping ending narration');
+            if (this.onNarrationEnd) {
+                this.onNarrationEnd();
+            }
+            return;
+        }
+        
+        const fileName = `ending_${endingType}.mp3`;
+        const filePath = this.getAudioPath(`audio/narration/${fileName}`);
+        
+        console.log(`🎙️ Playing ending narration: ${fileName}`);
+        
+        this.narrationAudio.src = filePath;
+        this.isNarrationPlaying = true;
+        
+        this.narrationAudio.play().catch(err => {
+            console.error('❌ Failed to play ending narration:', err);
+            console.warn(`   File: ${fileName}`);
+            this.isNarrationPlaying = false;
+            if (this.onNarrationEnd) {
+                this.onNarrationEnd();
+            }
+        });
+    }
+    
+    /**
+     * Determine narration path based on player performance
+     * @returns {string} 'success', 'moderate', or 'failure'
+     */
+    getNarrationPath() {
+        const score = window.trustDecay ? window.trustDecay.getScore() : 100;
+        const goodChoices = window.goodDecisionCount || 0;
+        const riskyChoices = window.riskyChoiceCount || 0;
+        
+        // Success path: High score + more good than risky
+        if (score >= 70 && goodChoices > riskyChoices) {
+            return 'success';
+        }
+        
+        // Failure path: Low score OR significantly more risky choices
+        if (score < 40 || riskyChoices >= goodChoices + 2) {
+            return 'failure';
+        }
+        
+        // Moderate path: Everything else
+        return 'moderate';
     }
     
     /**
@@ -245,4 +300,5 @@ class AudioManager {
 // Make globally accessible
 if (typeof window !== 'undefined') {
     window.AudioManager = AudioManager;
+    console.log('✅ AudioManager class exported to window');
 }

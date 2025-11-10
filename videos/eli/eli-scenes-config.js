@@ -176,8 +176,20 @@ let chromaBotCorruptor = null;
 let pauseMenu = null;
 // Make trustDecay global so pause menu can access it
 window.trustDecay = null;
+// Make audioManager global
+window.audioManager = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Audio Manager
+    console.log('🔍 Checking for AudioManager...', typeof AudioManager);
+    if (typeof AudioManager !== 'undefined') {
+        window.audioManager = new AudioManager();
+        console.log('✅ Audio Manager initialized for narration system');
+    } else {
+        console.warn('⚠️ AudioManager not found - narration will be skipped');
+        console.warn('   Available on window:', Object.keys(window).filter(k => k.includes('Audio')));
+    }
+    
     // Initialize Trust Decay System
     window.trustDecay = new TrustDecaySystem({
         onScoreUpdate: (score, status) => {
@@ -315,10 +327,22 @@ function loadScene(index) {
         }
     }
     
-    // Show scene briefing for scenes 2-6
-    if (index > 0) {
+    // Play transition narration BEFORE showing briefing for scenes 2-6
+    if (index > 0 && window.audioManager) {
+        const narrationPath = window.audioManager.getNarrationPath();
+        console.log(`🎬 Playing transition narration: Scene ${index} → ${index + 1} (${narrationPath} path)`);
+        
+        // Play narration, then show briefing when it ends
+        window.audioManager.onNarrationEnd = () => {
+            showSceneBriefing(index);
+            window.pendingSceneLoad = index;
+        };
+        
+        window.audioManager.playTransitionNarration(index, index + 1, narrationPath);
+        return;
+    } else if (index > 0) {
+        // Fallback if audio manager not available
         showSceneBriefing(index);
-        // Wait for user to click continue before loading scene
         window.pendingSceneLoad = index;
         return;
     }
