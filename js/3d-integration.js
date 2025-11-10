@@ -43,8 +43,13 @@ class ThreeDIntegration {
         // Update mobile 3D support with character system reference
         this.mobile3DSupport.character3DSystem = this.character3DSystem;
         
-        // Initialize performance monitoring
-        this.performanceMonitor = new PerformanceMonitor(this.sceneManager, this.mobile3DSupport);
+        // Initialize performance monitoring (if available)
+        if (typeof PerformanceMonitor !== 'undefined') {
+          this.performanceMonitor = new PerformanceMonitor(this.sceneManager, this.mobile3DSupport);
+        } else {
+          console.warn('⚠️ PerformanceMonitor not available, skipping performance tracking');
+          this.performanceMonitor = null;
+        }
         
         this.isEnabled = true;
         this.setupChromaBotIntegration();

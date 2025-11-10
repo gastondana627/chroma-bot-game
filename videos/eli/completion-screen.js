@@ -64,15 +64,18 @@ function showCompletionScreen(finalScore) {
         bottom: 0;
         background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         z-index: 20000;
         opacity: 0;
         transition: opacity 0.5s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 40px 20px;
     `;
     
     completionScreen.innerHTML = `
-        <div style="max-width: 700px; text-align: center; padding: 40px;">
+        <div style="max-width: 700px; width: 100%; text-align: center; padding: 20px; margin: 0 auto;">
             <!-- Ending Title -->
             <div style="
                 font-size: 2.5rem;
@@ -104,70 +107,7 @@ function showCompletionScreen(finalScore) {
                 margin-right: auto;
             ">${endingMessage}</p>
             
-            <!-- Email Signup (for winners) -->
-            ${showEmailSignup ? `
-                <div style="
-                    background: rgba(0, 255, 136, 0.1);
-                    border: 2px solid #00ff88;
-                    border-radius: 12px;
-                    padding: 30px;
-                    margin: 40px 0;
-                ">
-                    <div style="
-                        font-size: 1.5rem;
-                        color: #00ff88;
-                        margin-bottom: 15px;
-                        font-weight: bold;
-                    ">🎮 READY FOR MORE?</div>
-                    <p style="
-                        color: rgba(255, 255, 255, 0.9);
-                        margin-bottom: 20px;
-                        font-size: 1.1rem;
-                    ">
-                        You've proven your digital awareness. Get early access to Maya's and Stanley's stories.
-                    </p>
-                    <form id="email-signup-form" style="
-                        display: flex;
-                        gap: 10px;
-                        max-width: 500px;
-                        margin: 0 auto;
-                    ">
-                        <input 
-                            type="email" 
-                            id="email-input" 
-                            placeholder="Enter your email"
-                            required
-                            style="
-                                flex: 1;
-                                padding: 15px;
-                                background: rgba(0, 0, 0, 0.5);
-                                border: 2px solid #00ff88;
-                                border-radius: 8px;
-                                color: #fff;
-                                font-size: 1rem;
-                                font-family: 'Courier New', monospace;
-                            "
-                        />
-                        <button type="submit" style="
-                            padding: 15px 30px;
-                            background: rgba(0, 255, 136, 0.2);
-                            border: 2px solid #00ff88;
-                            border-radius: 8px;
-                            color: #00ff88;
-                            font-size: 1rem;
-                            font-family: 'Courier New', monospace;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                        ">Notify Me</button>
-                    </form>
-                    <div id="signup-message" style="
-                        margin-top: 15px;
-                        color: #00ff88;
-                        font-size: 0.9rem;
-                        display: none;
-                    "></div>
-                </div>
-            ` : ''}
+            <!-- Email signup handled by modal (triggered automatically) -->
             
             <!-- Action Buttons -->
             <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
@@ -237,29 +177,41 @@ function showCompletionScreen(finalScore) {
                     color: rgba(255, 255, 255, 0.6);
                     margin-bottom: 15px;
                 ">
-                    Created by [Your Name]
+                    A Data Bleed Experience
                 </div>
                 <div style="
                     font-size: 0.8rem;
                     color: rgba(255, 255, 255, 0.4);
+                    margin-bottom: 15px;
                 ">
-                    Scan for more projects →
+                    📱 Connect with the creator
                 </div>
-                <!-- QR Code placeholder - add your actual QR code image -->
-                <div style="
-                    width: 100px;
-                    height: 100px;
+                <!-- Animated Logo that transforms to QR Code -->
+                <div id="completion-logo-container" style="
+                    width: 150px;
+                    height: 150px;
                     margin: 15px auto;
-                    background: rgba(255, 255, 255, 0.1);
-                    border: 2px solid rgba(0, 255, 255, 0.3);
+                    padding: 10px;
+                    background: rgba(0, 0, 0, 0.8);
+                    border: 2px solid rgba(0, 255, 255, 0.5);
                     border-radius: 8px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+                    position: relative;
+                    overflow: hidden;
+                " onclick="window.open('https://www.linkedin.com/in/gaston-d-859653184/', '_blank')">
+                    <!-- Logo will be inserted here based on ending type -->
+                </div>
+                <div style="
                     font-size: 0.7rem;
                     color: rgba(255, 255, 255, 0.5);
+                    margin-top: 10px;
                 ">
-                    QR CODE<br>HERE
+                    Scan or click to connect on LinkedIn
                 </div>
             </div>
         </div>
@@ -272,31 +224,7 @@ function showCompletionScreen(finalScore) {
         completionScreen.style.opacity = '1';
     }, 100);
     
-    // Handle email signup
-    if (showEmailSignup) {
-        const form = document.getElementById('email-signup-form');
-        const message = document.getElementById('signup-message');
-        
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email-input').value;
-            
-            // TODO: Send to your backend/email service
-            console.log('📧 Email signup:', email);
-            
-            // Show success message
-            message.textContent = '✅ Thanks! You\'ll be notified when new stories drop.';
-            message.style.display = 'block';
-            form.style.display = 'none';
-            
-            // Optional: Send to backend
-            // await fetch('/api/signup', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ email, score: finalScore })
-            // });
-        });
-    }
+    // Email signup now handled by the modal system (triggered automatically below)
     
     // Add animations
     const style = document.createElement('style');
@@ -313,6 +241,217 @@ function showCompletionScreen(finalScore) {
     document.head.appendChild(style);
     
     console.log(`✅ Completion screen shown: ${endingType} ending, score: ${finalScore}, threshold: ${WINNING_THRESHOLD}`);
+    
+    // Animate logo then transform to QR code
+    setTimeout(() => {
+        const logoContainer = document.getElementById('completion-logo-container');
+        
+        if (!logoContainer) return;
+        
+        console.log(`🎬 Starting logo animation for ${endingType} ending...`);
+        
+        // Choose animation based on ending type
+        if (showEmailSignup) {
+            // SUCCESS: Show Data Bleed logo video
+            showDataBleedVideo();
+        } else {
+            // FAILURE: Show ChromaBot corrupted animation
+            showChromaBotAnimation();
+        }
+        
+        // Function to show Data Bleed video (for success)
+        function showDataBleedVideo() {
+            const video = document.createElement('video');
+            video.style.cssText = 'width: 130px; height: 130px; object-fit: contain;';
+            video.muted = true;
+            video.playsInline = true;
+            video.src = '../../Main_Animations/DataBleed_Logo_Animation_Adobe_Take_10.mp4';
+            
+            logoContainer.appendChild(video);
+            
+            video.play().then(() => {
+                console.log('✅ Data Bleed logo video playing');
+            }).catch(err => {
+                console.warn('⚠️ Video autoplay failed:', err);
+            });
+            
+            // When video ends, transform to QR
+            video.addEventListener('ended', () => {
+                console.log('✅ Video ended, transforming to QR...');
+                setTimeout(() => {
+                    transformToQR(video);
+                }, 500);
+            });
+        }
+        
+        // Function to show ChromaBot animation (for failure)
+        function showChromaBotAnimation() {
+            const logoFrame = document.createElement('img');
+            logoFrame.style.cssText = 'width: 130px; height: 130px; object-fit: contain;';
+            logoFrame.src = '../../chroma-bot/assets/img/Chroma_Org_Logo_No_Background/Chroma_1.png';
+            logoContainer.appendChild(logoFrame);
+            
+            // Animate through logo frames
+            let currentFrame = 0;
+            const totalFrames = 5;
+            const frameDelay = 150;
+            const cycles = 3;
+            let cycleCount = 0;
+            
+            const animateFrames = setInterval(() => {
+                currentFrame = (currentFrame + 1) % totalFrames;
+                const frameNumber = currentFrame + 1;
+                logoFrame.src = `../../chroma-bot/assets/img/Chroma_Org_Logo_No_Background/Chroma_${frameNumber}.png`;
+                
+                if (currentFrame === 0) {
+                    cycleCount++;
+                    if (cycleCount >= cycles) {
+                        clearInterval(animateFrames);
+                        console.log('✅ ChromaBot animation complete, transforming to QR...');
+                        setTimeout(() => {
+                            transformToQR(logoFrame);
+                        }, 500);
+                    }
+                }
+            }, frameDelay);
+        }
+        
+        // Function to transform logo to QR code
+        function transformToQR(element) {
+            // Apply glitch effect
+            element.style.animation = 'logoGlitch 0.5s ease-in-out';
+            
+            setTimeout(() => {
+                // Fade out logo
+                element.style.transition = 'opacity 0.3s ease';
+                element.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // Replace with QR code
+                    generateQR();
+                }, 300);
+            }, 500);
+        }
+        
+        // Function to generate QR code
+        function generateQR() {
+            // Clear container
+            logoContainer.innerHTML = '';
+            
+            // Create QR element
+            const qrElement = document.createElement('div');
+            qrElement.id = 'completion-qr-code';
+            qrElement.style.cssText = 'opacity: 0; transition: opacity 0.5s ease;';
+            logoContainer.appendChild(qrElement);
+            
+            // Load QR library if needed
+            if (window.QRCode) {
+                createQRCode(qrElement);
+            } else {
+                console.log('📦 Loading QR Code library...');
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+                script.onload = () => {
+                    console.log('✅ QR Code library loaded');
+                    createQRCode(qrElement);
+                };
+                script.onerror = () => {
+                    console.warn('❌ Failed to load QR Code library');
+                    showFallback(qrElement);
+                };
+                document.head.appendChild(script);
+            }
+        }
+        
+        function createQRCode(container) {
+            try {
+                new QRCode(container, {
+                    text: 'https://www.linkedin.com/in/gaston-d-859653184/',
+                    width: 130,
+                    height: 130,
+                    colorDark: '#00ffff',
+                    colorLight: '#000000',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                // Style the generated elements
+                setTimeout(() => {
+                    const img = container.querySelector('img');
+                    const canvas = container.querySelector('canvas');
+                    
+                    // QR library creates both canvas and img - hide canvas, show only img
+                    if (canvas) {
+                        canvas.style.display = 'none';
+                    }
+                    if (img) {
+                        img.style.cssText = 'display: block; margin: 0 auto; width: 130px; height: 130px; object-fit: contain;';
+                    }
+                    
+                    // Fade in QR code
+                    container.style.opacity = '1';
+                    
+                    console.log('✅ QR code generated and displayed');
+                }, 100);
+                
+            } catch (error) {
+                console.warn('⚠️ Could not generate QR code:', error);
+                showFallback(container);
+            }
+        }
+        
+        function showFallback(container) {
+            container.innerHTML = `
+                <div style="
+                    width: 130px;
+                    height: 130px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(0, 255, 255, 0.1);
+                    border: 2px dashed #00ffff;
+                    border-radius: 8px;
+                    margin: 0 auto;
+                ">
+                    <a href="https://www.linkedin.com/in/gaston-d-859653184/" target="_blank" style="
+                        color: #00ffff;
+                        text-decoration: none;
+                        font-size: 0.9rem;
+                        font-weight: bold;
+                        text-align: center;
+                    ">
+                        🔗<br>Connect on<br>LinkedIn
+                    </a>
+                </div>
+            `;
+            container.style.opacity = '1';
+        }
+        
+        // Add glitch animation styles
+        if (!document.getElementById('logo-glitch-styles')) {
+            const glitchStyles = document.createElement('style');
+            glitchStyles.id = 'logo-glitch-styles';
+            glitchStyles.textContent = `
+                @keyframes logoGlitch {
+                    0%, 100% { transform: translate(0); filter: none; }
+                    10% { transform: translate(-3px, 3px); filter: hue-rotate(90deg); }
+                    20% { transform: translate(3px, -3px); filter: hue-rotate(180deg); }
+                    30% { transform: translate(-3px, -3px); filter: invert(1); }
+                    40% { transform: translate(3px, 3px); filter: hue-rotate(270deg); }
+                    50% { transform: translate(-2px, 2px) scale(0.95); filter: saturate(3); }
+                    60% { transform: translate(2px, -2px) scale(1.05); filter: brightness(2); }
+                    70% { transform: translate(-1px, 1px); filter: contrast(3); }
+                    80% { transform: translate(1px, -1px); filter: hue-rotate(180deg); }
+                    90% { transform: translate(-1px, 1px); filter: blur(1px); }
+                }
+            `;
+            document.head.appendChild(glitchStyles);
+        }
+    }, 500);
+    
+    // Trigger email signup modal for successful completions
+    if (showEmailSignup && window.emailSignup) {
+        window.emailSignup.triggerOnStoryCompletion();
+    }
 }
 
 // Make globally accessible

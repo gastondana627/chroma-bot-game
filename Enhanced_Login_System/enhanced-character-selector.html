@@ -637,7 +637,13 @@
                 'stanley': 'Stanley'
             };
             
-            alert(`${characterNames[character]}'s story is coming in a future update!\n\nFor now, experience Eli's complete interactive story.`);
+            // Trigger email signup modal if available
+            if (window.emailSignup) {
+                window.emailSignup.triggerOnCharacterLocked();
+            } else {
+                // Fallback to alert if email system not loaded
+                alert(`${characterNames[character]}'s story is coming in a future update!\n\nFor now, experience Eli's complete interactive story.`);
+            }
         }
 
         // 3D mouse tracking effect
@@ -665,5 +671,8 @@
         
         animate();
     </script>
+    
+    <!-- Email Signup System -->
+    <script src="../js/email-signup-system.js"></script>
 </body>
 </html>

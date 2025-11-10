@@ -536,9 +536,9 @@
         // Listen for video end
         logoAnimation.addEventListener("ended", () => {
           console.log("✅ Logo animation completed");
-          introVideo.style.display = "none";
           
-          // Navigate to enhanced character selector
+          // Navigate directly to character selector (no QR code here)
+          introVideo.style.display = "none";
           console.log("🎯 Navigating to character selector");
           window.location.href = './Enhanced_Login_System/enhanced-character-selector.html';
         }, { once: true }); // Use once: true to prevent multiple listeners
@@ -1019,6 +1019,12 @@
   
   <!-- 3D Integration Module -->
   <script src="./js/3d-integration.js"></script>
+  
+  <!-- Email Signup System -->
+  <script src="./js/email-signup-system.js"></script>
+  
+  <!-- QR Logo System -->
+  <script src="./js/qr-logo-system.js"></script>
 </body>
 
 </html>
