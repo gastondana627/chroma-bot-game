@@ -16,8 +16,18 @@ Simple 1-liner narration prompts (3-5 seconds each) that adapt based on player c
 
 ## Scene Transitions & Narration
 
+**TIMING STRATEGY**: Play narration BEFORE each scene starts (not after)
+- Creates anticipation and sets emotional tone
+- Gives player breathing room between scenes
+- Feels more intentional and cinematic
+- Avoids awkward pauses after video ends
+
+**Flow**: Scene 1 ends → Narration plays (3-5 sec) → Scene 2 briefing → User clicks continue → Scene 2 starts
+
+---
+
 ### Scene 1 → Scene 2
-**Timing**: After Scene 1 video ends, before Scene 2 loads  
+**Timing**: BEFORE Scene 2 loads (after Scene 1 ends)  
 **Context**: First tournament, initial choices made
 
 #### Success Path (Good choices in Scene 1)

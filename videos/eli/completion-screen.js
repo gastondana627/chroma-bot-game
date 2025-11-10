@@ -448,9 +448,26 @@ function showCompletionScreen(finalScore) {
         }
     }, 500);
     
-    // Trigger email signup modal for successful completions
+    // Trigger email signup modal ONLY for successful completions (60+)
     if (showEmailSignup && window.emailSignup) {
+        console.log(`✅ Player passed with score ${finalScore}! Triggering email signup...`);
         window.emailSignup.triggerOnStoryCompletion();
+    } else {
+        console.log(`❌ Player failed with score ${finalScore}. No email signup shown.`);
+    }
+}
+
+// Update email signup modal message based on score
+function updateEmailModalForWinners() {
+    const modalHeader = document.querySelector('.email-modal-header h2');
+    const modalIntro = document.querySelector('.modal-intro');
+    
+    if (modalHeader) {
+        modalHeader.textContent = '🎉 Congratulations! You Passed!';
+    }
+    
+    if (modalIntro) {
+        modalIntro.textContent = "You've successfully protected Eli! Want to be first to know when Maya and Stanley's adventures are ready?";
     }
 }
 
