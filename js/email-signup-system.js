@@ -115,7 +115,7 @@ class EmailSignupSystem {
                 left: 0;
                 width: 100vw;
                 height: 100vh;
-                z-index: 10000;
+                z-index: 25000;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -571,10 +571,8 @@ class EmailSignupSystem {
 
     // Trigger methods
     triggerOnStoryCompletion() {
-        console.log('🎉 Story completed! Showing email signup...');
-        setTimeout(() => {
-            this.showModal();
-        }, 2000); // 2 second delay after completion
+        // No longer auto-triggers - user clicks button instead
+        console.log('🎉 Story completed! Email signup available via button.');
     }
 
     triggerOnCharacterLocked() {

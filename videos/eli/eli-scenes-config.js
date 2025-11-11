@@ -401,7 +401,22 @@ function loadScene(index) {
         // Auto-advance to next scene if available
         if (window.currentSceneIndex < SCENES_CONFIG.length - 1) {
             console.log(`📹 Video ended, advancing to scene ${window.currentSceneIndex + 2}`);
-            setTimeout(() => nextScene(), 1000);
+            
+            // Play narration between scenes 3-4, 4-5, and 5-6
+            if ((window.currentSceneIndex === 2 || window.currentSceneIndex === 3 || window.currentSceneIndex === 4) && window.audioManager) {
+                const narrationPath = window.audioManager.getNarrationPath();
+                const fromScene = window.currentSceneIndex + 1;
+                const toScene = window.currentSceneIndex + 2;
+                console.log(`🎙️ Playing transition narration: Scene ${fromScene} → ${toScene} (${narrationPath} path)`);
+                
+                window.audioManager.onNarrationEnd = () => {
+                    nextScene();
+                };
+                
+                window.audioManager.playTransitionNarration(fromScene, toScene, narrationPath);
+            } else {
+                setTimeout(() => nextScene(), 1000);
+            }
         } else {
             console.log('📹 Last scene completed');
             // On last scene, show completion screen with final score
@@ -740,7 +755,20 @@ function makeChoice(scene, choice) {
             const video = document.getElementById('story-video');
             video.style.filter = 'none';
             console.log('🎬 Post-video decision complete, advancing to next scene');
-            nextScene();
+            
+            // Play narration based on the decision made (Scene 3 → 4)
+            if (window.currentSceneIndex === 2 && window.audioManager) {
+                const narrationPath = window.audioManager.getNarrationPath();
+                console.log(`🎙️ Playing post-decision narration: Scene 3 → 4 (${narrationPath} path)`);
+                
+                window.audioManager.onNarrationEnd = () => {
+                    nextScene();
+                };
+                
+                window.audioManager.playTransitionNarration(3, 4, narrationPath);
+            } else {
+                nextScene();
+            }
         }, 4000); // Increased from 2500 to 4000ms
     } else {
         // For mid-video decisions, resume the current video

@@ -107,8 +107,6 @@ function showCompletionScreen(finalScore) {
                 margin-right: auto;
             ">${endingMessage}</p>
             
-            <!-- Email signup handled by modal (triggered automatically) -->
-            
             <!-- Action Buttons -->
             <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
                 ${showRestart ? `
@@ -242,7 +240,7 @@ function showCompletionScreen(finalScore) {
     
     console.log(`✅ Completion screen shown: ${endingType} ending, score: ${finalScore}, threshold: ${WINNING_THRESHOLD}`);
     
-    // Animate logo then transform to QR code
+    // Start logo animation immediately (no delay)
     setTimeout(() => {
         const logoContainer = document.getElementById('completion-logo-container');
         
@@ -448,14 +446,15 @@ function showCompletionScreen(finalScore) {
         }
     }, 500);
     
-    // Trigger email signup modal ONLY for successful completions (60+)
-    if (showEmailSignup && window.emailSignup) {
-        console.log(`✅ Player passed with score ${finalScore}! Triggering email signup...`);
-        window.emailSignup.triggerOnStoryCompletion();
-    } else {
-        console.log(`❌ Player failed with score ${finalScore}. No email signup shown.`);
+    // Show email widget for successful completions
+    if (showEmailSignup && window.emailWidget) {
+        console.log(`✅ Showing email widget for score ${finalScore}`);
+        window.emailWidget.show();
     }
 }
+
+// Export to window
+window.showCompletionScreen = showCompletionScreen;
 
 // Update email signup modal message based on score
 function updateEmailModalForWinners() {
