@@ -8,16 +8,61 @@
  * - choices: array of options with trust deltas
  */
 
-// Sound effect helper
+// Feature flags for audio enhancements
+const AUDIO_FEATURES = {
+    enableHeartbeatCorruption: true,  // Toggle new heartbeat sequence
+    enableNarrationSystem: true,       // Toggle narration
+    enableEnhancedFlicker: true        // Toggle sync flicker
+};
+
+// Timing configuration for optimal pacing
+const TIMING_CONFIG = {
+    postDecisionDelay: 2000,      // Wait after decision feedback (2 seconds - faster)
+    postNarrationDelay: 0,        // No delay - narration plays during video
+    fallbackDelay: 500,           // Quick transition if no narration (0.5 seconds)
+    narrationTimeout: 6000,       // Max narration duration (6 seconds)
+    feedbackDisplayTime: 2500,    // How long to show feedback (2.5 seconds - faster)
+    briefingDisplayTime: 300      // Quick briefing display before video (0.3 seconds)
+};
+
+// Preload sound effects to eliminate delay
+const preloadedSounds = {};
+
+function preloadSound(path) {
+    if (!preloadedSounds[path]) {
+        const audio = new Audio(path);
+        audio.preload = 'auto';
+        audio.load();
+        preloadedSounds[path] = audio;
+        console.log(`🔊 Preloaded sound: ${path}`);
+    }
+    return preloadedSounds[path];
+}
+
+// Sound effect helper with preloading
 function playSound(path, volume = 0.5) {
     try {
-        const audio = new Audio(path);
-        audio.volume = volume;
-        audio.play().catch(err => console.log('Audio play blocked:', err.message));
+        // Get or create preloaded audio
+        let audio = preloadedSounds[path];
+        if (!audio) {
+            audio = preloadSound(path);
+        }
+        
+        // Clone the audio element to allow overlapping plays
+        const audioClone = audio.cloneNode();
+        audioClone.volume = volume;
+        audioClone.play().catch(err => console.log('Audio play blocked:', err.message));
     } catch (err) {
         console.warn('Could not play sound:', path, err.message);
     }
 }
+
+// Preload common UI sounds on page load
+window.addEventListener('DOMContentLoaded', () => {
+    preloadSound('audio/ui/decision_card_appear.wav');
+    preloadSound('audio/ui/decision_card_hover.wav');
+    console.log('✅ UI sounds preloaded');
+});
 
 const SCENES_CONFIG = [
     {
@@ -178,6 +223,8 @@ let pauseMenu = null;
 window.trustDecay = null;
 // Make audioManager global
 window.audioManager = null;
+// Initialize corruption sequence (will be set in DOMContentLoaded)
+window.chromaBotCorruptionSequence = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize Audio Manager
@@ -238,6 +285,27 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('⚠️ ChromaBotResponseCorruptor not found');
     }
     
+    // Initialize ChromaBot Corruption Sequence (for heartbeat sync)
+    console.log('🔍 Checking for ChromaBotCorruptionSequence...');
+    console.log('  - typeof ChromaBotCorruptionSequence:', typeof ChromaBotCorruptionSequence);
+    console.log('  - window.ChromaBotCorruptionSequence:', window.ChromaBotCorruptionSequence);
+    
+    if (typeof ChromaBotCorruptionSequence !== 'undefined') {
+        try {
+            window.chromaBotCorruptionSequence = new ChromaBotCorruptionSequence();
+            console.log('✅ ChromaBot Corruption Sequence initialized successfully');
+            console.log('  - Instance:', window.chromaBotCorruptionSequence);
+        } catch (err) {
+            console.error('❌ Failed to initialize ChromaBotCorruptionSequence:', err);
+            console.warn('⚠️ Using fallback corruption');
+        }
+    } else {
+        console.warn('⚠️ ChromaBotCorruptionSequence class not found - using fallback corruption');
+        console.warn('  - This means chromabot-corruption-sequence.js did not load properly');
+        console.warn('  - Check browser console for script loading errors');
+        console.warn('  - Try hard refresh (Cmd+Shift+R) to clear cache');
+    }
+    
     // Initialize Pause Menu (will be created after video loads)
     const video = document.getElementById('story-video');
     pauseMenu = new PauseMenuSystem(video);
@@ -295,6 +363,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function loadScene(index) {
     if (index < 0 || index >= SCENES_CONFIG.length) return;
     
+    // Stop any lingering narration from previous scene
+    if (window.audioManager) {
+        window.audioManager.stopNarration();
+    }
+    
     // Set scene index FIRST so pause menu always has correct value
     window.currentSceneIndex = index;
     console.log(`🎬 Scene changed: currentSceneIndex = ${index} (Scene ${index + 1}/6)`);
@@ -327,23 +400,25 @@ function loadScene(index) {
         }
     }
     
-    // Play transition narration BEFORE showing briefing for scenes 2-6
-    if (index > 0 && window.audioManager) {
-        const narrationPath = window.audioManager.getNarrationPath();
-        console.log(`🎬 Playing transition narration: Scene ${index} → ${index + 1} (${narrationPath} path)`);
+    // Show briefing and wait for user to click continue
+    if (index > 0) {
+        console.log(`🎬 Showing briefing for Scene ${index + 1} - waiting for user interaction`);
         
-        // Play narration, then show briefing when it ends
-        window.audioManager.onNarrationEnd = () => {
+        setTimeout(() => {
             showSceneBriefing(index);
             window.pendingSceneLoad = index;
-        };
-        
-        window.audioManager.playTransitionNarration(index, index + 1, narrationPath);
-        return;
-    } else if (index > 0) {
-        // Fallback if audio manager not available
-        showSceneBriefing(index);
-        window.pendingSceneLoad = index;
+            
+            // Store narration info for when user clicks continue
+            if (window.audioManager && AUDIO_FEATURES.enableNarrationSystem) {
+                const narrationPath = window.audioManager.getNarrationPath();
+                console.log(`🎙️ Narration ready for when video starts: Scene ${index} → ${index + 1} (${narrationPath} path)`);
+                window.pendingNarration = {
+                    fromScene: index,
+                    toScene: index + 1,
+                    path: narrationPath
+                };
+            }
+        }, 100); // Small delay to show briefing
         return;
     }
     
@@ -402,29 +477,43 @@ function loadScene(index) {
         if (window.currentSceneIndex < SCENES_CONFIG.length - 1) {
             console.log(`📹 Video ended, advancing to scene ${window.currentSceneIndex + 2}`);
             
-            // Play narration between scenes 3-4, 4-5, and 5-6
-            if ((window.currentSceneIndex === 2 || window.currentSceneIndex === 3 || window.currentSceneIndex === 4) && window.audioManager) {
-                const narrationPath = window.audioManager.getNarrationPath();
-                const fromScene = window.currentSceneIndex + 1;
-                const toScene = window.currentSceneIndex + 2;
-                console.log(`🎙️ Playing transition narration: Scene ${fromScene} → ${toScene} (${narrationPath} path)`);
+            // Don't play narration here - it will play when user clicks continue
+            // This prevents duplicate narration playback
+            console.log(`⏭️ Using fallback delay of ${TIMING_CONFIG.fallbackDelay}ms`);
+            setTimeout(() => nextScene(), TIMING_CONFIG.fallbackDelay);
+        } else {
+            console.log('📹 Last scene completed - preparing ending sequence');
+            
+            // On last scene, play ending narration before showing completion screen
+            const finalScore = window.trustDecay ? window.trustDecay.getScore() : trustScore;
+            
+            if (window.audioManager && AUDIO_FEATURES.enableNarrationSystem) {
+                // Calculate ending narration path based on final performance
+                const endingPath = window.audioManager.getNarrationPath(true); // verbose logging
+                console.log(`🎙️ Playing ending narration: ${endingPath} path (score: ${finalScore})`);
                 
+                // Set up callback to show completion screen after narration
                 window.audioManager.onNarrationEnd = () => {
-                    nextScene();
+                    console.log(`✅ Ending narration complete, waiting 500ms before showing completion screen`);
+                    setTimeout(() => {
+                        if (window.showCompletionScreen) {
+                            window.showCompletionScreen(finalScore);
+                        } else {
+                            showCompletionMessage(); // Fallback
+                        }
+                    }, 500); // 500ms delay after narration as per requirements
                 };
                 
-                window.audioManager.playTransitionNarration(fromScene, toScene, narrationPath);
+                // Play ending narration
+                window.audioManager.playEndingNarration(endingPath);
             } else {
-                setTimeout(() => nextScene(), 1000);
-            }
-        } else {
-            console.log('📹 Last scene completed');
-            // On last scene, show completion screen with final score
-            const finalScore = window.trustDecay ? window.trustDecay.getScore() : trustScore;
-            if (window.showCompletionScreen) {
-                window.showCompletionScreen(finalScore);
-            } else {
-                showCompletionMessage(); // Fallback
+                // Fallback if audio manager not available
+                console.log('⏭️ No audio manager available, showing completion screen immediately');
+                if (window.showCompletionScreen) {
+                    window.showCompletionScreen(finalScore);
+                } else {
+                    showCompletionMessage(); // Fallback
+                }
             }
         }
     };
@@ -469,6 +558,19 @@ window.continueSurveillance = function() {
             video.onloadeddata = () => {
                 console.log(`Scene ${index + 1} loaded`);
                 video.play();
+                
+                // Start narration after video begins (user-triggered)
+                if (window.pendingNarration) {
+                    const narration = window.pendingNarration;
+                    window.pendingNarration = undefined;
+                    
+                    console.log(`🎙️ Starting narration after user clicked continue: Scene ${narration.fromScene} → ${narration.toScene} (${narration.path} path)`);
+                    
+                    // Delay narration slightly so video starts first
+                    setTimeout(() => {
+                        window.audioManager.playTransitionNarration(narration.fromScene, narration.toScene, narration.path);
+                    }, 500); // Start narration 0.5s after video begins
+                }
             };
             
             video.ontimeupdate = () => {
@@ -496,7 +598,8 @@ window.continueSurveillance = function() {
                 }
                 
                 if (window.currentSceneIndex < SCENES_CONFIG.length - 1) {
-                    setTimeout(() => nextScene(), 1000);
+                    console.log(`⏭️ Using fallback delay of ${TIMING_CONFIG.fallbackDelay}ms`);
+                    setTimeout(() => nextScene(), TIMING_CONFIG.fallbackDelay);
                 } else {
                     // Last scene completed - show completion screen
                     console.log('📹 Last scene completed');
@@ -697,9 +800,19 @@ function makeChoice(scene, choice) {
             if (chromaBotVideo) {
                 chromaBotVideo.onBadDecision(penalty, scene);
             }
-            // DELAY corruption animation until after decision overlay is dismissed
-            // Store that we need to trigger corruption
-            window.pendingCorruption = true;
+            
+            // ENHANCED: Use heartbeat corruption sequence if available
+            // Falls back to existing behavior if sequence not loaded
+            if (window.chromaBotCorruptionSequence && AUDIO_FEATURES.enableHeartbeatCorruption) {
+                console.log('💔 Bad decision - triggering enhanced corruption sequence');
+                // Trigger enhanced sequence (handles animation internally)
+                window.pendingCorruption = false; // Sequence handles it
+                window.pendingCorruptionSequence = true; // Flag for delayed trigger
+            } else {
+                // FALLBACK: Use existing corruption animation
+                console.log('💔 Bad decision - using standard corruption');
+                window.pendingCorruption = true; // Existing behavior
+            }
         } else {
             // Neutral decision - apply delta directly (usually negative)
             const oldScore = window.trustDecay.getScore();
@@ -733,7 +846,17 @@ function makeChoice(scene, choice) {
     unlockNextButton();
     
     // Trigger corruption animation AFTER decision overlay is dismissed
-    if (window.pendingCorruption) {
+    if (window.pendingCorruptionSequence) {
+        // ENHANCED: Trigger heartbeat corruption sequence
+        setTimeout(() => {
+            if (window.chromaBotCorruptionSequence) {
+                window.chromaBotCorruptionSequence.startCorruptionSequence();
+                console.log('💔 Enhanced corruption sequence triggered (after decision)');
+            }
+            window.pendingCorruptionSequence = false;
+        }, 500); // Trigger 500ms after decision overlay starts to fade
+    } else if (window.pendingCorruption) {
+        // FALLBACK: Use existing corruption animation
         setTimeout(() => {
             if (chromaBotAnimator) {
                 chromaBotAnimator.animateToBad();
@@ -750,33 +873,29 @@ function makeChoice(scene, choice) {
     const currentScene = SCENES_CONFIG[window.currentSceneIndex];
     if (currentScene.showDecisionAfterEnd) {
         // For post-video decisions, advance to next scene after feedback
-        // Longer delay to show feedback clearly
+        console.log(`⏱️ Post-video decision - waiting ${TIMING_CONFIG.postDecisionDelay}ms before advancing`);
+        
+        // Stop any lingering narration from previous scene
+        if (window.audioManager) {
+            window.audioManager.stopNarration();
+        }
+        
         setTimeout(() => {
             const video = document.getElementById('story-video');
             video.style.filter = 'none';
             console.log('🎬 Post-video decision complete, advancing to next scene');
             
-            // Play narration based on the decision made (Scene 3 → 4)
-            if (window.currentSceneIndex === 2 && window.audioManager) {
-                const narrationPath = window.audioManager.getNarrationPath();
-                console.log(`🎙️ Playing post-decision narration: Scene 3 → 4 (${narrationPath} path)`);
-                
-                window.audioManager.onNarrationEnd = () => {
-                    nextScene();
-                };
-                
-                window.audioManager.playTransitionNarration(3, 4, narrationPath);
-            } else {
-                nextScene();
-            }
-        }, 4000); // Increased from 2500 to 4000ms
+            // Simply advance to next scene - narration will play during the video
+            nextScene();
+        }, TIMING_CONFIG.postDecisionDelay);
     } else {
         // For mid-video decisions, resume the current video
+        console.log(`⏱️ Mid-video decision - waiting ${TIMING_CONFIG.postDecisionDelay}ms before resuming`);
         setTimeout(() => {
             const video = document.getElementById('story-video');
             video.style.filter = 'none';
             video.play();
-        }, 2500);
+        }, TIMING_CONFIG.postDecisionDelay);
     }
 }
 
@@ -806,7 +925,7 @@ function showFeedback(choice) {
     setTimeout(() => {
         feedback.classList.remove('show');
         setTimeout(() => feedback.remove(), 300);
-    }, 3500); // Increased from 2000 to 3500ms to match the 4000ms advance delay
+    }, TIMING_CONFIG.feedbackDisplayTime); // Use configured feedback display time
 }
 
 function updateTrustDisplay() {
@@ -1033,7 +1152,23 @@ function startObservation() {
     briefing.classList.remove('show');
     setTimeout(() => {
         briefing.remove();
-        loadScene(0);
+        
+        // Show tutorial overlay before first scene (if user hasn't seen it)
+        if (window.tutorialOverlay && !window.tutorialOverlay.hasSeenTutorial) {
+            console.log('📚 Showing tutorial before Scene 1');
+            window.tutorialOverlay.show();
+            
+            // Wait for tutorial to be dismissed before loading scene
+            const checkTutorialDismissed = setInterval(() => {
+                if (window.tutorialOverlay.hasSeenTutorial) {
+                    clearInterval(checkTutorialDismissed);
+                    loadScene(0);
+                }
+            }, 100);
+        } else {
+            // No tutorial needed, load scene immediately
+            loadScene(0);
+        }
     }, 500);
 }
 
@@ -1087,6 +1222,32 @@ function showSceneBriefing(sceneIndex) {
 // Continue surveillance (resume video)
 function continueSurveillance() {
     const briefing = document.querySelector('.observer-briefing.scene-transition');
-    briefing.classList.remove('show');
-    setTimeout(() => briefing.remove(), 500);
+    if (briefing) {
+        briefing.classList.remove('show');
+        setTimeout(() => briefing.remove(), 500);
+    }
+    
+    // Load the pending scene if one exists
+    if (window.pendingSceneLoad !== undefined) {
+        const index = window.pendingSceneLoad;
+        window.pendingSceneLoad = undefined;
+        
+        console.log(`🎬 User clicked continue - loading Scene ${index + 1}`);
+        
+        // Load the scene
+        loadScene(index);
+        
+        // Start narration after video begins (user-triggered)
+        if (window.pendingNarration) {
+            const narration = window.pendingNarration;
+            window.pendingNarration = undefined;
+            
+            console.log(`🎙️ Starting narration after user clicked continue: Scene ${narration.fromScene} → ${narration.toScene} (${narration.path} path)`);
+            
+            // Delay narration slightly so video starts first
+            setTimeout(() => {
+                window.audioManager.playTransitionNarration(narration.fromScene, narration.toScene, narration.path);
+            }, 500); // Start narration 0.5s after video begins
+        }
+    }
 }
