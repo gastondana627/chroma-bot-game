@@ -1,0 +1,110 @@
+{
+  "timestamp": "2025-11-11T09:21:34.140Z",
+  "passed": 11,
+  "failed": 0,
+  "successRate": "100.0%",
+  "results": [
+    {
+      "test": "Scene 6 completion triggers ending narration",
+      "status": "PASS",
+      "details": "Found playEndingNarration call in last scene handler"
+    },
+    {
+      "test": "Ending narration uses path calculation",
+      "status": "PASS",
+      "details": "Found getNarrationPath call for ending selection"
+    },
+    {
+      "test": "Completion screen shows after narration ends",
+      "status": "PASS",
+      "details": "Found onNarrationEnd callback triggering completion screen"
+    },
+    {
+      "test": "500ms delay implemented after narration",
+      "status": "PASS",
+      "details": "Found 500ms setTimeout before completion screen"
+    },
+    {
+      "test": "Audio Manager has playEndingNarration method",
+      "status": "PASS",
+      "details": "Method exists and uses correct file naming convention"
+    },
+    {
+      "test": "All three ending narration files documented",
+      "status": "PASS",
+      "details": "success, moderate, and failure endings defined"
+    },
+    {
+      "test": "Verbose logging enabled for ending path calculation",
+      "status": "PASS",
+      "details": "Path calculation includes detailed reasoning"
+    },
+    {
+      "test": "Fallback to immediate completion screen if audio unavailable",
+      "status": "PASS",
+      "details": "Graceful degradation implemented"
+    },
+    {
+      "test": "Test interface file exists",
+      "status": "PASS",
+      "details": "test-ending-narration.html created"
+    },
+    {
+      "test": "Test interface has all required test functions",
+      "status": "PASS",
+      "details": "All test functions implemented"
+    },
+    {
+      "test": "All requirements covered",
+      "status": "PASS",
+      "details": "9/9 requirements met"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "2.1",
+      "description": "Calculate narration path based on score",
+      "met": true
+    },
+    {
+      "id": "2.2",
+      "description": "Success path for high scores",
+      "met": true
+    },
+    {
+      "id": "2.3",
+      "description": "Failure path for low scores",
+      "met": true
+    },
+    {
+      "id": "2.4",
+      "description": "Moderate path for middle scores",
+      "met": true
+    },
+    {
+      "id": "8.1",
+      "description": "Play ending narration after Scene 6",
+      "met": true
+    },
+    {
+      "id": "8.2",
+      "description": "Success ending for protected status",
+      "met": true
+    },
+    {
+      "id": "8.3",
+      "description": "Moderate ending for vulnerable status",
+      "met": true
+    },
+    {
+      "id": "8.4",
+      "description": "Failure ending for compromised status",
+      "met": true
+    },
+    {
+      "id": "8.5",
+      "description": "Trigger completion screen after narration",
+      "met": true
+    }
+  ]
+}

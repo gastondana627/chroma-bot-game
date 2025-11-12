@@ -425,16 +425,21 @@
     <script src="../../Game/Mechanics/horror-atmosphere-engine.js"></script>
     <script src="../../Game/Mechanics/horror-video-integration.js"></script>
     
+    <!-- Audio System (MUST load before scenes config) -->
+    <script src="audio-manager.js"></script>
+    
     <!-- ChromaBot Integration -->
     <script src="../../Game/Mechanics/chroma-bot-adaptive-integration.js"></script>
     <script src="chromabot-corruption-animator.js"></script>
     <script src="chromabot-response-corruptor.js"></script>
+    <script src="chromabot-corruption-sequence.js?v=2"></script>
     <script src="chromabot-video-config.js"></script>
     
-    <!-- Trust Decay & Pause Menu Dashboard (MUST load before scenes config) -->
+    <!-- Trust Decay & Pause Menu (MUST load before scenes config) -->
     <script src="trust-decay-system.js"></script>
-    <script src="chromabot-scene-training.js"></script>
+    <!-- Using pause-menu-dashboard.js (includes full dashboard functionality) -->
     <script src="pause-menu-dashboard.js"></script>
+    <script src="chromabot-scene-training.js"></script>
     
     <!-- Completion Screen -->
     <script src="completion-screen.js"></script>

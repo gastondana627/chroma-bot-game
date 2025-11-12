@@ -90,7 +90,7 @@
         /* Title */
         .main-title {
             position: absolute;
-            top: 80px;
+            top: 60px;
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
@@ -99,7 +99,7 @@
 
         .main-title h1 {
             font-family: 'Orbitron', monospace;
-            font-size: 3.5em;
+            font-size: 3em;
             font-weight: 900;
             background: linear-gradient(45deg, #00ffff, #ff1493, #00ffff);
             -webkit-background-clip: text;
@@ -112,8 +112,8 @@
 
         .main-title p {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 1.1em;
-            margin-top: 15px;
+            font-size: 0.95em;
+            margin-top: 12px;
             letter-spacing: 3px;
             text-transform: uppercase;
         }
@@ -148,6 +148,18 @@
 
         .character-node:hover {
             transform: scale(1.15) translateZ(50px);
+        }
+
+        .character-node:hover .face-orb {
+            box-shadow: 
+                0 0 100px currentColor,
+                0 0 60px currentColor,
+                0 0 30px currentColor,
+                inset 0 0 80px rgba(255, 255, 255, 0.15),
+                inset -15px -15px 50px rgba(0, 0, 0, 0.6),
+                inset 15px 15px 50px rgba(255, 255, 255, 0.25),
+                0 30px 80px rgba(0, 0, 0, 0.7);
+            transform: translateZ(30px);
         }
 
         /* Locked Character State */
@@ -212,7 +224,7 @@
             }
         }
 
-        /* 3D Face Orb */
+        /* 3D Face Orb - Billboard Effect (always faces camera) */
         .face-orb {
             position: absolute;
             top: 50%;
@@ -221,47 +233,108 @@
             width: 200px;
             height: 200px;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent);
-            border: 3px solid;
-            box-shadow: 0 0 40px currentColor, inset 0 0 40px currentColor;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(0, 0, 0, 0.4), transparent 50%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(0, 0, 0, 0.2) 100%);
+            border: 4px solid;
+            box-shadow: 
+                0 0 60px currentColor,
+                0 0 30px currentColor,
+                inset 0 0 60px rgba(255, 255, 255, 0.1),
+                inset -10px -10px 40px rgba(0, 0, 0, 0.5),
+                inset 10px 10px 40px rgba(255, 255, 255, 0.2),
+                0 20px 50px rgba(0, 0, 0, 0.6);
             animation: orbFloat 4s ease-in-out infinite;
-            transform-style: preserve-3d;
+            transform-style: flat;
             overflow: hidden;
+            position: relative;
+            will-change: transform;
+        }
+        
+        /* Glass reflection effect */
+        .face-orb::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(10px);
+            opacity: 0.8;
+        }
+        
+        /* Bottom shadow depth */
+        .face-orb::after {
+            content: '';
+            position: absolute;
+            bottom: -5%;
+            left: 10%;
+            width: 80%;
+            height: 30%;
+            background: radial-gradient(ellipse, rgba(0, 0, 0, 0.8) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(15px);
         }
 
         .character-node.maya .face-orb {
             border-color: #ff1493;
-            box-shadow: 0 0 40px #ff1493, inset 0 0 40px rgba(255, 20, 147, 0.3);
+            box-shadow: 
+                0 0 80px #ff1493,
+                0 0 40px #ff1493,
+                0 0 20px #ff1493,
+                inset 0 0 60px rgba(255, 20, 147, 0.2),
+                inset -10px -10px 40px rgba(0, 0, 0, 0.5),
+                inset 10px 10px 40px rgba(255, 20, 147, 0.3),
+                0 25px 60px rgba(255, 20, 147, 0.4);
         }
 
         .character-node.eli .face-orb {
             border-color: #00ffff;
-            box-shadow: 0 0 40px #00ffff, inset 0 0 40px rgba(0, 255, 255, 0.3);
+            box-shadow: 
+                0 0 80px #00ffff,
+                0 0 40px #00ffff,
+                0 0 20px #00ffff,
+                inset 0 0 60px rgba(0, 255, 255, 0.2),
+                inset -10px -10px 40px rgba(0, 0, 0, 0.5),
+                inset 10px 10px 40px rgba(0, 255, 255, 0.3),
+                0 25px 60px rgba(0, 255, 255, 0.4);
         }
 
         .character-node.stanley .face-orb {
             border-color: #9ca3af;
-            box-shadow: 0 0 40px #9ca3af, inset 0 0 40px rgba(156, 163, 175, 0.3);
+            box-shadow: 
+                0 0 80px #9ca3af,
+                0 0 40px #9ca3af,
+                0 0 20px #9ca3af,
+                inset 0 0 60px rgba(156, 163, 175, 0.2),
+                inset -10px -10px 40px rgba(0, 0, 0, 0.5),
+                inset 10px 10px 40px rgba(156, 163, 175, 0.3),
+                0 25px 60px rgba(156, 163, 175, 0.4);
         }
 
         @keyframes orbFloat {
             0%, 100% { 
-                transform: translate(-50%, -50%) translateY(0px) rotateY(0deg);
+                transform: translate(-50%, -50%) translateY(0px);
             }
             50% { 
-                transform: translate(-50%, -50%) translateY(-15px) rotateY(180deg);
+                transform: translate(-50%, -50%) translateY(-15px);
             }
         }
 
-        /* Character Face Image */
+        /* Character Face Image - Always faces forward */
         .character-face {
             width: 100%;
             height: 100%;
             object-fit: cover;
             border-radius: 50%;
             opacity: 0.8;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s ease, filter 0.3s ease;
             filter: brightness(0.9) contrast(1.1);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
 
         .character-node:hover .character-face {
@@ -280,48 +353,63 @@
             border: 2px solid;
             border-radius: 50%;
             opacity: 0.4;
-            animation: ringRotate 8s linear infinite;
         }
 
         .character-node.maya .orbit-ring {
             border-color: #ff1493;
+            animation: ringRotateReverse 8s linear infinite;
         }
 
         .character-node.eli .orbit-ring {
             border-color: #00ffff;
+            animation: ringRotate 8s linear infinite;
         }
 
         .character-node.stanley .orbit-ring {
             border-color: #9ca3af;
+            animation: ringRotateReverse 8s linear infinite;
         }
 
         @keyframes ringRotate {
             0% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg); }
             100% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg); }
         }
+        
+        @keyframes ringRotateReverse {
+            0% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg); }
+            100% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg); }
+        }
 
         /* Character Info Card */
         .character-info {
             position: absolute;
-            bottom: -80px;
+            top: -100px;
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
             opacity: 0;
             transition: all 0.4s ease;
             pointer-events: none;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid currentColor;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            min-width: 220px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
         }
 
         .character-node:hover .character-info {
             opacity: 1;
-            bottom: -100px;
+            top: -120px;
         }
 
         .character-name {
             font-family: 'Orbitron', monospace;
-            font-size: 1.8em;
+            font-size: 1.5em;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-shadow: 0 0 10px currentColor;
         }
 
@@ -338,31 +426,33 @@
         }
 
         .character-specialty {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9em;
-            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85em;
+            line-height: 1.3;
         }
 
         /* Case File Preview (appears on hover) */
         .case-preview {
             position: absolute;
-            top: -60px;
+            bottom: -80px;
             left: 50%;
             transform: translateX(-50%) scale(0.8);
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             border: 2px solid;
             border-radius: 8px;
-            padding: 12px 20px;
+            padding: 10px 18px;
             opacity: 0;
             transition: all 0.4s ease;
             pointer-events: none;
             white-space: nowrap;
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
         }
 
         .character-node:hover .case-preview {
             opacity: 1;
-            top: -80px;
+            bottom: -100px;
             transform: translateX(-50%) scale(1);
         }
 
@@ -380,7 +470,7 @@
 
         .case-preview-text {
             color: rgba(255, 255, 255, 0.9);
-            font-size: 0.85em;
+            font-size: 0.8em;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -422,12 +512,12 @@
         /* Instructions */
         .instructions {
             position: absolute;
-            bottom: 60px;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
             color: rgba(255, 255, 255, 0.5);
-            font-size: 0.9em;
+            font-size: 0.85em;
             letter-spacing: 2px;
             animation: instructionPulse 2s ease-in-out infinite;
         }
@@ -658,12 +748,26 @@
             const nodes = document.querySelectorAll('.character-node');
             nodes.forEach((node, index) => {
                 const offsetX = (index - 1) * 0.5;
+                const rotationY = mouseX * 0.5;
+                const rotationX = -mouseY * 0.5;
+                
+                // Apply rotation to the node
                 node.style.transform = `
                     translateX(${mouseX * offsetX}px) 
                     translateY(${mouseY * 0.5}px) 
-                    rotateY(${mouseX * 0.5}deg) 
-                    rotateX(${-mouseY * 0.5}deg)
+                    rotateY(${rotationY}deg) 
+                    rotateX(${rotationX}deg)
                 `;
+                
+                // Counter-rotate the orb to keep it facing forward (billboard effect)
+                const orb = node.querySelector('.face-orb');
+                if (orb) {
+                    orb.style.transform = `
+                        translate(-50%, -50%)
+                        rotateX(${-rotationX}deg)
+                        rotateY(${-rotationY}deg)
+                    `;
+                }
             });
             
             requestAnimationFrame(animate);

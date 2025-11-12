@@ -326,6 +326,18 @@ class PauseMenuSystem {
             this.video.onended = null;
         }
         
+        // Pause audio narration if playing
+        if (window.audioManager) {
+            window.audioManager.pauseNarration();
+            console.log('🎙️ Audio narration paused');
+        }
+        
+        // Pause heartbeat corruption if playing
+        if (window.chromaBotCorruptionSequence && window.chromaBotCorruptionSequence.heartbeatInterval) {
+            window.chromaBotCorruptionSequence.pauseHeartbeat();
+            console.log('💔 Heartbeat corruption paused');
+        }
+        
         // Play pause sound
         this.playSound('video_pause', 0.4);
         
@@ -360,6 +372,18 @@ class PauseMenuSystem {
             if (this.storedOnEnded) {
                 this.video.onended = this.storedOnEnded;
             }
+        }
+        
+        // Resume audio narration if it was playing
+        if (window.audioManager) {
+            window.audioManager.resumeNarration();
+            console.log('🎙️ Audio narration resumed');
+        }
+        
+        // Resume heartbeat corruption if it was paused
+        if (window.chromaBotCorruptionSequence && window.chromaBotCorruptionSequence.isPausedHeartbeat) {
+            window.chromaBotCorruptionSequence.resumeHeartbeat();
+            console.log('💔 Heartbeat corruption resumed');
         }
         
         // Play resume sound
