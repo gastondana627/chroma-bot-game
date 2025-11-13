@@ -17,7 +17,7 @@ Examples:
 - scene_1_to_2_moderate.mp3
 - scene_1_to_2_failure.mp3
 ```
-
+ 
 ### Ending Narrations
 ```
 ending_[TYPE].mp3
