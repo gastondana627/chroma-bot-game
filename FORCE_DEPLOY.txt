@@ -1,0 +1,4 @@
+Force deployment trigger - timestamp: 2025-11-13T03:28:00Z
+
+This file exists to trigger a Vercel deployment.
+The previous commit fixed the .vercelignore issue.
