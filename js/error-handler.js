@@ -52,17 +52,31 @@ class ErrorHandler {
   initializeErrorUI() {
     // Create notification container if it doesn't exist
     if (!document.getElementById('error-notifications')) {
-      const container = document.createElement('div');
-      container.id = 'error-notifications';
-      container.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-        max-width: 400px;
-        pointer-events: none;
-      `;
-      document.body.appendChild(container);
+      // Wait for DOM to be ready before appending
+      const createContainer = () => {
+        if (!document.body) {
+          setTimeout(createContainer, 50);
+          return;
+        }
+        
+        const container = document.createElement('div');
+        container.id = 'error-notifications';
+        container.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 10000;
+          max-width: 400px;
+          pointer-events: none;
+        `;
+        document.body.appendChild(container);
+      };
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', createContainer);
+      } else {
+        createContainer();
+      }
     }
   }
 

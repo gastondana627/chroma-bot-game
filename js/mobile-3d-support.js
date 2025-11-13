@@ -29,8 +29,12 @@ class Mobile3DSupport {
       // Analyze device performance capabilities
       this.analyzeDeviceCapabilities();
       
-      // Set up touch gesture handlers
-      this.setupTouchGestures();
+      // Set up touch gesture handlers (only if scene manager exists)
+      if (this.sceneManager) {
+        this.setupTouchGestures();
+      } else {
+        console.log('⚠️ Scene manager not available, skipping touch gestures');
+      }
       
       // Configure adaptive rendering
       this.configureAdaptiveRendering();
@@ -47,7 +51,8 @@ class Mobile3DSupport {
       return true;
       
     } catch (error) {
-      console.error('❌ Failed to initialize mobile 3D support:', error);
+      console.warn('⚠️ Mobile 3D support initialization had issues:', error);
+      // Don't fail completely - allow page to load
       return false;
     }
   }

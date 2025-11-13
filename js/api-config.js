@@ -53,8 +53,9 @@ class APIConfig {
    */
   validateConfiguration() {
     if (!this.config.apiBaseUrl) {
-      console.error('❌ API Base URL not configured');
-      throw new Error('API configuration failed: No base URL available');
+      console.warn('⚠️ API Base URL not configured - chat features will be unavailable');
+      // Don't throw error - allow frontend to work without backend
+      return;
     }
 
     if (this.config.isProduction && this.config.apiBaseUrl.includes('localhost')) {

@@ -6,8 +6,18 @@ __pycache__/
 venv/
 .env
 
-# Backend/API files
-chroma-bot/
+# Backend/API files (but keep assets for frontend)
+chroma-bot/server.js
+chroma-bot/openai.js
+chroma-bot/chatbot.js
+chroma-bot/3d-response-formatter.js
+chroma-bot/package.json
+chroma-bot/package-lock.json
+chroma-bot/node_modules/
+chroma-bot/.env
+chroma-bot/src/
+chroma-bot/docs/
+chroma-bot/characters/
 main.py
 requirements.txt
 runtime.txt
