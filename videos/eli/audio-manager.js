@@ -106,7 +106,7 @@ class AudioManager {
         this.narrationAudio.volume = 0.9; // Slightly louder for clarity over video
         this.isNarrationPlaying = true;
         
-        // Set timeout protection (6 seconds max)
+        // Set timeout protection (15 seconds max - allows for network latency + playback)
         const timeoutId = setTimeout(() => {
             if (this.isNarrationPlaying) {
                 console.warn('⏱️ Narration timeout - forcing advancement');
@@ -115,7 +115,7 @@ class AudioManager {
                     this.onNarrationEnd();
                 }
             }
-        }, 6000);
+        }, 15000);
         
         // Clear timeout when narration ends naturally
         const originalCallback = this.onNarrationEnd;
