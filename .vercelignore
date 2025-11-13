@@ -1,0 +1,40 @@
+# Python files
+*.py
+*.pyc
+__pycache__/
+.venv/
+venv/
+.env
+
+# Backend/API files
+chroma-bot/
+main.py
+requirements.txt
+runtime.txt
+Procfile
+
+# Build artifacts
+node_modules/
+.git/
+.vscode/
+coverage/
+logs/
+
+# Test files
+tests/
+test-*.html
+test-*.js
+verify-*.js
+validate-*.js
+*-test-*.json
+
+# Documentation
+*.md
+docs/
+
+# Railway/other deployment configs
+railway.json
+railway-*.json
+.railwayignore
+nixpacks.toml
+Dockerfile
