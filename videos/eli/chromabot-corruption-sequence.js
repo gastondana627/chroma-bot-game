@@ -191,7 +191,10 @@ class ChromaBotCorruptionSequence {
         
         // Play corruption completion sound
         if (window.audioManager) {
-            window.audioManager.playSFX('corruption_level_up');
+            // Use direct audio path since it's in chromabot folder, not sfx
+            const audio = new Audio(window.audioManager.getAudioPath('audio/chromabot/corruption_level_up.wav'));
+            audio.volume = 0.5;
+            audio.play().catch(err => console.log('Corruption level up sound prevented:', err.message));
         }
     }
     
