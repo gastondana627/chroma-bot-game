@@ -132,6 +132,38 @@ app.get("/api/3d/capabilities", (req, res) => {
   res.json(capabilities);
 });
 
+// --- Health Check Endpoint ---
+app.get("/api/health", (req, res) => {
+  const healthStatus = {
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || "production",
+    services: {
+      openai: !!process.env.OPENAI_API_KEY,
+      server: true,
+      formatter3D: !!formatter3D
+    },
+    version: "1.0.0"
+  };
+  
+  res.status(200).json(healthStatus);
+});
+
+// --- Root Health Check (for Railway) ---
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "DATA_BLEED Backend API",
+    status: "running",
+    endpoints: [
+      "POST /api/chat",
+      "GET /api/health",
+      "GET /api/3d/capabilities",
+      "GET /api/3d/validate/:character/:trigger"
+    ]
+  });
+});
+
 app.listen(port, () => {
   console.log(`✅ Server running at http://localhost:${port}`);
   console.log(`Serving static files from the root project directory.`);

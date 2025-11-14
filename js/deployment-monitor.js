@@ -6,10 +6,10 @@
 class DeploymentMonitor {
   constructor() {
     this.config = {
-      // Monitoring intervals
-      healthCheckInterval: 60000, // 1 minute
-      performanceCheckInterval: 300000, // 5 minutes
-      uptimeCheckInterval: 30000, // 30 seconds
+      // Monitoring intervals - DISABLED FOR PRODUCTION
+      healthCheckInterval: 300000, // 5 minutes (reduced frequency)
+      performanceCheckInterval: 600000, // 10 minutes
+      uptimeCheckInterval: 300000, // 5 minutes (reduced frequency)
       
       // Thresholds
       responseTimeThreshold: 5000, // 5 seconds
@@ -23,8 +23,8 @@ class DeploymentMonitor {
         chat: '/api/chat'
       },
       
-      // Alert settings
-      alertsEnabled: true,
+      // Alert settings - DISABLED FOR PRODUCTION
+      alertsEnabled: false, // Disabled to prevent spam
       maxAlerts: 5, // Max alerts per hour
       alertCooldown: 300000 // 5 minutes between same alert types
     };
@@ -70,30 +70,34 @@ class DeploymentMonitor {
       return;
     }
 
-    console.log('🚀 Starting deployment monitoring...');
+    console.log('🚀 Starting deployment monitoring (smart mode)...');
     this.isMonitoring = true;
 
-    // Start health checks
+    // Smart monitoring: Only check health periodically, not constantly
+    // Start health checks (reduced frequency for production)
     this.intervals.health = setInterval(() => {
       this.performHealthCheck();
     }, this.config.healthCheckInterval);
 
-    // Start performance monitoring
-    this.intervals.performance = setInterval(() => {
-      this.performPerformanceCheck();
-    }, this.config.performanceCheckInterval);
+    // Performance monitoring disabled by default (enable with ?debug=true)
+    if (window.location.search.includes('debug=true')) {
+      this.intervals.performance = setInterval(() => {
+        this.performPerformanceCheck();
+      }, this.config.performanceCheckInterval);
 
-    // Start uptime monitoring
-    this.intervals.uptime = setInterval(() => {
-      this.performUptimeCheck();
-    }, this.config.uptimeCheckInterval);
+      this.intervals.uptime = setInterval(() => {
+        this.performUptimeCheck();
+      }, this.config.uptimeCheckInterval);
+      
+      console.log('✅ Full monitoring enabled (debug mode)');
+    } else {
+      console.log('ℹ️ Smart monitoring active (health checks only)');
+    }
 
-    // Initial checks
+    // Initial health check only
     this.performHealthCheck();
-    this.performUptimeCheck();
 
     this.updateUI();
-    console.log('✅ Deployment monitoring started');
   }
 
   /**
