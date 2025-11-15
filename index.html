@@ -310,34 +310,13 @@
     </video>
   </div>
 
-  <!-- Login Screen -->
-  <div id="login-screen">
-    <!-- Old character selector hidden - using Enhanced_Login_System instead -->
-    <div id="character-selector" class="hidden">
-      <div class="character-card maya" data-character="maya">
-        <h2>Maya</h2>
-        <p>Cyber-security / Dating App Warnings</p>
-      </div>
-      <div class="character-card eli" data-character="eli">
-        <h2>Eli</h2>
-        <p>Gaming Exploitation / Peer Pressure</p>
-      </div>
-      <div class="character-card stanley" data-character="stanley">
-        <h2>Stanley</h2>
-        <p>Identity Theft / Catfishing</p>
-      </div>
-    </div>
-    <div id="eli-login" class="character-login hidden"><iframe class="login-frame"
-        src="./Log_in_formats/Eli.html"></iframe></div>
-    <div id="maya-login" class="character-login hidden"><iframe class="login-frame"
-        src="./Log_in_formats/Maya.html"></iframe></div>
-    <div id="stanley-login" class="character-login hidden"><iframe class="login-frame"
-        src="./Log_in_formats/Stanley.html"></iframe></div>
+  <!-- Login Screen - REMOVED: Now using Enhanced_Login_System exclusively -->
+  <div id="login-screen" style="display: none;">
+    <!-- Old login system completely removed to prevent flashing -->
   </div>
 
   <!-- Background Audio -->
-  <audio id="start-audio" src="./Start_Here_Screen/The_Corrupted_Lullaby.mp3" loop></audio>
-  <!-- Intro audio removed - using start audio throughout intro for continuity -->
+  <!-- Start audio removed - handled by Start_Button.html to prevent duplicate playback -->
   <audio id="eli-audio" src="./Main_Login_Audio/Eli_Rage_Glitch.mp3" loop></audio>
   <audio id="maya-audio" src="./Main_Login_Audio/Maya_The_Connection_Trap.mp3" loop></audio>
   <audio id="stanley-audio" src="./Main_Login_Audio/Stanely_The Digital Doppelganger.mp3" loop></audio>
@@ -486,7 +465,7 @@
     const stanleyUI = document.getElementById("stanley-ui");
 
     // --- AUDIO ---
-    const startAudio = document.getElementById("start-audio");
+    // Start audio removed - handled by Start_Button.html iframe
     const eliAudio = document.getElementById("eli-audio");
     const mayaAudio = document.getElementById("maya-audio");
     const stanleyAudio = document.getElementById("stanley-audio");
@@ -496,20 +475,13 @@
     const introVideo = document.getElementById("intro-video");
     const logoAnimation = document.getElementById("logo-animation");
 
-    // Start the intro audio when page loads
-    window.addEventListener("load", () => {
-      startAudio.play().catch(err => console.warn("Start audio blocked:", err));
-    });
-
     const startFrame = document.getElementById("start-frame");
     window.addEventListener("message", (event) => {
       if (event.data === "start-clicked") {
         console.log("🎬 Start button clicked - beginning intro sequence");
         
-        // STOP the initialize button music immediately
-        startAudio.pause();
-        startAudio.currentTime = 0;
-        console.log("🔇 Initialize button music stopped");
+        // Music is already stopped by Start_Button.html before sending this message
+        console.log("🔇 Initialize button music stopped by iframe");
         
         // Hide intro screen
         introScreen.style.display = "none"; 
@@ -573,7 +545,7 @@
 
     // --- THEME SWITCHER ---
     function switchTheme(character) {
-      [eliAudio, mayaAudio, stanleyAudio, startAudio].forEach(a => { a.pause(); a.currentTime = 0; });
+      [eliAudio, mayaAudio, stanleyAudio].forEach(a => { a.pause(); a.currentTime = 0; });
       if (character === "eli") eliAudio.play().catch(() => { });
       if (character === "maya") mayaAudio.play().catch(() => { });
       if (character === "stanley") stanleyAudio.play().catch(() => { });
