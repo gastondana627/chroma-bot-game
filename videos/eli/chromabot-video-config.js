@@ -321,7 +321,7 @@ class ChromaBotVideoIntegration {
     /**
      * Handle chat message submission
      */
-    handleChatSubmit(event) {
+    async handleChatSubmit(event) {
         event.preventDefault();
         const message = this.chatInput.value.trim();
         
@@ -338,14 +338,17 @@ class ChromaBotVideoIntegration {
             // Scroll to bottom
             this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
             
-            // Simulate bot response
+            // Get bot response
+            const response = await this.generateResponse(message);
+            
+            // Add bot response
             setTimeout(() => {
                 // Play message sound
                 this.playSound('chromabot_message', 0.3);
                 
                 const botMsg = document.createElement('p');
                 botMsg.style.marginBottom = '10px';
-                botMsg.innerHTML = `<b style="color: #00ffff;">ChromaBot:</b> ${this.generateResponse(message)}`;
+                botMsg.innerHTML = `<b style="color: #00ffff;">ChromaBot:</b> ${response}`;
                 this.chatMessages.appendChild(botMsg);
                 this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
             }, 800);
@@ -353,11 +356,80 @@ class ChromaBotVideoIntegration {
     }
     
     /**
-     * Generate bot response (NORMAL - no corruption, no easter eggs)
-     * Video orb chat is always clean and helpful
-     * Easter eggs are ONLY in pause menu chat
+     * Generate bot response with context awareness
+     * Tries scene-specific responses first, then API, then fallback
      */
-    generateResponse(message) {
+    async generateResponse(message) {
+        const messageLower = message.toLowerCase();
+        
+        // Get current scene number
+        const currentScene = window.currentSceneIndex !== undefined ? window.currentSceneIndex + 1 : 1;
+        
+        // 1. Try scene-specific responses first (from chromabot-scene-training.js)
+        if (window.getSceneChromaBotResponse) {
+            const sceneResponse = window.getSceneChromaBotResponse(currentScene, messageLower);
+            if (sceneResponse) {
+                console.log('✅ Using scene-specific response');
+                return sceneResponse;
+            }
+        }
+        
+        // 2. Check for direct character/story questions
+        const directResponses = {
+            'who is eli': "Eli is a young gamer facing peer pressure and online scams. He's learning to navigate digital dangers while staying true to himself.",
+            'what is eli': "Eli is the main character in this story - a gamer who gets caught up in online manipulation and gambling schemes.",
+            'tell me about eli': "Eli loves gaming but struggles with peer pressure and online scams. His journey teaches us about digital safety.",
+            'who is maya': "Maya is a cybersecurity investigator who knows how to spot scams. She's smart, cautious, and always verifies information.",
+            'who is stanley': "Stanley is a businessman who fell victim to identity theft. His story shows how even careful people can be scammed.",
+            'what is this game': "This is Data_Bleed - an interactive experience that teaches scam awareness through psychological horror. Every choice matters!",
+            'what is data bleed': "Data_Bleed is a training simulation for digital survival. It uses horror and storytelling to teach you how to spot and avoid scams.",
+            'how do i play': "Watch the story unfold, make decisions when prompted, and learn from the consequences. Your trust score shows how vulnerable you are.",
+            'what is trust score': "Your trust score (0-100) shows your vulnerability to scams. Higher = safer. Bad decisions lower it. Stay above 30!",
+            'what happens if trust is low': "If your trust score drops too low, you become highly vulnerable to scams and manipulation. The game shows you the consequences.",
+        };
+        
+        // Check for direct matches
+        for (const [key, value] of Object.entries(directResponses)) {
+            if (messageLower.includes(key)) {
+                console.log('✅ Using direct response for:', key);
+                return value;
+            }
+        }
+        
+        // 3. Try API call for contextual responses
+        try {
+            const apiUrl = window.location.hostname === 'localhost' 
+                ? 'http://localhost:3001/api/chat'
+                : 'https://data-bleed-vsc-production.up.railway.app/api/chat';
+                
+            const apiResponse = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: message,
+                    character: 'eli',
+                    sessionId: 'video-orb-chat',
+                    mode: 'standard'
+                })
+            });
+            
+            if (apiResponse.ok) {
+                const data = await apiResponse.json();
+                console.log('✅ Using API response');
+                return data.reply || this.getFallbackResponse();
+            }
+        } catch (error) {
+            console.log('⚠️ API unavailable, using fallback');
+        }
+        
+        // 4. Fallback to generic but helpful responses
+        return this.getFallbackResponse();
+    }
+    
+    /**
+     * Get fallback response when API is unavailable
+     */
+    getFallbackResponse() {
         const responses = [
             "That's a great question! In this scenario, it's important to verify information before acting.",
             "Good thinking! Always be cautious with personal information online.",
@@ -371,7 +443,6 @@ class ChromaBotVideoIntegration {
             "Excellent point! Never share passwords or sensitive data through unsecured channels."
         ];
         
-        // Return clean response - NO corruption for video orb chat
         return responses[Math.floor(Math.random() * responses.length)];
     }
     
