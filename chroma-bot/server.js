@@ -11,7 +11,22 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // --- Middleware ---
-app.use(cors()); // Allows requests from your frontend
+// CORS configuration for production
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5500',
+    'https://data-bleed.vercel.app',
+    'https://chroma-bot-game.vercel.app',
+    'https://*.vercel.app'
+  ],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions)); // Allows requests from your frontend
 app.use(express.json()); // Parses incoming JSON requests
 
 // This line serves all files from the parent directory (Data_Bleed_VSC).

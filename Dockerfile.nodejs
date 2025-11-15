@@ -1,0 +1,23 @@
+# Node.js Backend Dockerfile for Railway
+FROM node:18-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY chroma-bot/package*.json ./
+
+# Install dependencies
+RUN npm install --production
+
+# Copy application files
+COPY chroma-bot/ ./
+
+# Copy character configs if they exist
+COPY chroma-bot/characters ./characters 2>/dev/null || true
+
+# Expose port (Railway will set PORT env variable)
+EXPOSE 3001
+
+# Start the server
+CMD ["node", "server.js"]
