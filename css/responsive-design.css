@@ -46,6 +46,24 @@ video {
     display: block;
 }
 
+/* Mobile-specific video positioning for Eli */
+@media (max-width: 768px) {
+    #story-video {
+        object-fit: contain !important;
+        object-position: center center !important;
+        background: #000;
+    }
+}
+
+/* iPad/Tablet-specific video positioning */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #story-video {
+        object-fit: contain !important;
+        object-position: center center !important;
+        background: #000;
+    }
+}
+
 /* Touch-friendly buttons */
 button,
 .choice-btn,
